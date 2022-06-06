@@ -92,37 +92,6 @@ struct DXPointer {
 	}
 };
 
-template<class T, class E>
-struct Res {
-private:
-	bool is_value_ok;
-	union Inner {
-		T ok;
-		E err;
-	} value;
-public:
-	constexpr Res(T&& ok) : is_value_ok(true) { value.ok = ok; }
-	constexpr Res(E&& err) : is_value_ok(true) { value.err = err; }
-
-	constexpr bool is_ok() const {
-		return is_value_ok;
-	}
-	constexpr bool is_err() const {
-		return !is_value_ok;
-	}
-
-	constexpr const T ok() const {
-		return value.ok;
-	}
-	constexpr const E err() const {
-		return value.err;
-	}
-
-	constexpr operator bool() const {
-		return is_ok();
-	}
-};
-
 // Tries to unwrap a result, otherwise return the error.
 #define TRY(x, result) {\
 	auto x ## __res = result; \
