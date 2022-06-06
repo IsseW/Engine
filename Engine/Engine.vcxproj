@@ -164,6 +164,7 @@
     <ClInclude Include="transform.h" />
     <ClInclude Include="renderer.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="tuple.h" />
     <ClInclude Include="util.h" />
   </ItemGroup>
   <ItemGroup>

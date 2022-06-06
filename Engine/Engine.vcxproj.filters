@@ -62,6 +62,9 @@
     <ClInclude Include="panic.h">
       <Filter>Header Files\rstd</Filter>
     </ClInclude>
+    <ClInclude Include="tuple.h">
+      <Filter>Header Files\rstd</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="VertexShader.hlsl">
