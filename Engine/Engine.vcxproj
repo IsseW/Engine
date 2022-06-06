@@ -140,13 +140,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp" />
-    <ClCompile Include="PipelineHelper.cpp" />
-    <ClCompile Include="renderer.cpp" />
-    <ClCompile Include="transform.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="PipelineHelper.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="renderer.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="transform.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="assets.h" />
+    <ClInclude Include="option.h" />
+    <ClInclude Include="result.h" />
     <ClInclude Include="standard.h" />
     <ClInclude Include="transform.h" />
     <ClInclude Include="renderer.h" />

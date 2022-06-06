@@ -16,11 +16,11 @@
     <Filter Include="Header Files\Pipelines">
       <UniqueIdentifier>{9ba3b717-8930-4148-9e5b-b19da2303edd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\rstd">
+      <UniqueIdentifier>{37b5c258-8683-4298-ab8b-74e112d78979}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PipelineHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -28,6 +28,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -49,6 +52,12 @@
     </ClInclude>
     <ClInclude Include="assets.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="result.h">
+      <Filter>Header Files\rstd</Filter>
+    </ClInclude>
+    <ClInclude Include="option.h">
+      <Filter>Header Files\rstd</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
