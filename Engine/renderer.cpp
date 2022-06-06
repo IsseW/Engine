@@ -171,9 +171,10 @@ Res<RendererCtx, RenderCreateError> create_renderer_ctx(HINSTANCE instance, uint
 	auto device = device_res.device;
 	auto context = device_res.context;
 	auto swap_chain = device_res.swap_chain;
-
+	ID3D11RenderTargetView* rtv;
 	TRY(rtv, create_render_target_view(device, swap_chain));
 
+	DepthStencilRes depth_res;
 	TRY(depth_res, create_depth_stencil(device, width, height));
 	auto ds_texture = depth_res.ds_texture;
 	auto ds_view = depth_res.ds_view;
@@ -190,6 +191,7 @@ Res<RendererCtx, RenderCreateError> create_renderer_ctx(HINSTANCE instance, uint
 }
 
 Res<Renderer, RenderCreateError> create_renderer(HINSTANCE instance, uint32_t width, uint32_t height, int nCmdShow) {
+	RendererCtx ctx;
 	TRY(ctx, create_renderer_ctx(instance, width, height, nCmdShow));
 
 	return Renderer{

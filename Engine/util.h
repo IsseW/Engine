@@ -101,8 +101,8 @@ private:
 		E err;
 	} value;
 public:
-	constexpr Res(T& ok) : is_value_ok(true) { value.ok = ok; }
-	constexpr Res(E& err) : is_value_ok(true) { value.err = err; }
+	constexpr Res(T&& ok) : is_value_ok(true) { value.ok = ok; }
+	constexpr Res(E&& err) : is_value_ok(true) { value.err = err; }
 
 	constexpr bool is_ok() const {
 		return is_value_ok;
@@ -126,6 +126,6 @@ public:
 // Tries to unwrap a result, otherwise return the error.
 #define TRY(x, result) {\
 	auto x ## __res = result; \
-	if (!(x ## __res)) { return (x ## __res).err(); } \
+	if (!(x ## __res)) { return std::move((x ## __res).err()); } \
 	x = (x ## __res).ok(); \
 }
