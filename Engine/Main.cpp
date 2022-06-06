@@ -29,17 +29,7 @@ private:
 };
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow) {
-	Console __console{};
+	Console __console{};	
 
-	Option<int> t{32};
-	int i = t.unwrap();
-	Option<int> a{};
-	
-
-	std::cerr << "wa\n";
-	std::cout << i;
-	int x;
-	std::cin >> x;
-	a.unwrap();
-
+	auto tuple = new_tuple(1,2,3,4);
 }

@@ -2,6 +2,7 @@
 #include<utility>
 #include"option.h"
 #include"panic.h"
+#include<cstdint>
 
 template<typename T, typename E>
 struct Result {
@@ -35,6 +36,15 @@ struct Result {
 			std::move(this->_ok);
 		} else {
 			PANIC("Trying to unwrap err.");
+		}
+	}
+
+	Option<T> ok() {
+		if (this->is_ok()) {
+			Option<T>::some(this->_ok);
+		}
+		else {
+			Option<T>::none();
 		}
 	}
 
@@ -75,3 +85,23 @@ private:
 		char _t;
 	};
 };
+
+template<typename T, typename E>
+Result<T, E> ok(const T& v) {
+	return Result<T, E>::ok(v);
+}
+
+template<typename T, typename E>
+Result<T, E> ok(T&& v) {
+	return Result<T, E>::ok(v);
+}
+
+template<typename T, typename E>
+Result<T, E> err(const E& e) {
+	return Result<T, E>::err(e);
+}
+
+template<typename T, typename E>
+Result<T, E> err(E&& e) {
+	return Result<T, E>::err(e);
+}
