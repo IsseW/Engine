@@ -19,6 +19,9 @@
     <Filter Include="Header Files\rstd">
       <UniqueIdentifier>{37b5c258-8683-4298-ab8b-74e112d78979}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\math">
+      <UniqueIdentifier>{a2f480fa-22b0-42a2-9fc8-1c28d4535ab5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PipelineHelper.cpp">
@@ -63,6 +66,12 @@
       <Filter>Header Files\rstd</Filter>
     </ClInclude>
     <ClInclude Include="tuple.h">
+      <Filter>Header Files\rstd</Filter>
+    </ClInclude>
+    <ClInclude Include="primitives.h">
+      <Filter>Header Files\rstd</Filter>
+    </ClInclude>
+    <ClInclude Include="vector.h">
       <Filter>Header Files\rstd</Filter>
     </ClInclude>
   </ItemGroup>

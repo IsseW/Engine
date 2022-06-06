@@ -159,12 +159,14 @@
     <ClInclude Include="assets.h" />
     <ClInclude Include="option.h" />
     <ClInclude Include="panic.h" />
+    <ClInclude Include="primitives.h" />
     <ClInclude Include="result.h" />
     <ClInclude Include="standard.h" />
     <ClInclude Include="transform.h" />
     <ClInclude Include="renderer.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="tuple.h" />
+    <ClInclude Include="vector.h" />
     <ClInclude Include="util.h" />
   </ItemGroup>
   <ItemGroup>
