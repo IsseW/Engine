@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <d3d11.h>
 #include <directxmath.h>
 
@@ -62,9 +61,6 @@ const DirectX::XMFLOAT4X4 WORLD_MATRIX = {
 	0, 0, 0, 1,
 };
 
-
-
-
 template<class T>
 struct DXPointer {
 	T* ptr{};
@@ -96,26 +92,40 @@ struct DXPointer {
 	}
 };
 
-struct Pipeline {
-	DXPointer<ID3D11Device> device;
-	DXPointer<ID3D11DeviceContext> context;
-	DXPointer<IDXGISwapChain> swapChain;
-	DXPointer<ID3D11RenderTargetView> rtv;
-	DXPointer<ID3D11Texture2D> dsTexture;
-	DXPointer<ID3D11DepthStencilView> dsView;
-	D3D11_VIEWPORT viewport;
+template<class T, class E>
+struct Res {
+private:
+	bool is_value_ok;
+	union Inner {
+		T ok;
+		E err;
+	} value;
+public:
+	constexpr Res(T& ok) : is_value_ok(true) { value.ok = ok; }
+	constexpr Res(E& err) : is_value_ok(true) { value.err = err; }
 
-	DXPointer<ID3D11VertexShader> vShader;
-	DXPointer<ID3D11Buffer> vsConstantBuffer;
-	DXPointer<ID3D11PixelShader> pShader;
-	DXPointer<ID3D11Buffer> psConstantBuffer;
-	DXPointer<ID3D11InputLayout> inputLayout;
-	DXPointer<ID3D11Buffer> vertexBuffer;
-	DXPointer<ID3D11Texture2D> texture;
-	DXPointer<ID3D11ShaderResourceView> shaderResource;
-	DXPointer<ID3D11SamplerState> samplerState;
+	constexpr bool is_ok() const {
+		return is_value_ok;
+	}
+	constexpr bool is_err() const {
+		return !is_value_ok;
+	}
+
+	constexpr const T ok() const {
+		return value.ok;
+	}
+	constexpr const E err() const {
+		return value.err;
+	}
+
+	constexpr operator bool() const {
+		return is_ok();
+	}
 };
 
-bool SetupPipeline(Pipeline& pipeline);
-
-DirectX::XMFLOAT4X4 CreateProjection(Pipeline& pipeline);
+// Tries to unwrap a result, otherwise return the error.
+#define TRY(x, result) {\
+	auto x ## __res = result; \
+	if (!(x ## __res)) { return (x ## __res).err(); } \
+	x = (x ## __res).ok(); \
+}
