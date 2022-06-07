@@ -151,6 +151,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\rstd.cpp" />
+    <ClCompile Include="src\tests.cpp" />
     <ClCompile Include="src\transform.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -158,6 +160,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="assets.h" />
+    <ClInclude Include="math\consts.h" />
+    <ClInclude Include="math\mat.h" />
+    <ClInclude Include="math\quat.h" />
+    <ClInclude Include="math\vec.h" />
     <ClInclude Include="rstd\option.h" />
     <ClInclude Include="rstd\panic.h" />
     <ClInclude Include="rstd\primitives.h" />

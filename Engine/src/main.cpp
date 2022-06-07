@@ -1,10 +1,14 @@
 #include<rstd/option.h>
 #include<rstd/result.h>
 #include<rstd/tuple.h>
+#include<math/mat.h>
+#include<math/quat.h>
+#include<math/consts.h>
+
 #include<Windows.h>
 
-struct Console {
 
+struct Console {
 	Console() {
 		AllocConsole();
 		freopen_s(&console_err, "CONOUT$", "w", stderr);
@@ -27,9 +31,18 @@ private:
 	FILE* console_out;
 	FILE* console_in;
 };
+// TODO: Add a TEST define?
+#ifdef _DEBUG
+void run_tests();
+#endif
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow) {
-	Console __console{};	
+	Console __console{};
 
-	auto tuple = new_tuple(1,2,3,4);
+#ifdef _DEBUG
+	run_tests();
+#endif
+
+	system("pause");
+	return 0;
 }

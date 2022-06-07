@@ -3,6 +3,7 @@
 #include"option.h"
 #include"panic.h"
 #include<cstdint>
+#include<iostream>
 
 template<typename T, typename E>
 struct Result {
@@ -31,17 +32,26 @@ struct Result {
 		return res;
 	}
 
-	T&& unwrap() {
-		if (this->_is_ok) {
+	T&& unwrap() const {
+		if (is_ok()) {
 			std::move(this->_ok);
 		} else {
 			PANIC("Trying to unwrap err.");
 		}
 	}
 
-	Option<T> ok() {
+	E&& unwrap_err() const {
+		if (is_err()) {
+			std::move(this->_err);
+		}
+		else {
+			PANIC("Trying to unwrap err from ok.");
+		}
+	}
+
+	Option<T>&& ok() const {
 		if (this->is_ok()) {
-			Option<T>::some(this->_ok);
+			Option<T>::some(std::move(this->_ok));
 		}
 		else {
 			Option<T>::none();
@@ -55,11 +65,19 @@ struct Result {
 		else {
 			return Result<T&, E&>::err(this->_err);
 		}
+	}
 
+	Result<const T&, const E&> as_ref() const {
+		if (this->is_ok()) {
+			return Result<const T&, const E&>::ok(this->_ok);
+		}
+		else {
+			return Result<const T&, const E&>::err(this->_err);
+		}
 	}
 
 	template<typename U, typename F>
-	Result<U, E> map(F f) {
+	Result<U, E> map(F f) const {
 		if (this->is_ok()) {
 			return Result<U, E>::ok(f(this->_ok));
 		}
@@ -69,8 +87,11 @@ struct Result {
 
 	}
 
-	bool is_ok() {
+	bool is_ok() const {
 		return this->_is_ok;
+	}
+	bool is_err() const {
+		return !this->_is_ok;
 	}
 private:
 	Result() {
@@ -104,4 +125,17 @@ Result<T, E> err(const E& e) {
 template<typename T, typename E>
 Result<T, E> err(E&& e) {
 	return Result<T, E>::err(e);
+}
+
+
+template<typename T, typename E>
+std::ostream& operator<<(std::ostream& os, const Result<T, E>& o) {
+	if (o.is_ok()) {
+		const T& t = o.as_ref().unwrap();
+		return os << "ok(" << t << ")";
+	}
+	else {
+		const E& e = o.as_ref().unwrap_err();
+		return os << "err(" << e << ")";
+	}
 }

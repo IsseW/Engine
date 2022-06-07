@@ -1,5 +1,6 @@
 #pragma once
 #include<utility>
+#include<iostream>
 #include"panic.h"
 
 template<typename T>
@@ -14,7 +15,7 @@ struct Option {
 		return Option(v);
 	}
 
-	T&& unwrap() {
+	T&& unwrap() const {
 		if (_is_some) {
 			return std::move(_v);
 		}
@@ -23,7 +24,7 @@ struct Option {
 		}
 	}
 
-	T&& unwrap_or(T&& v) {
+	T&& unwrap_or(T&& v) const {
 		if (_is_some) {
 			return std::move(_v);
 		}
@@ -33,7 +34,7 @@ struct Option {
 	}
 
 	template<typename F>
-	T&& unwrap_or_else(F els) {
+	T&& unwrap_or_else(F els) const {
 		if (_is_some) {
 			return std::move(_v);
 		}
@@ -50,9 +51,17 @@ struct Option {
 			return Option<T&>::some(_v);
 		}
 	}
+	Option<const T&> as_ref() const {
+		if (_is_some) {
+			return Option<const T&>::none();
+		}
+		else {
+			return Option<const T&>::some(_v);
+		}
+	}
 	
 	template<typename U, typename F>
-	Option<U> map(F map) {
+	Option<U> map(F map) const {
 		if (_is_some) {
 			return map(std::move(_v));
 		}
@@ -61,10 +70,10 @@ struct Option {
 		}
 	}
 
-	bool is_some() {
+	bool is_some() const {
 		return _is_some;
 	}
-	bool is_none() {
+	bool is_none() const {
 		return !_is_some;
 	}
 
@@ -92,4 +101,15 @@ Option<T> some(const T& v) {
 template<typename T>
 Option<T> some(T&& v) {
 	return Option<T>::some(v);
+}
+
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const Option<T>& o) {
+	if (o.is_some()) {
+		const T& t = o.as_ref().unwrap();
+		return os << "some(" << t << ")";
+	}
+	else {
+		return os << "none";
+	}
 }
