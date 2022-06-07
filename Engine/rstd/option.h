@@ -15,7 +15,7 @@ struct Option {
 		return Option(v);
 	}
 
-	T&& unwrap() const {
+	T&& unwrap() {
 		if (_is_some) {
 			return std::move(_v);
 		}
@@ -24,7 +24,7 @@ struct Option {
 		}
 	}
 
-	T&& unwrap_or(T&& v) const {
+	T&& unwrap_or(T&& v) {
 		if (_is_some) {
 			return std::move(_v);
 		}
@@ -34,7 +34,7 @@ struct Option {
 	}
 
 	template<typename F>
-	T&& unwrap_or_else(F els) const {
+	T&& unwrap_or_else(F els) {
 		if (_is_some) {
 			return std::move(_v);
 		}

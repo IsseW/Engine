@@ -7,6 +7,15 @@
 
 template<typename T, typename E>
 struct Result {
+	Result(const E& e) : _err(e), _is_ok(false) { }
+	~Result() {
+		if (is_ok()) {
+			_ok.~T();
+		}
+		else {
+			_err.~E();
+		}
+	}
 	static Result<T, E> ok(const T& v) {
 		Result<T, E> res{};
 		res._ok = v;
@@ -32,21 +41,24 @@ struct Result {
 		return res;
 	}
 
-	T&& unwrap() const {
+	T&& unwrap() {
 		if (is_ok()) {
-			std::move(this->_ok);
+			return std::move(this->_ok);
 		} else {
 			PANIC("Trying to unwrap err.");
 		}
 	}
 
-	E&& unwrap_err() const {
+	E&& unwrap_err() {
 		if (is_err()) {
-			std::move(this->_err);
+			return std::move(this->_err);
 		}
 		else {
 			PANIC("Trying to unwrap err from ok.");
 		}
+	}
+	E&& unwrap_err_unchecked() {
+		return std::move(this->_err);
 	}
 
 	Option<T>&& ok() const {
@@ -138,4 +150,11 @@ std::ostream& operator<<(std::ostream& os, const Result<T, E>& o) {
 		const E& e = o.as_ref().unwrap_err();
 		return os << "err(" << e << ")";
 	}
+}
+
+// Tries to unwrap a result, otherwise return the error.
+#define TRY(x, result) {\
+	auto x ## __res = result; \
+	if ((x ## __res).is_err()) { return x ## __res.unwrap_err_unchecked(); } \
+	x = (x ## __res).unwrap(); \
 }

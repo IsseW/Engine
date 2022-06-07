@@ -44,19 +44,19 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="renderer.h">
+    <ClInclude Include="renderer\renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="transform.h">
+    <ClInclude Include="renderer\transform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="standard.h">
+    <ClInclude Include="renderer\pipelines\standard.h">
       <Filter>Header Files\Pipelines</Filter>
     </ClInclude>
-    <ClInclude Include="util.h">
+    <ClInclude Include="renderer\util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="assets.h">

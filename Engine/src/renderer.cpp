@@ -2,8 +2,7 @@
 
 #include <Windows.h>
 #include <iostream>
-
-#include "renderer.h"
+#include<renderer/renderer.h>
 
 
 LRESULT CALLBACK window_proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -20,7 +19,7 @@ LRESULT CALLBACK window_proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-HWND setup_window(HINSTANCE instance, UINT width, UINT height)
+HWND setup_window(HINSTANCE instance, u32 width, u32 height)
 {
 	const wchar_t CLASS_NAME[] = L"Cool Engine";
 
@@ -38,10 +37,10 @@ struct DeviceCreationRes {
 	ID3D11DeviceContext* context;
 	IDXGISwapChain* swap_chain;
 };
-Res<DeviceCreationRes, RenderCreateError>
-create_interfaces(uint32_t width, uint32_t height, HWND window)
+Result<DeviceCreationRes, RenderCreateError>
+create_interfaces(u32 width, u32 height, HWND window)
 {
-	uint32_t flags = 0;
+	u32 flags = 0;
 	if (_DEBUG) flags = D3D11_CREATE_DEVICE_DEBUG;
 
 	D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0 };
@@ -84,20 +83,20 @@ create_interfaces(uint32_t width, uint32_t height, HWND window)
 		&context
 	);
 	if FAILED(hr) {
-		return FailedDeviceCreation;
+		return err<DeviceCreationRes, RenderCreateError>(FailedDeviceCreation);
 	}
 	else {
-		return DeviceCreationRes { device, context, swap_chain };
+		return ok<DeviceCreationRes, RenderCreateError>(DeviceCreationRes { device, context, swap_chain });
 	}
 }
 
-Res<ID3D11RenderTargetView*, RenderCreateError> create_render_target_view(ID3D11Device* device, IDXGISwapChain* swap_chain)
+Result<ID3D11RenderTargetView*, RenderCreateError> create_render_target_view(ID3D11Device* device, IDXGISwapChain* swap_chain)
 {
 	// get the address of the back buffer
 	ID3D11Texture2D* backBuffer = nullptr;
 	if (FAILED(swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer))))
 	{
-		return FailedBackBuffer;
+		return err<ID3D11RenderTargetView*, RenderCreateError>(FailedBackBuffer);
 	}
 
 	ID3D11RenderTargetView* rtv;
@@ -106,10 +105,10 @@ Res<ID3D11RenderTargetView*, RenderCreateError> create_render_target_view(ID3D11
 	HRESULT hr = device->CreateRenderTargetView(backBuffer, NULL, &rtv);
 	backBuffer->Release();
 	if (FAILED(hr)) {
-		return FailedRTVCreation;
+		return err<ID3D11RenderTargetView*, RenderCreateError>(FailedRTVCreation);
 	}
 	else {
-		return rtv;
+		return ok<ID3D11RenderTargetView*, RenderCreateError>(rtv);
 	}
 }
 
@@ -118,7 +117,7 @@ struct DepthStencilRes {
 	ID3D11DepthStencilView* ds_view;
 };
 
-Res<DepthStencilRes, RenderCreateError>  create_depth_stencil(ID3D11Device* device, uint32_t width, uint32_t height)
+Result<DepthStencilRes, RenderCreateError>  create_depth_stencil(ID3D11Device* device, u32 width, u32 height)
 {
 	D3D11_TEXTURE2D_DESC textureDesc;
 	textureDesc.Width = width;
@@ -134,16 +133,16 @@ Res<DepthStencilRes, RenderCreateError>  create_depth_stencil(ID3D11Device* devi
 	textureDesc.MiscFlags = 0;
 	ID3D11Texture2D* ds_texture;
 	if (FAILED(device->CreateTexture2D(&textureDesc, nullptr, &ds_texture))) {
-		return FailedTextureCreation;
+		return err<DepthStencilRes, RenderCreateError>(FailedTextureCreation);
 	}
 	ID3D11DepthStencilView* ds_view;
 	HRESULT hr = device->CreateDepthStencilView(ds_texture, 0, &ds_view);
 
 	if (FAILED(hr)) {
-		return FailedDepthStencilViewCreation;
+		return err<DepthStencilRes, RenderCreateError>(FailedDepthStencilViewCreation);
 	}
 	else {
-		return DepthStencilRes{ ds_texture, ds_view };
+		return ok<DepthStencilRes, RenderCreateError>(DepthStencilRes{ ds_texture, ds_view });
 	}
 }
 
@@ -159,10 +158,10 @@ D3D11_VIEWPORT create_viewport(uint32_t width, uint32_t height)
 	return viewport;
 }
 
-Res<RendererCtx, RenderCreateError> create_renderer_ctx(HINSTANCE instance, uint32_t width, uint32_t height, int nCmdShow) {
+Result<RendererCtx, RenderCreateError> create_renderer_ctx(HINSTANCE instance, u32 width, u32 height, i32 nCmdShow) {
 	HWND window = setup_window(instance, width, height);
 	if (window == nullptr) {
-		return FailedWindowCreation;
+		return err<RendererCtx, RenderCreateError>(FailedWindowCreation);
 	}
 	ShowWindow(window, nCmdShow);
 	
@@ -181,20 +180,20 @@ Res<RendererCtx, RenderCreateError> create_renderer_ctx(HINSTANCE instance, uint
 
 	auto view_port = create_viewport(width, height);
 
-	return RendererCtx{
+	return ok<RendererCtx, RenderCreateError>(RendererCtx{
 		device,
 		context,
 		swap_chain,
 		view_port,
 		window,
-	};
+	});
 }
 
-Res<Renderer, RenderCreateError> create_renderer(HINSTANCE instance, uint32_t width, uint32_t height, int nCmdShow) {
+Result<Renderer, RenderCreateError> create_renderer(HINSTANCE instance, u32 width, u32 height, i32 nCmdShow) {
 	RendererCtx ctx;
 	TRY(ctx, create_renderer_ctx(instance, width, height, nCmdShow));
 
-	return Renderer{
+	return ok<Renderer, RenderCreateError>(Renderer{
 		ctx
-	};
+	});
 }

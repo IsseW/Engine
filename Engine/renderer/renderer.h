@@ -1,6 +1,6 @@
 #pragma once
-#include "util.h"
-#include "standard.h"
+#include"util.h"
+#include<rstd/result.h> 
 
 struct ObjectRenderer {
 
@@ -31,4 +31,4 @@ struct Renderer {
 	RendererCtx ctx;
 	ObjectRenderer object_renderer;
 };
-Res<Renderer, RenderCreateError> create_renderer(HINSTANCE instance, uint32_t width, uint32_t height, int nCmdShow);
+Result<Renderer, RenderCreateError> create_renderer(HINSTANCE instance, u32 width, u32 height, i32 nCmdShow);

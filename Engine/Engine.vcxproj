@@ -149,7 +149,7 @@
     </ClCompile>
     <ClCompile Include="src\renderer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\rstd.cpp" />
     <ClCompile Include="src\tests.cpp" />
@@ -168,13 +168,13 @@
     <ClInclude Include="rstd\panic.h" />
     <ClInclude Include="rstd\primitives.h" />
     <ClInclude Include="rstd\result.h" />
-    <ClInclude Include="standard.h" />
-    <ClInclude Include="transform.h" />
-    <ClInclude Include="renderer.h" />
+    <ClInclude Include="renderer\pipelines\standard.h" />
+    <ClInclude Include="renderer\transform.h" />
+    <ClInclude Include="renderer\renderer.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="rstd\tuple.h" />
     <ClInclude Include="rstd\vector.h" />
-    <ClInclude Include="util.h" />
+    <ClInclude Include="renderer\util.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\PixelShader.hlsl">
