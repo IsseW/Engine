@@ -9,7 +9,18 @@
 template<typename T, typename E>
 struct Result {
 	Result(E&& e) {
-		*this = Result<T, E>::err(e);
+		this->_is_ok = false;
+		this->_err = std::move(e);
+	}
+	Result(Result&& r) {
+		this->_is_ok = r._is_ok;
+		if (r._is_ok){
+			this->_ok = std::move(r._ok);
+		}
+		else {
+			this->_err = std::move(r._err);
+		}
+		r._is_ok = false;
 	}
 	~Result() {
 		if (is_ok()) {
@@ -19,25 +30,25 @@ struct Result {
 			_err.~E();
 		}
 	}
-	static Result<T, E> ok(const T& v) requires std::copyable<T> {
+	static Result ok(const T& v) requires std::copyable<T> {
 		Result<T, E> res{};
 		res._ok = v;
 		res._is_ok = true;
 		return res;
 	}
-	static Result<T, E> ok(T&& v) requires std::movable<T> {
+	static Result ok(T&& v) requires std::movable<T> {
 		Result<T, E> res{};
 		res._ok = v;
 		res._is_ok = true;
 		return res;
 	}
-	static Result<T, E> err(const E& v) requires std::copyable<T> {
+	static Result err(const E& v) requires std::copyable<T> {
 		Result<T, E> res{};
 		res._err = v;
 		res._is_ok = false;
 		return res;
 	}
-	static Result<T, E> err(E&& v) requires std::movable<T> {
+	static Result err(E&& v) requires std::movable<T> {
 		Result<T, E> res{};
 		res._err = v;
 		res._is_ok = false;
@@ -110,7 +121,7 @@ struct Result {
 	}
 private:
 	Result() {
-		_is_ok = true;
+		_is_ok = false;
 		_t = 0;
 	}
 
@@ -129,7 +140,7 @@ Result<T, E> ok(const T& v) requires std::copyable<T> {
 
 template<typename T, typename E>
 Result<T, E> ok(T&& v) requires std::movable<T> {
-	return Result<T, E>::ok(v);
+	return Result<T, E>::ok(std::move(v));
 }
 
 template<typename T, typename E>
@@ -139,7 +150,7 @@ Result<T, E> err(const E& e) requires std::copyable<T> {
 
 template<typename T, typename E>
 Result<T, E> err(E&& e) requires std::movable<T> {
-	return Result<T, E>::err(e);
+	return Result<T, E>::err(std::move(e));
 }
 
 
@@ -153,13 +164,11 @@ std::ostream& operator<<(std::ostream& os, const Result<T, E>& o) {
 		const E& e = o.as_ref().unwrap_err();
 		return os << "err(" << e << ")";
 	}
-	using hello = Result<err, z>;
-	hello::ok();
 }
 
 // Tries to unwrap a result, otherwise return the error.
 #define TRY(x, result) {\
 	auto x ## __res = std::move(result); \
-	if ((x ## __res).is_err()) { return x ## __res.unwrap_err_unchecked(); } \
+	if ((x ## __res).is_err()) { return std::move(x ## __res.unwrap_err_unchecked()); } \
 	x = (x ## __res).unwrap(); \
 }

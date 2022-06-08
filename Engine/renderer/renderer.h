@@ -17,15 +17,15 @@ enum RenderCreateError {
 };
 
 struct RendererCtx {
-	std::unique_ptr<ID3D11Device> device;
-	std::unique_ptr<ID3D11DeviceContext> context;
-	std::unique_ptr<IDXGISwapChain> swapChain;
+	ID3D11Device* device;
+	ID3D11DeviceContext* context;
+	IDXGISwapChain* swapChain;
 	D3D11_VIEWPORT iewport;
 	HWND window;
 
-	std::unique_ptr<ID3D11RenderTargetView> rtv;
-	std::unique_ptr<ID3D11Texture2D> dsTexture;
-	std::unique_ptr<ID3D11DepthStencilView> dsView;
+	ID3D11RenderTargetView* rtv;
+	ID3D11Texture2D* dsTexture;
+	ID3D11DepthStencilView* dsView;
 };
 
 struct Renderer {

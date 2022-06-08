@@ -170,9 +170,9 @@ Result<RendererCtx, RenderCreateError> create_renderer_ctx(HINSTANCE instance, u
 	
 	DeviceCreationRes device_res;
 	TRY(device_res, create_interfaces(width, height, window));
-	auto device = std::make_unique<ID3D11Device>( device_res.device);
-	auto context =  std::make_unique<ID3D11DeviceContext>(device_res.context);
-	auto swap_chain = std::make_unique<IDXGISwapChain>(device_res.swap_chain);
+	auto device = device_res.device;
+	auto context = device_res.context;
+	auto swap_chain = device_res.swap_chain;
 	ID3D11RenderTargetView* rtv;
 	TRY(rtv, create_render_target_view(device, swap_chain));
 
@@ -184,12 +184,12 @@ Result<RendererCtx, RenderCreateError> create_renderer_ctx(HINSTANCE instance, u
 	auto view_port = create_viewport(width, height);
 
 	return ok<RendererCtx, RenderCreateError>(RendererCtx{
-		device,
-		context,
-		swap_chain,
+		std::move(device),
+		std::move(context),
+		std::move(swap_chain),
 		view_port,
 		window,
-	}));
+	});
 }
 
 Result<Renderer, RenderCreateError> create_renderer(HINSTANCE instance, u32 width, u32 height, i32 n_cmd_show) {
@@ -197,6 +197,6 @@ Result<Renderer, RenderCreateError> create_renderer(HINSTANCE instance, u32 widt
 	TRY(ctx, create_renderer_ctx(instance, width, height, n_cmd_show));
 
 	return ok<Renderer, RenderCreateError>(Renderer{
-		ctx
+		std::move(ctx)
 	});
 }
