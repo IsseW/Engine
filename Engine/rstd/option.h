@@ -6,14 +6,19 @@
 
 template<typename T>
 struct Option {
-	static Option<T> none() {
+	static Option none() {
 		return Option();
 	}
-	static Option<T> some(const T& v) requires std::copyable<T> {
+	static Option some(const T& v) requires std::copyable<T> {
 		return Option(v);
 	}
-	static Option<T> some(T&& v) requires std::movable<T> {
+	static Option some(T&& v) requires std::movable<T> {
 		return Option(v);
+	}
+
+	Option(Option&& o) requires std::movable<T> {
+		*this = std::move(o);
+		o._is_some = false;
 	}
 
 	T&& unwrap() requires std::movable<T> {
