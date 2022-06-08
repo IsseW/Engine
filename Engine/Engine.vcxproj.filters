@@ -27,7 +27,7 @@
     <ClCompile Include="src\PipelineHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\renderer\renderer.cpp">
+    <ClCompile Include="renderer\src\renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp">
@@ -36,7 +36,7 @@
     <ClCompile Include="src\tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\rstd.cpp">
+    <ClCompile Include="rstd\src\rstd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
