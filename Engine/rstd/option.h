@@ -2,20 +2,21 @@
 #include<utility>
 #include<iostream>
 #include"panic.h"
+#include<concepts>
 
 template<typename T>
 struct Option {
 	static Option<T> none() {
 		return Option();
 	}
-	static Option<T> some(const T& v) {
+	static Option<T> some(const T& v) requires std::copyable<T> {
 		return Option(v);
 	}
-	static Option<T> some(T&& v) {
+	static Option<T> some(T&& v) requires std::movable<T> {
 		return Option(v);
 	}
 
-	T&& unwrap() {
+	T&& unwrap() requires std::movable<T> {
 		if (_is_some) {
 			return std::move(_v);
 		}
@@ -24,7 +25,7 @@ struct Option {
 		}
 	}
 
-	T&& unwrap_or(T&& v) {
+	T&& unwrap_or(T&& v) requires std::movable<T> {
 		if (_is_some) {
 			return std::move(_v);
 		}
@@ -34,7 +35,7 @@ struct Option {
 	}
 
 	template<typename F>
-	T&& unwrap_or_else(F els) {
+	T&& unwrap_or_else(F els) requires std::movable<T> {
 		if (_is_some) {
 			return std::move(_v);
 		}
@@ -61,7 +62,7 @@ struct Option {
 	}
 	
 	template<typename U, typename F>
-	Option<U> map(F map) const {
+	Option<U> map(F map) const requires std::movable<T> {
 		if (_is_some) {
 			return map(std::move(_v));
 		}
@@ -95,11 +96,11 @@ Option<T> none() {
 	return Option<T>::none();
 }
 template<typename T>
-Option<T> some(const T& v) {
+Option<T> some(const T& v) requires std::copyable<T> {
 	return Option<T>::some(v);
 }
 template<typename T>
-Option<T> some(T&& v) {
+Option<T> some(T&& v) requires std::movable<T> {
 	return Option<T>::some(v);
 }
 
