@@ -147,16 +147,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\renderer.cpp">
+    <ClCompile Include="src\renderer\renderer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\rstd.cpp" />
     <ClCompile Include="src\tests.cpp" />
-    <ClCompile Include="src\transform.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="assets.h" />
@@ -168,7 +164,7 @@
     <ClInclude Include="rstd\panic.h" />
     <ClInclude Include="rstd\primitives.h" />
     <ClInclude Include="rstd\result.h" />
-    <ClInclude Include="renderer\pipelines\standard.h" />
+    <ClInclude Include="renderer\pipelines\object.h" />
     <ClInclude Include="renderer\transform.h" />
     <ClInclude Include="renderer\renderer.h" />
     <ClInclude Include="stb_image.h" />

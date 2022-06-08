@@ -1,9 +1,5 @@
-#include<rstd/option.h>
-#include<rstd/result.h>
-#include<rstd/tuple.h>
 #include<math/mat.h>
-#include<math/quat.h>
-#include<math/consts.h>
+#include<renderer/renderer.h>
 
 #include<Windows.h>
 
@@ -42,6 +38,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 #ifdef _DEBUG
 	run_tests();
 #endif
+
+	create_renderer(hInstance, 600, 600, nCmdShow);
 
 	system("pause");
 	return 0;

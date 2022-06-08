@@ -27,10 +27,7 @@
     <ClCompile Include="src\PipelineHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\transform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\renderer.cpp">
+    <ClCompile Include="src\renderer\renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp">
@@ -53,7 +50,7 @@
     <ClInclude Include="renderer\transform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\pipelines\standard.h">
+    <ClInclude Include="renderer\pipelines\object.h">
       <Filter>Header Files\Pipelines</Filter>
     </ClInclude>
     <ClInclude Include="renderer\util.h">

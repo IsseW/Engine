@@ -158,12 +158,12 @@ D3D11_VIEWPORT create_viewport(uint32_t width, uint32_t height)
 	return viewport;
 }
 
-Result<RendererCtx, RenderCreateError> create_renderer_ctx(HINSTANCE instance, u32 width, u32 height, i32 nCmdShow) {
+Result<RendererCtx, RenderCreateError> create_renderer_ctx(HINSTANCE instance, u32 width, u32 height, i32 n_cmd_show) {
 	HWND window = setup_window(instance, width, height);
 	if (window == nullptr) {
 		return err<RendererCtx, RenderCreateError>(FailedWindowCreation);
 	}
-	ShowWindow(window, nCmdShow);
+	ShowWindow(window, n_cmd_show);
 	
 	DeviceCreationRes device_res;
 	TRY(device_res, create_interfaces(width, height, window));
@@ -189,9 +189,9 @@ Result<RendererCtx, RenderCreateError> create_renderer_ctx(HINSTANCE instance, u
 	});
 }
 
-Result<Renderer, RenderCreateError> create_renderer(HINSTANCE instance, u32 width, u32 height, i32 nCmdShow) {
+Result<Renderer, RenderCreateError> create_renderer(HINSTANCE instance, u32 width, u32 height, i32 n_cmd_show) {
 	RendererCtx ctx;
-	TRY(ctx, create_renderer_ctx(instance, width, height, nCmdShow));
+	TRY(ctx, create_renderer_ctx(instance, width, height, n_cmd_show));
 
 	return ok<Renderer, RenderCreateError>(Renderer{
 		ctx
