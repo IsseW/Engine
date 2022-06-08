@@ -4,10 +4,10 @@
 #include"panic.h"
 #include<cstdint>
 #include<iostream>
+#include<concepts>
 
 template<typename T, typename E>
 struct Result {
-	Result(const E& e) : _err(e), _is_ok(false) { }
 	~Result() {
 		if (is_ok()) {
 			_ok.~T();
@@ -16,25 +16,25 @@ struct Result {
 			_err.~E();
 		}
 	}
-	static Result<T, E> ok(const T& v) {
+	static Result<T, E> ok(const T& v) requires std::copyable<T> {
 		Result<T, E> res{};
 		res._ok = v;
 		res._is_ok = true;
 		return res;
 	}
-	static Result<T, E> ok(T&& v) {
+	static Result<T, E> ok(T&& v) requires std::movable<T> {
 		Result<T, E> res{};
 		res._ok = v;
 		res._is_ok = true;
 		return res;
 	}
-	static Result<T, E> err(const E& v) {
+	static Result<T, E> err(const E& v) requires std::copyable<T> {
 		Result<T, E> res{};
 		res._err = v;
 		res._is_ok = false;
 		return res;
 	}
-	static Result<T, E> err(E&& v) {
+	static Result<T, E> err(E&& v) requires std::movable<T> {
 		Result<T, E> res{};
 		res._err = v;
 		res._is_ok = false;
@@ -120,22 +120,22 @@ private:
 };
 
 template<typename T, typename E>
-Result<T, E> ok(const T& v) {
+Result<T, E> ok(const T& v) requires std::copyable<T> {
 	return Result<T, E>::ok(v);
 }
 
 template<typename T, typename E>
-Result<T, E> ok(T&& v) {
+Result<T, E> ok(T&& v) requires std::movable<T> {
 	return Result<T, E>::ok(v);
 }
 
 template<typename T, typename E>
-Result<T, E> err(const E& e) {
+Result<T, E> err(const E& e) requires std::copyable<T> {
 	return Result<T, E>::err(e);
 }
 
 template<typename T, typename E>
-Result<T, E> err(E&& e) {
+Result<T, E> err(E&& e) requires std::movable<T> {
 	return Result<T, E>::err(e);
 }
 

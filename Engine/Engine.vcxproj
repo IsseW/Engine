@@ -72,17 +72,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\issey\source\repos\Engine\Engine;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\edwin\source\repos\Engine\Engine;C:\Users\edwin\source\repos\Engine\Engine;C:\Users\issey\source\repos\Engine\Engine;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>C:\Users\edwin\source\repos\Engine\Engine;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\edwin\source\repos\Engine\Engine;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\edwin\source\repos\Engine\Engine;C:\Users\edwin\source\repos\Engine\Engine;C:\Users\edwin\source\repos\Engine\Engine;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>C:\Users\edwin\source\repos\Engine\Engine;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -172,7 +174,6 @@
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="rstd\tuple.h" />
     <ClInclude Include="rstd\vector.h" />
-    <ClInclude Include="renderer\util.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\PixelShader.hlsl">

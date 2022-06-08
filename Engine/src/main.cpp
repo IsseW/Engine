@@ -1,6 +1,6 @@
 #include<math/mat.h>
 #include<renderer/renderer.h>
-
+#include<chrono>
 #include<Windows.h>
 
 
@@ -40,6 +40,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 #endif
 
 	create_renderer(hInstance, 600, 600, nCmdShow);
+
+	MSG msg = { };
+	auto last_frame = std::chrono::high_resolution_clock::now();
+	while (!(GetKeyState(VK_ESCAPE) & 0x8000) && msg.message != WM_QUIT) {
+		auto now = std::chrono::high_resolution_clock::now();
+		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		float dt = std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(now - last_frame).count();
+		last_frame = now;
+	}
 
 	system("pause");
 	return 0;

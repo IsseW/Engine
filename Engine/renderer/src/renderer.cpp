@@ -1,7 +1,8 @@
 #pragma once
 
-#include <Windows.h>
-#include <iostream>
+#include<Windows.h>
+#include<iostream>
+#include<memory>
 #include<renderer/renderer.h>
 
 
@@ -32,11 +33,13 @@ HWND setup_window(HINSTANCE instance, u32 width, u32 height)
 
 	return CreateWindowEx(0, CLASS_NAME, L"Very cool", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, width, height, nullptr, nullptr, instance, nullptr);
 }
+
 struct DeviceCreationRes {
 	ID3D11Device* device;
 	ID3D11DeviceContext* context;
 	IDXGISwapChain* swap_chain;
 };
+
 Result<DeviceCreationRes, RenderCreateError>
 create_interfaces(u32 width, u32 height, HWND window)
 {
@@ -167,7 +170,7 @@ Result<RendererCtx, RenderCreateError> create_renderer_ctx(HINSTANCE instance, u
 	
 	DeviceCreationRes device_res;
 	TRY(device_res, create_interfaces(width, height, window));
-	auto device = device_res.device;
+	auto device = std::make device_res.device;
 	auto context = device_res.context;
 	auto swap_chain = device_res.swap_chain;
 	ID3D11RenderTargetView* rtv;
@@ -186,7 +189,7 @@ Result<RendererCtx, RenderCreateError> create_renderer_ctx(HINSTANCE instance, u
 		swap_chain,
 		view_port,
 		window,
-	});
+	}));
 }
 
 Result<Renderer, RenderCreateError> create_renderer(HINSTANCE instance, u32 width, u32 height, i32 n_cmd_show) {

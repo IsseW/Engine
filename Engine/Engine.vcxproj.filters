@@ -53,9 +53,6 @@
     <ClInclude Include="renderer\pipelines\object.h">
       <Filter>Header Files\Pipelines</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\util.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="assets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
