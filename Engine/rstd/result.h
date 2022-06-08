@@ -8,6 +8,9 @@
 
 template<typename T, typename E>
 struct Result {
+	Result(E&& e) {
+		*this = Result<T, E>::err(e);
+	}
 	~Result() {
 		if (is_ok()) {
 			_ok.~T();
@@ -150,11 +153,13 @@ std::ostream& operator<<(std::ostream& os, const Result<T, E>& o) {
 		const E& e = o.as_ref().unwrap_err();
 		return os << "err(" << e << ")";
 	}
+	using hello = Result<err, z>;
+	hello::ok();
 }
 
 // Tries to unwrap a result, otherwise return the error.
 #define TRY(x, result) {\
-	auto x ## __res = result; \
+	auto x ## __res = std::move(result); \
 	if ((x ## __res).is_err()) { return x ## __res.unwrap_err_unchecked(); } \
 	x = (x ## __res).unwrap(); \
 }
