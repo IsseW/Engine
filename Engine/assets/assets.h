@@ -3,15 +3,17 @@
 #include<rstd/primitives.h>
 #include<rstd/depot.h>
 #include<math/vec.h>
+#include<d3d11.h>
 
 struct Image {
-
+	ID3D11Texture2D* texture;
+	ID3D11ShaderResourceView* rsv;
 
 	usize width;
 	usize height;
 	usize channels;
 
-	static Image load(const std::string& path);
+	static Image load(const std::string& path, ID3D11Device* device);
 };
 
 struct Mesh {
@@ -22,13 +24,13 @@ struct Mesh {
 	u16* indices;
 	usize num_indices;
 
-	static Mesh load(const std::string& path);
+	static Mesh load(const std::string& path, ID3D11Device* device);
 };
 
 template<typename T>
 struct Assets {
-	Id<T> load(const std::string& asset) {
-		return items.insert(std::move(T::load(asset)));
+	Id<T> load(const std::string& asset, ID3D11Device* device) {
+		return items.insert(std::move(T::load(asset, device)));
 	}
 	Option<const T&> get(Id<T> handle) const {
 		return items.get(handle);
@@ -40,9 +42,9 @@ private:
 // Could implement hot reloading
 struct AssetHandler {
 	template<typename T>
-	Id<T> load(const std::string& asset) {
+	Id<T> load(const std::string& asset, ID3D11Device* device) {
 		Assets<T>& a = assets<T>();
-		return a.load(asset);
+		return a.load(asset, device);
 	}
 
 	template<typename T>
