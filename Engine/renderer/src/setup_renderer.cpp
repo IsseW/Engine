@@ -18,7 +18,7 @@ LRESULT CALLBACK window_proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 		Renderer* renderer = (Renderer*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 		if (renderer) {
 			std::cout << "aha";
-			renderer->resize((i32)wParam, (i32)lParam);
+			renderer->resize((UINT)LOWORD(lParam), (UINT)HIWORD(lParam));
 		}
 		break;
 	}

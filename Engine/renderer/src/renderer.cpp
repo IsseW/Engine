@@ -18,6 +18,7 @@ void Renderer::clean_up() {
 
 void Renderer::resize(u32 width, u32 height)  {
 	if (ctx.rtv) { ctx.rtv->Release();  }
+	std::cout << width << " " << height << std::endl;
 	ctx.swap_chain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
 	ctx.rtv = create_render_target_view(ctx.device, ctx.swap_chain).unwrap();
 }

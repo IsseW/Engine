@@ -10,6 +10,9 @@ void setup_ui(RendererCtx& ctx) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
+	// Prevents Dear ImGui from creating an .ini file.
+	ImGui::SaveIniSettingsToDisk(NULL);
+
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
 
