@@ -2,6 +2,7 @@
 #include<string>
 #include<rstd/primitives.h>
 #include<rstd/depot.h>
+#include<rstd/vector.h>
 #include<math/vec.h>
 #include<d3d11.h>
 
@@ -17,9 +18,9 @@ struct Image {
 };
 
 struct Mesh {
-	Vec3<f32>* vertices;
-	Vec3<f32>* normal;
-	Vec3<f32>* uv0;
+	Vec<Vec3<f32>> vertices;
+	Vec<Vec3<f32>> normal;
+	Vec<Vec3<f32>> uv0;
 	usize num_vertices;
 	u16* indices;
 	usize num_indices;
