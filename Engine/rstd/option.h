@@ -17,13 +17,32 @@ struct Option {
 	}
 
 	Option(Option&& o) requires std::movable<T> {
-		*this = std::move(o);
-		o._is_some = false;
+		*this = o.take();
+	}
+
+	Option&& take() requires std::movable<T> {
+		Option res = std::move(*this);
+		_is_some = false;
+		return std::move(res);
+	}
+
+	template<typename U, typename F>
+	Option<U> and_then(F f) requires std::movable<T> {
+		if (is_some()) {
+			return f(take());
+		}
+		else {
+			return none();
+		}
+	}
+
+	T&& unwrap_unchecked() requires std::movable<T> {
+		return std::move(_v);
 	}
 
 	T&& unwrap() requires std::movable<T> {
 		if (_is_some) {
-			return std::move(_v);
+			return take()._v;
 		}
 		else {
 			PANIC("Trying to unwrap Option::None");
@@ -32,7 +51,7 @@ struct Option {
 
 	T&& unwrap_or(T&& v) requires std::movable<T> {
 		if (_is_some) {
-			return std::move(_v);
+			return take()._v;
 		}
 		else {
 			return std::move(v);
@@ -42,7 +61,7 @@ struct Option {
 	template<typename F>
 	T&& unwrap_or_else(F els) requires std::movable<T> {
 		if (_is_some) {
-			return std::move(_v);
+			return take()._v;
 		}
 		else {
 			return std::move(els());
@@ -119,3 +138,7 @@ std::ostream& operator<<(std::ostream& os, const Option<T>& o) {
 		return os << "none";
 	}
 }
+
+#define IF_LET_SOME(arg, expr) \
+arg ## __option__ ## __LINE__ = expr; \
+if arg.is_some() && (true || auto arg = arg ## __option__ ## __LINE__.unwrap_unchecked())

@@ -2,6 +2,7 @@
 #include<renderer/renderer.h>
 #include<chrono>
 #include<Windows.h>
+#include<ui/ui.h>
 
 
 struct Console {
@@ -39,7 +40,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	run_tests();
 #endif
 
-	create_renderer(hInstance, 600, 600, nCmdShow);
+	Renderer renderer = create_renderer(hInstance, 600, 600, nCmdShow).unwrap();
+
+	setup_ui(renderer.ctx);
 
 	MSG msg = { };
 	auto last_frame = std::chrono::high_resolution_clock::now();
@@ -51,8 +54,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		}
 		float dt = std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(now - last_frame).count();
 		last_frame = now;
-	}
+		update_ui(renderer);
 
-	system("pause");
+		renderer.present();
+
+	}
+	clean_up_ui();
+	renderer.clean_up();
+
 	return 0;
 }

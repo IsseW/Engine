@@ -137,7 +137,6 @@ template<typename T, typename E>
 Result<T, E> ok(const T& v) requires std::copyable<T> {
 	return Result<T, E>::ok(v);
 }
-
 template<typename T, typename E>
 Result<T, E> ok(T&& v) requires std::movable<T> {
 	return Result<T, E>::ok(std::move(v));

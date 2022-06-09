@@ -12,3 +12,5 @@ void __panic(const char* message, const char* file, usize line);
 #define ASSERT(e) if (!(e)) { PANIC(STRINGIFY(Assertion failed: e)); }
 
 #define ASSERT_EQ(a, b) if ((a) != (b)) { PANIC(STRINGIFY(Assertion failed: a != b)); }
+
+#define TODO PANIC("Not implemented yet.")
