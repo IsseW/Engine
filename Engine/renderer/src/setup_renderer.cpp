@@ -2,12 +2,16 @@
 
 #include<Windows.h>
 #include<iostream>
+#include<ui/ui.h>
 #include<memory>
 #include<renderer/renderer.h>
-
+#include<renderer/rtv.h>
 
 LRESULT CALLBACK window_proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	if (handle_input(hWnd, message, wParam, lParam)) {
+		return true;
+	}
 	switch (message)
 	{
 	case WM_DESTROY:
@@ -31,7 +35,7 @@ HWND setup_window(HINSTANCE instance, u32 width, u32 height)
 
 	RegisterClass(&wc);
 
-	RECT rt = { 0, 0, width, height };
+	RECT rt = { 0, 0, (LONG)width, (LONG)height };
 	AdjustWindowRect(&rt, WS_OVERLAPPEDWINDOW, FALSE);
 
 	return CreateWindowEx(0, CLASS_NAME, L"Very cool", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, rt.right - rt.left, rt.bottom - rt.top, nullptr, nullptr, instance, nullptr);
@@ -46,75 +50,49 @@ struct DeviceCreationRes {
 Result<DeviceCreationRes, RenderCreateError>
 create_interfaces(u32 width, u32 height, HWND window)
 {
-	u32 flags = 0;
-	if (_DEBUG) flags = D3D11_CREATE_DEVICE_DEBUG;
-
-	D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0 };
-
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 
-	swapChainDesc.BufferDesc.Width = width;
-	swapChainDesc.BufferDesc.Height = height;
-	swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
-	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+	swapChainDesc.BufferCount = 2;
+	swapChainDesc.BufferDesc.Width = 0;
+	swapChainDesc.BufferDesc.Height = 0;
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
-	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-
-	// Default
+	swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapChainDesc.OutputWindow = window;
 	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.SampleDesc.Quality = 0;
-
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.BufferCount = 2;
-	swapChainDesc.OutputWindow = window;
-	swapChainDesc.Windowed = true;
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-	swapChainDesc.Flags = 0;
+	swapChainDesc.Windowed = TRUE;
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	
 	ID3D11Device* device;
 	ID3D11DeviceContext* context;
 	IDXGISwapChain* swap_chain;
 
+	UINT createDeviceFlags = 0;
+	D3D_FEATURE_LEVEL feature_level;
+	const D3D_FEATURE_LEVEL feature_level_array[2] = {D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0};
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(
-		nullptr,
-		D3D_DRIVER_TYPE_HARDWARE,
-		nullptr, flags,
-		featureLevels, 
-		1,
-		D3D11_SDK_VERSION,
+		NULL, 
+		D3D_DRIVER_TYPE_HARDWARE, 
+		NULL, 
+		createDeviceFlags, 
+		feature_level_array, 
+		2, 
+		D3D11_SDK_VERSION, 
 		&swapChainDesc,
 		&swap_chain,
 		&device,
-		nullptr, 
+		&feature_level,
 		&context
 	);
+
 	if FAILED(hr) {
 		return err<DeviceCreationRes, RenderCreateError>(FailedDeviceCreation);
 	}
 	else {
 		return ok<DeviceCreationRes, RenderCreateError>(DeviceCreationRes { device, context, swap_chain });
-	}
-}
-
-Result<ID3D11RenderTargetView*, RenderCreateError> create_render_target_view(ID3D11Device* device, IDXGISwapChain* swap_chain)
-{
-	// get the address of the back buffer
-	ID3D11Texture2D* backBuffer = nullptr;
-	if (FAILED(swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer))))
-	{
-		return err<ID3D11RenderTargetView*, RenderCreateError>(FailedBackBuffer);
-	}
-
-	ID3D11RenderTargetView* rtv;
-	// use the back buffer address to create the render target
-	// null as description to base it on the backbuffers values
-	HRESULT hr = device->CreateRenderTargetView(backBuffer, NULL, &rtv);
-	backBuffer->Release();
-	if (FAILED(hr)) {
-		return err<ID3D11RenderTargetView*, RenderCreateError>(FailedRTVCreation);
-	}
-	else {
-		return ok<ID3D11RenderTargetView*, RenderCreateError>(rtv);
 	}
 }
 
@@ -198,7 +176,7 @@ Result<RendererCtx, RenderCreateError> create_renderer_ctx(HINSTANCE instance, u
 	});
 }
 
-Result<Renderer, RenderCreateError>&& create_renderer(HINSTANCE instance, u32 width, u32 height, i32 n_cmd_show) {
+Result<Renderer, RenderCreateError> create_renderer(HINSTANCE instance, u32 width, u32 height, i32 n_cmd_show) {
 	RendererCtx ctx;
 	TRY(ctx, create_renderer_ctx(instance, width, height, n_cmd_show));
 

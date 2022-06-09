@@ -3,6 +3,7 @@
 #include"imgui/imgui_impl_dx11.h"
 #include"ui.h"
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 void setup_ui(RendererCtx& ctx) {
 	// Setup Dear ImGui context
@@ -14,6 +15,7 @@ void setup_ui(RendererCtx& ctx) {
 
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(ctx.window);
+	ImGui_ImplWin32_EnableDpiAwareness();
 	ImGui_ImplDX11_Init(ctx.device, ctx.context);
 }
 
@@ -26,12 +28,18 @@ void start() {
 void end() {
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
 }
 
 void update_ui(const Renderer& renderer) {
 	start();
 
-	static bool active = false;
+	ImGui_ImplWin32_GetDpiScaleForHwnd(renderer.ctx.window);
+
+	static bool active = true;
+	ImGui::BeginMainMenuBar();
+	ImGui::Button("hello!");
+	ImGui::EndMainMenuBar();
 	ImGui::Begin("lmao", &active);
 	if (ImGui::Button("Test")) {
 		std::cout << "lol" << std::endl;
@@ -41,8 +49,13 @@ void update_ui(const Renderer& renderer) {
 	end();
 }
 
+bool handle_input(HWND window, UINT msg, WPARAM wp, LPARAM lp) {
+	return ImGui_ImplWin32_WndProcHandler(window, msg, wp, lp);
+}
+
 void clean_up_ui() {
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 }
+

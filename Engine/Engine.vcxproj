@@ -172,6 +172,7 @@
     <ClInclude Include="..\..\..\..\..\..\dev\c++\imgui\imconfig.h" />
     <ClInclude Include="assets.h" />
     <ClInclude Include="assets\assets.h" />
+    <ClInclude Include="renderer\rtv.h" />
     <ClInclude Include="rstd\depot.h" />
     <ClInclude Include="ui\ui.h" />
     <ClInclude Include="ui\imgui\imconfig.h" />

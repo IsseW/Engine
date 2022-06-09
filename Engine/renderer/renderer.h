@@ -33,7 +33,9 @@ struct Renderer {
 	ObjectRenderer object_renderer;
 
 	void clean_up();
+	void begin_draw();
+	void resize(u32 width, u32 height);
 	void present();
 };
 
-Result<Renderer, RenderCreateError>&& create_renderer(HINSTANCE instance, u32 width, u32 height, i32 nCmdShow);
+Result<Renderer, RenderCreateError> create_renderer(HINSTANCE instance, u32 width, u32 height, i32 nCmdShow);
