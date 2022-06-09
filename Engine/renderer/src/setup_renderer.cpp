@@ -14,6 +14,14 @@ LRESULT CALLBACK window_proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	}
 	switch (message)
 	{
+	case WM_SIZE: {
+		Renderer* renderer = (Renderer*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+		if (renderer) {
+			std::cout << "aha";
+			renderer->resize((i32)wParam, (i32)lParam);
+		}
+		break;
+	}
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
@@ -176,11 +184,11 @@ Result<RendererCtx, RenderCreateError> create_renderer_ctx(HINSTANCE instance, u
 	});
 }
 
-Result<Renderer, RenderCreateError> create_renderer(HINSTANCE instance, u32 width, u32 height, i32 n_cmd_show) {
+Result<Renderer*, RenderCreateError> create_renderer(HINSTANCE instance, u32 width, u32 height, i32 n_cmd_show) {
 	RendererCtx ctx;
 	TRY(ctx, create_renderer_ctx(instance, width, height, n_cmd_show));
 
-	return ok<Renderer, RenderCreateError>(Renderer {
+	return ok<Renderer*, RenderCreateError>(new Renderer {
 		ctx
 	});
 }

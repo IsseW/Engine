@@ -38,4 +38,4 @@ struct Renderer {
 	void present();
 };
 
-Result<Renderer, RenderCreateError> create_renderer(HINSTANCE instance, u32 width, u32 height, i32 nCmdShow);
+Result<Renderer*, RenderCreateError> create_renderer(HINSTANCE instance, u32 width, u32 height, i32 nCmdShow);

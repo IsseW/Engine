@@ -31,10 +31,10 @@ void end() {
 
 }
 
-void update_ui(const Renderer& renderer) {
+void update_ui(const Renderer* renderer) {
 	start();
 
-	ImGui_ImplWin32_GetDpiScaleForHwnd(renderer.ctx.window);
+	ImGui_ImplWin32_GetDpiScaleForHwnd(renderer->ctx.window);
 
 	static bool active = true;
 	ImGui::BeginMainMenuBar();
