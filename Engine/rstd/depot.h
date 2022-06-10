@@ -5,6 +5,7 @@
 
 template<typename T>
 struct Id {
+	Id(u32 idx, u32 gen) : _idx(idx), _gen(gen) {}
 	u32 idx() const { return _idx; }
 	u32 gen() const { return _gen; }
 private:
@@ -13,6 +14,7 @@ private:
 };
 template<typename T>
 struct Depot {
+	Depot() : _entries(), _len(0) {}
 	bool is_empty() { return _len == 0; }
 	usize len() { return _len; }
 	bool contains(Id<T> id) {
@@ -48,24 +50,18 @@ struct Depot {
 			u32 i = 0;
 			for (Entry& e : _entries) {
 				if (e.item.is_none()) {
-					e.item = some(std::move(item));
+					e.item.insert(std::move(item));
 					ASSERT(e.gen < UINT32_MAX);
 					e.gen++;
 					_len += 1;
-					return Id{
-						i,
-						e.gen
-					};
+					return Id<T>(i, e.gen);
 				}
 				++i;
 			}
 		}
 		else {
 			ASSERT(_entries.len() < UINT32_MAX - 1);
-			auto id = Id{
-				_entries.len(),
-				0
-			};
+			auto id = Id<T>(_entries.len(), 0);
 			_entries.push(std::move(Entry{
 					0,
 					some(std::move(item))
@@ -77,15 +73,33 @@ struct Depot {
 	}
 
 	Option<T>&& remove(Id<T> id) {
-		return _entries.get(id.idx()).and_then<Option<T>>([&](auto&& e) {
-				if (e.gen == id.gen()) {
+		return std::move(_entries.get(id.idx()).and_then<T>([&](Entry* e) {
+				if (e->gen == id.gen()) {
 					_len -= 1;
-					return e.item.take();
+					return e->item.take();
 				}
 				else {
-					return none<Option<T>&&>();
+					return none<T>();
 				}
-			});
+			}));
+	}
+
+	template<typename F>
+	void values(F f) const {
+		for (const Entry& e : _entries) {
+			if (e.item.is_some()) {
+				f(e.item.as_ref().unwrap_unchecked());
+			}
+		}
+	}
+
+	template<typename F>
+	void values(F f) {
+		for (Entry& e : _entries) {
+			if (e.item.is_some()) {
+				f(e.item.as_ptr().unwrap_unchecked());
+			}
+		}
 	}
 	
 private:

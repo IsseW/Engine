@@ -5,7 +5,7 @@
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-void setup_ui(RendererCtx& ctx) {
+void setup_ui(const Window* window, Renderer& renderer) {
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -17,9 +17,9 @@ void setup_ui(RendererCtx& ctx) {
 	ImGui::StyleColorsDark();
 
 	// Setup Platform/Renderer backends
-	ImGui_ImplWin32_Init(ctx.window);
+	ImGui_ImplWin32_Init(window->window());
 	ImGui_ImplWin32_EnableDpiAwareness();
-	ImGui_ImplDX11_Init(ctx.device, ctx.context);
+	ImGui_ImplDX11_Init(renderer.ctx.device, renderer.ctx.context);
 }
 
 void start() {
@@ -34,10 +34,10 @@ void end() {
 
 }
 
-void update_ui(const Renderer* renderer) {
+void update_ui(const Window* window) {
 	start();
 
-	ImGui_ImplWin32_GetDpiScaleForHwnd(renderer->ctx.window);
+	ImGui_ImplWin32_GetDpiScaleForHwnd(window->window());
 
 	static bool active = true;
 	ImGui::BeginMainMenuBar();

@@ -1,8 +1,8 @@
-#include<renderer/renderer.h>
+#include<renderer/window.h>
 
-void setup_ui(RendererCtx& ctx);
+void setup_ui(const Window* window, Renderer& renderer);
 
-void update_ui(const Renderer* renderer);
+void update_ui(const Window* window);
 
 bool handle_input(HWND window, UINT msg, WPARAM wp, LPARAM lp);
 

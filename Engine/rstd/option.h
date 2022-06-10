@@ -16,28 +16,34 @@ struct Option {
 		return Option(v);
 	}
 
-	Option(Option&& o) requires std::movable<T> {
-		*this = o.take();
+	Option(Option&& other) requires std::movable<T> {
+		Option&& o = other.take();
+		_is_some = o._is_some;
+		if (_is_some) {
+			_v = std::move(o._v);
+		}
 	}
 
 	Option&& take() requires std::movable<T> {
-		Option res = std::move(*this);
+		Option res;
+		res._is_some = _is_some;
+		res._v = _v;
 		_is_some = false;
 		return std::move(res);
 	}
 
 	template<typename U, typename F>
-	Option<U> and_then(F f) requires std::movable<T> {
+	Option<U> and_then(F f) {
 		if (is_some()) {
-			return f(take());
+			return f(unwrap_unchecked());
 		}
 		else {
-			return none();
+			return Option<U>::none();
 		}
 	}
 
 	T&& unwrap_unchecked() requires std::movable<T> {
-		return std::move(_v);
+		return std::move(take()._v);
 	}
 
 	T&& unwrap() requires std::movable<T> {
@@ -68,27 +74,27 @@ struct Option {
 		}
 	}
 
-	Option<T&> as_ref() {
+	Option<T*> as_ptr() {
 		if (_is_some) {
-			return Option<T&>::none();
+			return Option<T*>::some(&_v);
 		}
 		else {
-			return Option<T&>::some(_v);
+			return Option<T*>::none();
 		}
 	}
-	Option<const T&> as_ref() const {
+	Option<const T*> as_ptr() const {
 		if (_is_some) {
-			return Option<const T&>::none();
+			return Option<const T*>::some(&_v);
 		}
 		else {
-			return Option<const T&>::some(_v);
+			return Option<const T*>::none();
 		}
 	}
 	
 	template<typename U, typename F>
 	Option<U> map(F map) const requires std::movable<T> {
 		if (_is_some) {
-			return map(std::move(_v));
+			return map(take()._v);
 		}
 		else {
 			return Option<U>::none();
@@ -102,16 +108,19 @@ struct Option {
 		return !_is_some;
 	}
 
+	Option<T> insert(T&& item) {
+		Option res(std::move(*this));
+		_is_some = true;
+		_v = item;
+		return res;
+	}
+
 private:
-	Option() : _is_some(false), __t(0) {}
+	Option() : _is_some(false) { }
 	Option(const T& v) : _is_some(true), _v(v) {}
-	Option(T&& v) : _is_some(true), _v(v) {}
 
 	bool _is_some;
-	union {
-		T _v;
-		char __t;
-	};
+	T _v;
 };
 
 

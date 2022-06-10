@@ -4,6 +4,7 @@
 
 template<typename T>
 struct Vec {
+	Vec() : _internal() {}
 	usize len() { return _internal.size(); }
 
 	bool is_empty() { return len() == 0; }
@@ -14,28 +15,28 @@ struct Vec {
 
 	Option<T> pop() {
 		if (!is_empty()) {
-			return some<T>(_internal.pop_back());
+			return some<T>(std::move(_internal.pop_back()));
 		}
 		else {
 			return none<T>();
 		}
 	}
 
-	Option<T&> get(usize i) {
+	Option<T*> get(usize i) {
 		if (i < len()) {
-			return some<T&>(_internal[i]);
+			return some(&_internal[i]);
 		}
 		else {
-			return none<T&>();
+			return none<T*>();
 		}
 	}
 
-	Option<const T&> get(usize i) const {
+	Option<const T*> get(usize i) const {
 		if (i < len()) {
-			return some<const T&>(_internal[i]);
+			return some(&_internal[i]);
 		}
 		else {
-			return none<const T&>();
+			return none<const T*>();
 		}
 	}
 

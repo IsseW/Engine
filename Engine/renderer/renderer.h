@@ -21,7 +21,6 @@ struct RendererCtx {
 	ID3D11DeviceContext* context;
 	IDXGISwapChain* swap_chain;
 	D3D11_VIEWPORT viewport;
-	HWND window;
 
 	ID3D11RenderTargetView* rtv;
 	ID3D11Texture2D* ds_texture;
@@ -38,4 +37,5 @@ struct Renderer {
 	void present();
 };
 
-Result<Renderer*, RenderCreateError> create_renderer(HINSTANCE instance, u32 width, u32 height, i32 nCmdShow);
+struct Window;
+Result<Renderer, RenderCreateError> create_renderer(const Window* window);

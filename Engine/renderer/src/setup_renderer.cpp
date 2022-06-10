@@ -2,52 +2,10 @@
 
 #include<Windows.h>
 #include<iostream>
-#include<ui/ui.h>
 #include<memory>
 #include<renderer/renderer.h>
 #include<renderer/rtv.h>
-
-LRESULT CALLBACK window_proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	if (handle_input(hWnd, message, wParam, lParam)) {
-		return true;
-	}
-	switch (message)
-	{
-	case WM_SIZE: {
-		Renderer* renderer = (Renderer*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-		if (renderer) {
-			std::cout << "aha";
-			renderer->resize((UINT)LOWORD(lParam), (UINT)HIWORD(lParam));
-		}
-		break;
-	}
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		return 0;
-	default:
-		break;
-	}
-
-	return DefWindowProc(hWnd, message, wParam, lParam);
-}
-
-HWND setup_window(HINSTANCE instance, u32 width, u32 height)
-{
-	const wchar_t CLASS_NAME[] = L"Cool Engine";
-
-	WNDCLASS wc = {};
-	wc.lpfnWndProc = window_proc;
-	wc.hInstance = instance;
-	wc.lpszClassName = CLASS_NAME;
-
-	RegisterClass(&wc);
-
-	RECT rt = { 0, 0, (LONG)width, (LONG)height };
-	AdjustWindowRect(&rt, WS_OVERLAPPEDWINDOW, FALSE);
-
-	return CreateWindowEx(0, CLASS_NAME, L"Very cool", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, rt.right - rt.left, rt.bottom - rt.top, nullptr, nullptr, instance, nullptr);
-}
+#include<renderer/window.h>
 
 struct DeviceCreationRes {
 	ID3D11Device* device;
@@ -56,7 +14,7 @@ struct DeviceCreationRes {
 };
 
 Result<DeviceCreationRes, RenderCreateError>
-create_interfaces(u32 width, u32 height, HWND window)
+create_interfaces(const Window* window)
 {
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 
@@ -68,7 +26,7 @@ create_interfaces(u32 width, u32 height, HWND window)
 	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
 	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.OutputWindow = window;
+	swapChainDesc.OutputWindow = window->window();
 	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.SampleDesc.Quality = 0;
 	swapChainDesc.Windowed = TRUE;
@@ -150,15 +108,10 @@ D3D11_VIEWPORT create_viewport(uint32_t width, uint32_t height)
 	return viewport;
 }
 
-Result<RendererCtx, RenderCreateError> create_renderer_ctx(HINSTANCE instance, u32 width, u32 height, i32 n_cmd_show) {
-	HWND window = setup_window(instance, width, height);
-	if (window == nullptr) {
-		return err<RendererCtx, RenderCreateError>(FailedWindowCreation);
-	}
-	ShowWindow(window, n_cmd_show);
+Result<RendererCtx, RenderCreateError> create_renderer_ctx(const Window* window) {
 	
 	DeviceCreationRes device_res;
-	TRY(device_res, create_interfaces(width, height, window));
+	TRY(device_res, create_interfaces(window));
 	auto device = device_res.device;
 	auto context = device_res.context;
 	auto swap_chain = device_res.swap_chain;
@@ -166,29 +119,28 @@ Result<RendererCtx, RenderCreateError> create_renderer_ctx(HINSTANCE instance, u
 	TRY(rtv, create_render_target_view(device, swap_chain));
 
 	DepthStencilRes depth_res;
-	TRY(depth_res, create_depth_stencil(device, width, height));
+	TRY(depth_res, create_depth_stencil(device, window->width(), window->height()));
 	auto ds_texture = depth_res.ds_texture;
 	auto ds_view = depth_res.ds_view;
 
-	auto view_port = create_viewport(width, height);
+	auto view_port = create_viewport(window->width(), window->height());
 
 	return ok<RendererCtx, RenderCreateError>(RendererCtx{
 		device,
 		context,
 		swap_chain,
 		view_port,
-		window,
 		rtv,
 		ds_texture,
 		ds_view,
 	});
 }
 
-Result<Renderer*, RenderCreateError> create_renderer(HINSTANCE instance, u32 width, u32 height, i32 n_cmd_show) {
+Result<Renderer, RenderCreateError> create_renderer(const Window* window) {
 	RendererCtx ctx;
-	TRY(ctx, create_renderer_ctx(instance, width, height, n_cmd_show));
+	TRY(ctx, create_renderer_ctx(window));
 
-	return ok<Renderer*, RenderCreateError>(new Renderer {
+	return ok<Renderer, RenderCreateError>(Renderer {
 		ctx
 	});
 }

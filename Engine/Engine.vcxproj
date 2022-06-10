@@ -147,6 +147,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="assets\loaders.cpp" />
+    <ClCompile Include="renderer\src\window.cpp" />
     <ClCompile Include="ui\ui.cpp" />
     <ClCompile Include="ui\imgui\imgui.cpp" />
     <ClCompile Include="ui\imgui\imgui_demo.cpp" />
@@ -173,6 +174,7 @@
     <ClInclude Include="assets.h" />
     <ClInclude Include="assets\assets.h" />
     <ClInclude Include="renderer\rtv.h" />
+    <ClInclude Include="renderer\window.h" />
     <ClInclude Include="rstd\depot.h" />
     <ClInclude Include="ui\ui.h" />
     <ClInclude Include="ui\imgui\imconfig.h" />
