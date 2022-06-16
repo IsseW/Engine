@@ -69,4 +69,5 @@ Image Image::load(const std::string& path, ID3D11Device* device) {
 }
 
 Mesh Mesh::load(const std::string& path, ID3D11Device* device) {
+
 }

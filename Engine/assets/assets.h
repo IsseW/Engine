@@ -22,7 +22,7 @@ struct Mesh {
 	Vec<Vec3<f32>> normal;
 	Vec<Vec3<f32>> uv0;
 	usize num_vertices;
-	u16* indices;
+	Vec<u16> indices;
 	usize num_indices;
 
 	static Mesh load(const std::string& path, ID3D11Device* device);
