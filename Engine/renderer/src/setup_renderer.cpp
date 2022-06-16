@@ -3,9 +3,8 @@
 #include<Windows.h>
 #include<iostream>
 #include<memory>
-#include<renderer/renderer.h>
-#include<renderer/rtv.h>
 #include<renderer/window.h>
+#include<renderer/rtv.h>
 
 struct DeviceCreationRes {
 	ID3D11Device* device;

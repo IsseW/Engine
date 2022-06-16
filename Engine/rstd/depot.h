@@ -14,9 +14,9 @@ private:
 };
 template<typename T>
 struct Depot {
-	Depot() : _entries(), _len(0) {}
-	bool is_empty() { return _len == 0; }
-	usize len() { return _len; }
+	Depot() : _entries(), _free_entries() {}
+	bool is_empty() { return len() == 0; }
+	usize len() { return _entries.len() - _free_entries.len(); }
 	bool contains(Id<T> id) {
 		return _entries.get(id.idx())
 			.map([&](const Entry& e) { return e.gen == id.gen() && e.item.is_some(); })
@@ -46,18 +46,12 @@ struct Depot {
 	}
 
 	Id<T> insert(T&& item) {
-		if (_len < _entries.len()) {
-			u32 i = 0;
-			for (Entry& e : _entries) {
-				if (e.item.is_none()) {
-					e.item.insert(std::move(item));
-					ASSERT(e.gen < UINT32_MAX);
-					e.gen++;
-					_len += 1;
-					return Id<T>(i, e.gen);
-				}
-				++i;
-			}
+		Option<u32> free = _free_entries.pop();
+		if (free.is_some()) {
+			u32 idx = free.unwrap_unchecked();
+			ASSERT(++_entries[idx].gen < UINT32_MAX);
+			_entries[idx].item.insert(std::move(item));
+			return Id<T>(idx, _entries[idx].gen);
 		}
 		else {
 			ASSERT(_entries.len() < UINT32_MAX - 1);
@@ -66,7 +60,6 @@ struct Depot {
 					0,
 					some(std::move(item))
 				}));
-			_len += 1;
 			return id;
 		}
 		PANIC("This shouldn't happen");
@@ -75,7 +68,7 @@ struct Depot {
 	Option<T>&& remove(Id<T> id) {
 		return std::move(_entries.get(id.idx()).and_then<T>([&](Entry* e) {
 				if (e->gen == id.gen()) {
-					_len -= 1;
+					_free_entries.push(id.idx());
 					return e->item.take();
 				}
 				else {
@@ -108,5 +101,5 @@ private:
 		Option<T> item;
 	};
 	Vec<Entry> _entries;
-	usize _len;
+	Vec<u32> _free_entries;
 };

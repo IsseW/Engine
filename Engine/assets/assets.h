@@ -7,14 +7,21 @@
 #include<d3d11.h>
 
 struct Image {
-	ID3D11Texture2D* texture;
-	ID3D11ShaderResourceView* rsv;
+	struct Binded {
+		ID3D11Texture2D* texture;
+		ID3D11ShaderResourceView* rsv;
+	};
+
+
+	u8* data;
 
 	usize width;
 	usize height;
 	usize channels;
+	Option<Binded> binded;
 
-	static Image load(const std::string& path, ID3D11Device* device);
+	static Image load(const std::string& path);
+	void bind(ID3D11Device* device);
 };
 
 struct Mesh {
@@ -30,9 +37,13 @@ struct Mesh {
 
 template<typename T>
 struct Assets {
-	Id<T> load(const std::string& asset, ID3D11Device* device) {
-		return items.insert(std::move(T::load(asset, device)));
+	Id<T> load(const std::string& asset) {
+		return items.insert(std::move(T::load(asset)));
 	}
+	Id<T> insert(T&& asset) {
+		return items.insert(std::move(asset));
+	}
+
 	Option<const T&> get(Id<T> handle) const {
 		return items.get(handle);
 	}
@@ -43,15 +54,20 @@ private:
 // Could implement hot reloading
 struct AssetHandler {
 	template<typename T>
-	Id<T> load(const std::string& asset, ID3D11Device* device) {
+	Id<T> load(const std::string& asset) {
 		Assets<T>& a = assets<T>();
-		return a.load(asset, device);
+		return a.load(asset);
 	}
 
 	template<typename T>
 	Option<const T&> get(Id<T> handle) const {
 		Assets<T>& a = assets<T>();
 		return a.get(handle);
+	}
+
+	template<typename T>
+	Id<T> insert(T&& asset) {
+		return assets<T>().insert(asset);
 	}
 
 	template<typename T>
