@@ -97,16 +97,30 @@ Vec<std::string> split_string(std::string&& str, char delim) {
 	return ret;
 }
 
+struct IndexTuple {
+	u16 a, b, c;
+
+	bool operator==(const IndexTuple other) const {
+		return this->a == other.a && this->b == other.b && this->c == other.c;
+	}
+};
+template<>
+struct std::hash<IndexTuple> {
+	usize operator()(const IndexTuple& k) const {
+		return (std::hash<u16>{}(k.a)) ^ (std::hash<u16>{}(k.b)) ^ (std::hash<u16>{}(k.c));
+	}
+};
+
 Mesh Mesh::load(const std::string& path) {
+
 	auto file = std::ifstream{path};
 	std::string line;
 	Vec<SubMesh> submeshes;
 	Vec<Vec3<f32>> vertices;
 	Vec<Vec3<f32>> normals;
 	Vec<Vec3<f32>> uvs;
-	std::unordered_map<Vertex, u16> submesh_vertices;
-	Vec<u16> indices;
-	u16 index_count = 0;
+	std::unordered_map<IndexTuple, Vertex> submesh_vertices;
+	Vec<IndexTuple> indices;
 
 	while (std::getline(file, line)) {
 		auto split = split_string(std::move(line), ' ');
@@ -116,27 +130,27 @@ Mesh Mesh::load(const std::string& path) {
 			if (split.len() != 4) {
 				PANIC("");
 			}
-			auto a = split[1];
-			auto b = split[2];
-			auto c = split[3];
+			auto a = std::stof(split[1]);
+			auto b = std::stof(split[2]);
+			auto c = std::stof(split[3]);
 			vertices.push(Vec3<f32>{a, b, c});
 		}
 		else if (first == "vt") {
 			if (split.len() != 4) {
 				PANIC("");
 			}
-			auto a = split[1];
-			auto b = split[2];
-			auto c = split[3];
+			auto a = std::stof(split[1]);
+			auto b = std::stof(split[2]);
+			auto c = std::stof(split[3]);
 			uvs.push(Vec3<f32>{a, b, c});
 		}
 		else if (first == "vn") {
 			if (split.len() != 4) {
 				PANIC("");
 			}
-			auto a = split[1];
-			auto b = split[2];
-			auto c = split[3];
+			auto a = std::stof(split[1]);
+			auto b = std::stof(split[2]);
+			auto c = std::stof(split[3]);
 			normals.push(Vec3<f32>{a, b, c});
 		}
 		else if (first == "f") {
@@ -152,25 +166,25 @@ Mesh Mesh::load(const std::string& path) {
 			if (a_split.len() != 3 || c_split.len() != 3 || b_split.len() != 3) {
 				PANIC("");
 			}
-			auto a_vert = Vertex{};
-			auto b_vert = Vertex{};
-			auto c_vert = Vertex{};
-			if (submesh_vertices.contains(a_vert)) {
-				//indices.push(std::move(submesh_vertices.at(a_vert)));
+			IndexTuple a_tuple{(u16)std::stoi(a_split[0]), (u16)std::stoi(a_split[1]), (u16)std::stoi(a_split[2])};
+			IndexTuple b_tuple{(u16)std::stoi(b_split[0]), (u16)std::stoi(b_split[1]), (u16)std::stoi(b_split[2])};
+			IndexTuple c_tuple{(u16)std::stoi(c_split[0]), (u16)std::stoi(c_split[1]), (u16)std::stoi(c_split[2])};
+			if (submesh_vertices.contains(a_tuple)) {
+				indices.push(std::move(a_tuple));
 			}
 			else {
-				submesh_vertices.insert({ std::move(a_vert), index_count });
+				submesh_vertices.insert({ std::move(a_tuple),  });
 				indices.push(index_count++);
 			}
-			if (submesh_vertices.contains(b_vert)) {
-				//indices.push(std::move(submesh_vertices.at(b_vert)));
+			if (submesh_vertices.contains(b_tuple)) {
+				indices.push(std::move(b_tuple));
 			}
 			else {
 				submesh_vertices.insert({ std::move(b_vert), index_count });
 				indices.push(index_count++);
 			}
-			if (submesh_vertices.contains(c_vert)) {
-				//indices.push(std::move(submesh_vertices.at(c_vert)));
+			if (submesh_vertices.contains(c_tuple)) {
+				indices.push(std::move(c_tuple));
 			}
 			else {
 				submesh_vertices.insert({ std::move(c_vert), index_count});
@@ -180,16 +194,16 @@ Mesh Mesh::load(const std::string& path) {
 		else if (first == "o") {
 			if (index_count != 0 && vertices.len() != 0) {
 				auto vec = Vec<Vertex>{ Vertex{0,0,0}, index_count };
-				for (auto [vertex, index] : submesh_vertices) {
-					vec[index] = vertex;
-				}
+				//for (auto [vertex, index] : submesh_vertices) {
+				//	vec[index] = vertex;
+				//}
 				submeshes.push(SubMesh{
 					std::move(vec), std::move(indices)
 				});
 				vertices = Vec<Vec3<f32>>{};
 				normals = Vec<Vec3<f32>>{};
 				uvs = Vec<Vec3<f32>>{};
-				submesh_vertices = std::unordered_map<Vertex, u16>{};
+				submesh_vertices = std::unordered_map<IndexTuple, Vertex>{};
 				indices = Vec<u16>{};
 				index_count = 0;
 			}
