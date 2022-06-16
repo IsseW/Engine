@@ -23,26 +23,26 @@ struct Depot {
 			.unwrap_or(std::move(false));
 	}
 
-	Option<const T&> get(Id<T> id) const {
-		Option<Entry&> entry = _entries.get(id.idx());
+	Option<const T*> get(Id<T> id) const {
+		auto entry = _entries.get(id.idx());
 		if (entry.is_some()) {
-			Entry& e = entry.unwrap_unchecked();
-			if (e.gen == id.gen) {
-				return e.item.as_ref();
+			const Entry* e = entry.unwrap_unchecked();
+			if (e->gen == id.gen()) {
+				return e->item.as_ptr();
 			}
 		}
-		return none<const T&>();
+		return none<const T*>();
 	}
 
-	Option<T&> get(Id<T> id) {
-		Option<Entry&> entry = _entries.get(id.idx());
+	Option<T*> get(Id<T> id) {
+		auto entry = _entries.get(id.idx());
 		if (entry.is_some()) {
-			Entry& e = entry.unwrap_unchecked();
-			if (e.gen == id.gen) {
-				return e.item.as_ref();
+			Entry* e = entry.unwrap_unchecked();
+			if (e->gen == id.gen()) {
+				return e->item.as_ptr();
 			}
 		}
-		return none<T&>();
+		return none<T*>();
 	}
 
 	Id<T> insert(T&& item) {

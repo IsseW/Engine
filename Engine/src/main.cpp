@@ -68,10 +68,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		}
 		float dt = std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(now - last_frame).count();
 		last_frame = now;
+
 		renderer.begin_draw();
 		update_ui(window);
 		renderer.present();
-
 	}
 	clean_up_ui();
 	renderer.clean_up();

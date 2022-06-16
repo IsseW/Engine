@@ -11,7 +11,7 @@ struct Vec {
 			this->_internal.push_back(elem);
 		}
 	}
-	usize len() { return _internal.size(); }
+	usize len() const { return _internal.size(); }
 
 	bool is_empty() { return len() == 0; }
 
@@ -60,7 +60,13 @@ struct Vec {
 	auto begin() {
 		return _internal.begin();
 	}
+	auto begin() const {
+		return _internal.begin();
+	}
 	auto end() {
+		return _internal.end();
+	}
+	auto end() const {
 		return _internal.end();
 	}
 

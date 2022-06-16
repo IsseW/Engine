@@ -5,6 +5,7 @@
 #include<memory>
 #include<renderer/window.h>
 #include<renderer/rtv.h>
+#include<fstream>
 
 struct DeviceCreationRes {
 	ID3D11Device* device;
@@ -135,11 +136,112 @@ Result<RendererCtx, RenderCreateError> create_renderer_ctx(const Window* window)
 	});
 }
 
+Result<ObjectRenderer, RenderCreateError> create_object_renderer(RendererCtx& ctx)
+{
+	std::string vs_data;
+	std::ifstream reader;
+	reader.open("VertexShader.cso", std::ios::binary | std::ios::ate);
+	if (!reader.is_open())
+	{
+		return MissingShaderFile;
+	}
+
+	reader.seekg(0, std::ios::end);
+	vs_data.reserve(static_cast<unsigned int>(reader.tellg()));
+	reader.seekg(0, std::ios::beg);
+
+	vs_data.assign((std::istreambuf_iterator<char>(reader)),
+		std::istreambuf_iterator<char>());
+	ID3D11VertexShader* vs;
+	if (FAILED(ctx.device->CreateVertexShader(vs_data.c_str(), vs_data.length(), nullptr, &vs)))
+	{
+		return FailedShaderCreation;
+	}
+	std::string ps_data;
+	reader.close();
+	reader.open("PixelShader.cso", std::ios::binary | std::ios::ate);
+	if (!reader.is_open())
+	{
+		return MissingShaderFile;
+	}
+
+	reader.seekg(0, std::ios::end);
+	ps_data.reserve(static_cast<unsigned int>(reader.tellg()));
+	reader.seekg(0, std::ios::beg);
+
+	ps_data.assign((std::istreambuf_iterator<char>(reader)),
+		std::istreambuf_iterator<char>());
+
+	ID3D11PixelShader* ps;
+	if (FAILED(ctx.device->CreatePixelShader(ps_data.c_str(), ps_data.length(), nullptr, &ps)))
+	{
+		return FailedShaderCreation;
+	}
+
+
+	D3D11_INPUT_ELEMENT_DESC input_desc[3] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	};
+
+	ID3D11InputLayout* layout;
+
+	if (FAILED(ctx.device->CreateInputLayout(input_desc, 3, vs_data.c_str(), vs_data.length(), &layout))) {
+		return FailedLayoutCreation;
+	}
+
+	return ok<ObjectRenderer, RenderCreateError>(ObjectRenderer {
+			vs,
+			ps,
+			layout,
+		});
+}
+
+template<typename T>
+Result<Uniform<T>, RenderCreateError> create_uniform(RendererCtx& ctx) requires (sizeof(T) % 4 == 0) {
+	D3D11_BUFFER_DESC desc;
+	desc.ByteWidth = sizeof(T);
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
+
+	ID3D11Buffer* buffer;
+	if (FAILED(ctx.device->CreateBuffer(&desc, nullptr, &buffer))) {
+		return FailedBufferCreation;
+	}
+
+	return ok<Uniform<T>, RenderCreateError>(Uniform<T> { buffer });
+}
+
+Result<FirstPass, RenderCreateError> create_first_pass(RendererCtx& ctx) {
+	ObjectRenderer object_renderer;
+	TRY(object_renderer, create_object_renderer(ctx));
+
+	Uniform<Globals> globals;
+	TRY(globals, create_uniform<Globals>(ctx));
+	// Bind globals
+	ctx.context->VSSetConstantBuffers(0, 1, &globals.buffer);
+	ctx.context->PSSetConstantBuffers(0, 1, &globals.buffer);
+	
+	return ok<FirstPass, RenderCreateError>(FirstPass{
+			object_renderer,
+			globals
+		});
+}
+
 Result<Renderer, RenderCreateError> create_renderer(const Window* window) {
 	RendererCtx ctx;
 	TRY(ctx, create_renderer_ctx(window));
 
+	FirstPass first_pass;
+	TRY(first_pass, create_first_pass(ctx));
+
 	return ok<Renderer, RenderCreateError>(Renderer {
-		ctx
+		ctx,
+		first_pass,
 	});
 }

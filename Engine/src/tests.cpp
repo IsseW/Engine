@@ -26,7 +26,8 @@ namespace math {
 	}
 
 	void test_matrix() {
-		test_inversion(Mat3<f64>{ 3.0, 2.0, 1.0, 1.0, 2.0, 3.0, 3.0, 1.0, 2.0 });
+		auto mat = Mat3<f64>(3.0, 2.0, 1.0, 1.0, 2.0, 3.0, 3.0, 1.0, 2.0);
+		test_inversion(mat);
 		auto euler = Vec3<f64>{ 45.0, 45.0, 0.0 } *F64::TO_RAD;
 		auto quat = Quat<f64>::from_euler(euler);
 		auto rot_mat = mat_from_euler(euler);

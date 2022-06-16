@@ -8,9 +8,8 @@ namespace math {
 		Mat() : _rows() {}
 		Mat(const Vec<Vec<T, W>, H>& rows) : _rows(rows) {}
 		template<typename... Args>
-		constexpr Mat(Args... args) {
-			std::array arr = std::array<T, W* H> { args... };
-			_rows = *reinterpret_cast<Vec<Vec<T, W>, H>*>(&arr);
+		constexpr Mat(Args... args) requires (sizeof...(Args) == W * H) {
+			set_all(args...);
 		}
 
 		const Vec<Vec<T, H>, W>& rows() const {
@@ -197,6 +196,15 @@ namespace math {
 			}
 		}
 	private:
+		constexpr void set_all(T t) {
+			_rows[H - 1][W - 1] = t;
+		}
+		template<typename... Args>
+		constexpr void set_all(T t, Args... args) {
+			constexpr u32 I = W * H - (sizeof...(Args) + 1);
+			_rows[I / W][I % W] = t;
+			set_all(args...);
+		}
 		Vec<Vec<T, W>, H> _rows;
 	};
 
@@ -218,7 +226,7 @@ namespace math {
 		constexpr T ONE = (T)1;
 		constexpr T TWO = (T)2;
 		auto v = q.inner();
-		return Mat3<T> {
+		return Mat3<T>(
 			TWO * (v.w * v.w + v.x * v.x) - ONE,
 			TWO * (v.x * v.y - v.w * v.z),
 			TWO * (v.x * v.z + v.w * v.y),
@@ -228,7 +236,7 @@ namespace math {
 			TWO * (v.x * v.z - v.w * v.y),
 			TWO * (v.y * v.z + v.w * v.x),
 			TWO * (v.w * v.w + v.z * v.z) - ONE
-		};
+		);
 	}
 
 	constexpr Mat3<f64> mat_from_euler(const Vec3<f64>& euler) {
@@ -238,14 +246,14 @@ namespace math {
 	template<typename T>
 	constexpr Mat4<T> transformation(const Vec3<T>& t, const Vec3<T>& s, const Mat3<T>& r) {
 		constexpr T ZERO = T{};
-		constexpr T ONE = const_cast<T>(1);
-		constexpr T TWO = const_cast<T>(2);
-		return Mat3<T> {
+		constexpr T ONE = (T)1;
+		constexpr T TWO = (T)2;
+		return Mat4<T>(
 			s.x * r[0][0], s.y * r[0][1], s.z * r[0][2], t.x,
 			s.x * r[1][0], s.y * r[1][1], s.z * r[1][2], t.x,
 			s.x * r[2][0], s.y * r[2][1], s.z * r[2][2], t.x,
 			ZERO, ZERO, ZERO, ONE
-		};
+		);
 	}
 
 	template<typename T>

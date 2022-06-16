@@ -50,7 +50,7 @@ struct Assets {
 		return items.insert(std::move(asset));
 	}
 
-	Option<const T&> get(Id<T> handle) const {
+	Option<const T*> get(Id<T> handle) const {
 		return items.get(handle);
 	}
 private:
@@ -66,8 +66,8 @@ struct AssetHandler {
 	}
 
 	template<typename T>
-	Option<const T&> get(Id<T> handle) const {
-		Assets<T>& a = assets<T>();
+	Option<const T*> get(Id<T> handle) const {
+		const Assets<T>& a = assets<T>();
 		return a.get(handle);
 	}
 
