@@ -43,7 +43,7 @@ namespace math {
 
 namespace files {
 	void test_obj_load() {
-		auto mesh = Mesh::load("resources/test.wavefront", NULL);
+		auto mesh = Mesh::load("resources/test.wavefront");
 	}
 
 	void test() {

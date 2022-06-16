@@ -24,15 +24,21 @@ struct Image {
 	void bind(ID3D11Device* device);
 };
 
-struct Mesh {
-	Vec<Vec3<f32>> vertices;
-	Vec<Vec3<f32>> normal;
-	Vec<Vec3<f32>> uv0;
-	usize num_vertices;
-	Vec<u16> indices;
-	usize num_indices;
+struct Vertex{
+	f32 v;
+	f32 vn;
+	f32 uv;
+};
 
-	static Mesh load(const std::string& path, ID3D11Device* device);
+struct SubMesh {
+	Vec<Vertex> vertices;
+	Vec<u16> indices;
+};
+
+struct Mesh {
+	Vec<SubMesh> submeshes;
+
+	static Mesh load(const std::string& path);
 };
 
 template<typename T>

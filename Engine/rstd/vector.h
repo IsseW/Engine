@@ -1,16 +1,26 @@
 #pragma once
 #include<vector>
+#include<concepts>
 #include"option.h"
 
 template<typename T>
 struct Vec {
-	Vec() : _internal() {}
+	Vec() : _internal{} {}
+	Vec(T elem, usize len) requires std::copyable<T> : _internal{} {
+		for (usize i = 0; i < len; ++i) {
+			this->_internal.push_back(elem);
+		}
+	}
 	usize len() { return _internal.size(); }
 
 	bool is_empty() { return len() == 0; }
 
 	void push(T&& t) {
 		_internal.push_back(std::move(t));
+	}
+
+	void insert(T elem, usize index) {
+		_internal.insert(elem, index);
 	}
 
 	Option<T> pop() {
