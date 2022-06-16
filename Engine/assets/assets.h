@@ -25,9 +25,9 @@ struct Image {
 };
 
 struct Vertex{
-	f32 v;
-	f32 vn;
-	f32 uv;
+	Vec3<f32> v;
+	Vec3<f32> vn;
+	Vec3<f32> uv;
 };
 
 struct SubMesh {

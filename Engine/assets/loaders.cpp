@@ -97,6 +97,7 @@ Vec<std::string> split_string(std::string&& str, char delim) {
 	return ret;
 }
 
+#pragma pack(1)
 struct IndexTuple {
 	u16 a, b, c;
 
@@ -173,43 +174,67 @@ Mesh Mesh::load(const std::string& path) {
 				indices.push(std::move(a_tuple));
 			}
 			else {
-				submesh_vertices.insert({ std::move(a_tuple),  });
-				indices.push(index_count++);
+				auto vertex = vertices[a_tuple.a];
+				auto normal = normals[a_tuple.b];
+				auto texture = uvs[a_tuple.c];
+				auto vert = Vertex{
+					vertex,
+					normal,
+					texture,
+				};
+				submesh_vertices.insert({ std::move( a_tuple), std::move(vert)});
+				indices.push(std::move(a_tuple));
 			}
 			if (submesh_vertices.contains(b_tuple)) {
 				indices.push(std::move(b_tuple));
 			}
 			else {
-				submesh_vertices.insert({ std::move(b_vert), index_count });
-				indices.push(index_count++);
+				auto vertex = vertices[b_tuple.a];
+				auto normal = normals[b_tuple.b];
+				auto texture = uvs[b_tuple.c];
+				auto vert = Vertex{
+					vertex,
+					normal,
+					texture,
+				};
+				submesh_vertices.insert({ std::move(b_tuple), std::move(vert) });
+				indices.push(std::move(b_tuple));
 			}
 			if (submesh_vertices.contains(c_tuple)) {
 				indices.push(std::move(c_tuple));
 			}
 			else {
-				submesh_vertices.insert({ std::move(c_vert), index_count});
-				indices.push(index_count++);
+				auto vertex = vertices[c_tuple.a];
+				auto normal = normals[c_tuple.b];
+				auto texture = uvs[c_tuple.c];
+				auto vert = Vertex{
+					vertex,
+					normal,
+					texture,
+				};
+				submesh_vertices.insert({ std::move(c_tuple), std::move(vert) });
+				indices.push(std::move(c_tuple));
 			}
 		}
 		else if (first == "o") {
-			if (index_count != 0 && vertices.len() != 0) {
-				auto vec = Vec<Vertex>{ Vertex{0,0,0}, index_count };
-				//for (auto [vertex, index] : submesh_vertices) {
-				//	vec[index] = vertex;
-				//}
-				submeshes.push(SubMesh{
-					std::move(vec), std::move(indices)
-				});
-				vertices = Vec<Vec3<f32>>{};
-				normals = Vec<Vec3<f32>>{};
-				uvs = Vec<Vec3<f32>>{};
-				submesh_vertices = std::unordered_map<IndexTuple, Vertex>{};
-				indices = Vec<u16>{};
-				index_count = 0;
-			}
-			else {
-				PANIC("");
-			}
+			//if (index_count != 0 && vertices.len() != 0) {
+			//	auto vec = Vec<Vertex>{ Vertex{0,0,0}, index_count };
+			//	//for (auto [vertex, index] : submesh_vertices) {
+			//	//	vec[index] = vertex;
+			//	//}
+			//	submeshes.push(SubMesh{
+			//		std::move(vec), std::move(indices)
+			//	});
+			//	vertices = Vec<Vec3<f32>>{};
+			//	normals = Vec<Vec3<f32>>{};
+			//	uvs = Vec<Vec3<f32>>{};
+			//	submesh_vertices = std::unordered_map<IndexTuple, Vertex>{};
+			//	indices = Vec<u16>{};
+			//	index_count = 0;
+			//}
+			//else {
+			//	PANIC("");
+			//}
 		}
 	}
 	file.close();
