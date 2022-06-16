@@ -1,6 +1,37 @@
 #include<renderer/transform.h>
 
 
+Transform Transform::from_translation(Vec3<f32> trans) {
+	Transform t{};
+	t.translation = trans;
+	return t;
+}
+Transform Transform::from_scale(Vec3<f32> scale) {
+	Transform t{};
+	t.scale = scale;
+	return t;
+}
+Transform Transform::from_rotation(Quat<f32> rot) {
+	Transform t{};
+	t.rotation = rot;
+	return t;
+}
+Transform&& Transform::with_translation(Vec3<f32> trans) {
+	translation = trans;
+	return std::move(*this);
+}
+Transform&& Transform::with_scale(Vec3<f32> scale) {
+	this->scale = scale;
+	return std::move(*this);
+}
+Transform&& Transform::with_rotation(Quat<f32> rot) {
+	rotation = rot;
+	return std::move(*this);
+}
+Transform&& Transform::looking_at(Vec3<f32> point, Vec3<f32> up) {
+	TODO
+}
+
 Mat4<f32> Transform::get_mat() const {
 	return math::transformation(translation, scale, rotation);
 }

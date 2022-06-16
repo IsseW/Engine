@@ -3,6 +3,7 @@
 #include<chrono>
 #include<Windows.h>
 #include<ui/ui.h>
+#include<math/consts.h>
 
 
 struct Console {
@@ -41,6 +42,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 #ifdef _DEBUG
 	run_tests();
 #endif
+
+	World world;
+	world.camera = Camera::perspective(Transform::from_translation(Vec3<f32>(5.0, 5.0, 5.0)).looking_at(Vec3<f32>::zero(), Vec3<f32>::unit_y()), 60.0 * F32::TO_RAD);
 
 	Window* window = create_window(hInstance, 600, 600, nCmdShow).unwrap();
 
