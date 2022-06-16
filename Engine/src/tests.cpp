@@ -3,6 +3,7 @@
 #include<rstd/panic.h>
 #include<math/consts.h>
 #include<math/mat.h>
+#include<assets/assets.h>
 
 namespace math {
 	bool feq(f64 a, f64 b) {
@@ -40,9 +41,20 @@ namespace math {
 	}
 }
 
+namespace files {
+	void test_obj_load() {
+		auto mesh = Mesh::load("resources/test.wavefront", NULL);
+	}
+
+	void test() {
+		test_obj_load();
+	}
+}
+
 
 void run_tests() {
 	math::test();
+	files::test();
 	std::cout << "All tests passed." << std::endl;
 }
 
