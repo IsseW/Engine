@@ -60,6 +60,7 @@ void Renderer::begin_draw(const World& world, AssetHandler& assets) {
 	ctx.context->OMSetRenderTargets(1, &ctx.rtv, ctx.ds_view);
 	ctx.context->RSSetViewports(1, &ctx.viewport);
 	ctx.context->ClearRenderTargetView(ctx.rtv, clear_color_with_alpha);
+	ctx.context->ClearDepthStencilView(ctx.ds_view, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
 Globals Globals::from_world(const World& world, u32 width, u32 height) {
@@ -78,6 +79,7 @@ void Renderer::draw_first_pass(const Window* window, const World& world, const A
 	ctx.context->PSSetShader(first_pass.object_renderer.ps, nullptr, 0);
 
 	ID3D11Buffer* uniforms[2] = { first_pass.globals.buffer, first_pass.object_renderer.locals.buffer };
+	ctx.context->IASetInputLayout(first_pass.object_renderer.layout);
 	ctx.context->VSSetConstantBuffers(0, 2, uniforms);
 	ctx.context->PSSetConstantBuffers(0, 2, uniforms);
 	world.objects.values([&](const Object* obj) {
@@ -103,19 +105,19 @@ void Renderer::draw_first_pass(const Window* window, const World& world, const A
 		// ctx.context->PSSetSamplers(0, 1, &binded->sampler_state);
 
 		const Mesh* mesh = assets.get(obj->mesh).unwrap();
-		for (const SubMesh& sub_mesh : mesh->submeshes) {
+		for (const SubMesh& sub_mesh : mesh->submeshes) {                                                                                                                                                                                                                                             
 			if (sub_mesh.binded.is_none()) {
 				continue;
 			}
-			
+
 			auto binded = sub_mesh.binded.as_ptr().unwrap_unchecked();
 			u32 stride = sizeof(Vertex);
 			u32 offset = 0;
 			ctx.context->IASetVertexBuffers(0, 1, &binded->vertex_buffer, &stride, &offset);
 			ctx.context->IASetIndexBuffer(binded->index_buffer, DXGI_FORMAT_R16_UINT, 0);
-			ctx.context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+			ctx.context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-			ctx.context->Draw(sub_mesh.vertices.len(), 0);
+			ctx.context->DrawIndexed(sub_mesh.indices.len(), 0, 0);
 		}
 	});
 }
