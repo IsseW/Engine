@@ -2,7 +2,8 @@
 #include"imgui/imgui_impl_win32.h"
 #include"imgui/imgui_impl_dx11.h"
 #include"ui.h"
-
+#include<sstream>
+#include<unordered_set>
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 void setup_ui(const Window* window, Renderer& renderer) {
@@ -34,7 +35,7 @@ void end() {
 
 }
 
-void update_ui(const Window* window) {
+void update_ui(const Window* window, World& world) {
 	start();
 
 	ImGui_ImplWin32_GetDpiScaleForHwnd(window->window());
@@ -43,16 +44,40 @@ void update_ui(const Window* window) {
 	ImGui::BeginMainMenuBar();
 	ImGui::Button("hello!");
 	ImGui::EndMainMenuBar();
-	ImGui::Begin("lmao", &active);
-	if (ImGui::Button("Test")) {
-		std::cout << "lol" << std::endl;
-	}
+
+	ImGui::Begin("Editor", &active);
+	world.objects.iter([&](Id<Object> id, Object* obj) {
+		std::string s("Object.");
+		s += std::to_string(id.gen());
+		s += ".";
+		s += std::to_string(id.idx());
+		static std::unordered_set<Id<Object>> objects;
+		bool open = objects.contains(id);
+		ImGui::BeginGroup();
+		if (ImGui::SmallButton(s.data())) {
+			open = !open;
+		}
+		if (open) {
+			objects.insert(id);
+		}
+		else {
+			objects.erase(id);
+		}
+		if (open) {
+			ImGui::BeginGroup();
+			ImGui::DragFloat3("Translation", obj->transform.translation.data());
+			ImGui::DragFloat3("Scale", obj->transform.scale.data());
+			ImGui::ColorEdit3("Color", obj->color.data());
+			ImGui::EndGroup();
+		}
+		ImGui::EndGroup();
+	});
 	ImGui::End();
 
 	end();
 }
 
-bool handle_input(HWND window, UINT msg, WPARAM wp, LPARAM lp) {
+bool ui_handle_input(HWND window, UINT msg, WPARAM wp, LPARAM lp) {
 	return ImGui_ImplWin32_WndProcHandler(window, msg, wp, lp);
 }
 

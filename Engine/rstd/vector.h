@@ -6,11 +6,23 @@
 template<typename T>
 struct Vec {
 	Vec() : _internal{} {}
+	Vec(Vec&& v) noexcept : _internal(std::move(v._internal)) {}
+	Vec(const Vec& v) : _internal(v._internal) {}
 	Vec(T elem, usize len) requires std::copyable<T> : _internal{} {
 		for (usize i = 0; i < len; ++i) {
 			this->_internal.push_back(elem);
 		}
 	}
+
+	Vec& operator=(const Vec& other) {
+		_internal = other._internal;
+		return *this;
+	}
+	Vec& operator=(Vec&& other) {
+		_internal = std::move(other._internal);
+		return *this;
+	}
+
 	usize len() const { return _internal.size(); }
 
 	bool is_empty() { return len() == 0; }
@@ -25,7 +37,9 @@ struct Vec {
 
 	Option<T> pop() {
 		if (!is_empty()) {
-			return some<T>(std::move(_internal.pop_back()));
+			T elem = std::move(_internal.back());
+			_internal.pop_back();
+			return some<T>(std::move(elem));
 		}
 		else {
 			return none<T>();
@@ -68,6 +82,14 @@ struct Vec {
 	}
 	auto end() const {
 		return _internal.end();
+	}
+
+	T* raw() {
+		return _internal.data();
+	}
+
+	const T* raw() const {
+		return _internal.data();
 	}
 
 

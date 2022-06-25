@@ -79,6 +79,19 @@ Vec operator op() const {			\
 			return _elems[i];
 		}
 
+		bool operator==(const Vec& other) const {
+			for (usize i = 0; i < L; ++i) {
+				if (_elems[i] != other._elems[i]) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		bool operator!=(const Vec& other) const {
+			return !this->operator==(other);
+		}
+
 		BINARY_OPERATOR(+);
 		BINARY_OPERATOR(-);
 		BINARY_OPERATOR(*);
@@ -128,11 +141,8 @@ Vec operator op() const {			\
 		constexpr T length_sqr() const {
 			return dot(*this);
 		}
-		constexpr f32 length() const requires (std::same_as<T, f32>) {
-			return sqrtf(length_sqr());
-		}
-		constexpr f64 length() const requires (std::same_as<T, f64>) {
-			return sqrt(length_sqr());
+		constexpr T length() const {
+			return std::sqrt(length_sqr());
 		}
 		constexpr void normalize() {
 			this->operator/=(length());
@@ -142,17 +152,17 @@ Vec operator op() const {			\
 		}
 
 		constexpr Vec<T, 3> cross(const Vec<T, 3>& o) const requires (L == 3) {
-			return Vec<T, 3> { crs(1, 2), crs(2, 0), crs(0, 1) };
+			return Vec<T, 3> { crs(o, 1, 2), crs(o, 2, 0), crs(o, 0, 1) };
 		}
 		constexpr Vec<T, 7> cross(const Vec<T, 7>& o) const requires(L == 7) {
 			return Vec<T, 7> {  
-				crs(1, 3) + crs(2, 6) + crs(4, 5),
-				crs(2, 4) + crs(3, 0) + crs(5, 6),
-				crs(3, 5) + crs(4, 1) + crs(6, 0),
-				crs(4, 6) + crs(5, 2) + crs(0, 1),
-				crs(5, 0) + crs(6, 3) + crs(1, 2),
-				crs(6, 1) + crs(0, 4) + crs(2, 3),
-				crs(0, 2) + crs(1, 5) + crs(3, 4),
+				crs(o, 1, 3) + crs(o, 2, 6) + crs(o, 4, 5),
+				crs(o, 2, 4) + crs(o, 3, 0) + crs(o, 5, 6),
+				crs(o, 3, 5) + crs(o, 4, 1) + crs(o, 6, 0),
+				crs(o, 4, 6) + crs(o, 5, 2) + crs(o, 0, 1),
+				crs(o, 5, 0) + crs(o, 6, 3) + crs(o, 1, 2),
+				crs(o, 6, 1) + crs(o, 0, 4) + crs(o, 2, 3),
+				crs(o, 0, 2) + crs(o, 1, 5) + crs(o, 3, 4),
 			};
 		}
 
@@ -189,32 +199,60 @@ Vec operator op() const {			\
 		template<const usize E>
 		Vec<T, L + 1> with(const T& e) const requires (E == L) {
 			Vec<T, L + 1> res;
-			std::copy(_elems.begin(), _elems.end(), res._elems.begin());
-			res._elems.back() = e;
+			std::copy(_elems.begin(), _elems.end(), res.begin());
+			res.back() = e;
 			return res;
 		}
 
-		constexpr auto with_x(const T& e) {
+		constexpr auto with_x(const T& e) const {
 			return with<0>(e);
 		}
-		constexpr auto with_y(const T& e) {
+		constexpr auto with_y(const T& e) const {
 			return with<1>(e);
 		}
-		constexpr auto with_z(const T& e) {
+		constexpr auto with_z(const T& e) const {
 			return with<2>(e);
 		}
-		constexpr auto with_w(const T& e) {
+		constexpr auto with_w(const T& e) const {
 			return with<3>(e);
 		}
 
 		template<const usize E>
-		constexpr static Vec<T, L> unit() requires (E < L) { return Vec<T, L>().with<E>(); }
+		constexpr static Vec<T, L> unit() requires (E < L) { return Vec<T, L>().with<E>((T)1); }
 
 		constexpr static Vec<T, L> unit_x() { return unit<0>(); }
 		constexpr static Vec<T, L> unit_y() { return unit<1>(); }
 		constexpr static Vec<T, L> unit_z() { return unit<2>(); }
 		constexpr static Vec<T, L> unit_w() { return unit<3>(); }
 		constexpr static Vec<T, L> zero() { return Vec<T, L>(); }
+
+		auto begin() {
+			return _elems.begin();
+		}
+		auto begin() const {
+			return _elems.begin();
+		}
+
+		auto end() {
+			return _elems.begin();
+		}
+		auto end() const {
+			return _elems.begin();
+		}
+
+		T* data() {
+			return _elems.data();
+		}
+		const T* data() const {
+			return _elems.data();
+		}
+
+		T& back() {
+			return _elems.back();
+		}
+		const T& back() const {
+			return _elems.back();
+		}
 
 		SWIZZLE2(x, x);
 		SWIZZLE2(x, y);
@@ -993,11 +1031,11 @@ Vec operator op() const {			\
 
 	private:
 		std::array<T, L> _elems;
-		constexpr T crs(const usize a, const usize b) {
-			return _elems[a] * _elems[b] - _elems[b] * _elems[a];
+		constexpr T crs(const Vec& o, const usize a, const usize b) const {
+			return _elems[a] * o._elems[b] - _elems[b] * o._elems[a];
 		}
 		__declspec(property(put = set_none, get = get_none)) T _;
-		constexpr T set_none(const T& e) { }
+		constexpr T set_none(const T& e) const { }
 		constexpr T get_none() const {
 			return T{};
 		}

@@ -16,18 +16,53 @@ struct Option {
 		return Option(v);
 	}
 
-	Option(Option&& other) requires std::movable<T> {
-		Option&& o = other.take();
-		_is_some = o._is_some;
+	~Option() {
 		if (_is_some) {
-			_v = std::move(o._v);
+			_v.~T();
 		}
 	}
 
+	Option() : _is_some(false) { zero(); }
+
+	Option(Option&& other) {
+		if (other.is_some()) {
+			_is_some = true;
+			zero();
+			_v = std::move(other._v);
+		}
+		else {
+			_is_some = false;
+			zero();
+		}
+		other._is_some = false;
+	}
+
+	Option(const Option& other) {
+		if (other.is_some()) {
+			_is_some = true;
+			zero();
+			_v = other._v;
+		}
+		else {
+			_is_some = false;
+			zero();
+		}
+	}
+
+	Option& operator=(const Option& other) {
+		if (other.is_some()) {
+			_is_some = true;
+			_v = other._v;
+		}
+		else {
+			_is_some = false;
+			zero();
+		}
+		return *this;
+	}
+
 	Option&& take() requires std::movable<T> {
-		Option res;
-		res._is_some = _is_some;
-		res._v = _v;
+		Option res(std::move(*this));
 		_is_some = false;
 		return std::move(res);
 	}
@@ -40,6 +75,14 @@ struct Option {
 		else {
 			return Option<U>::none();
 		}
+	}
+
+	template<typename U>
+	Option<U>&& flatten() requires std::same_as<Option<U>, T> {
+		if (_is_some) {
+			return std::move(unwrap_unchecked());
+		}
+		return std::move(Option<U>::none());
 	}
 
 	T&& unwrap_unchecked() requires std::movable<T> {
@@ -78,27 +121,21 @@ struct Option {
 		if (_is_some) {
 			return Option<T*>::some(&_v);
 		}
-		else {
-			return Option<T*>::none();
-		}
+		return Option<T*>::none();
 	}
 	Option<const T*> as_ptr() const {
 		if (_is_some) {
 			return Option<const T*>::some(&_v);
 		}
-		else {
-			return Option<const T*>::none();
-		}
+		return Option<const T*>::none();
 	}
 	
 	template<typename U, typename F>
-	Option<U> map(F map) const requires std::movable<T> {
+	Option<U> map(F map) requires std::movable<T> {
 		if (_is_some) {
-			return map(take()._v);
+			return Option<U>::some(map(take().unwrap_unchecked()));
 		}
-		else {
-			return Option<U>::none();
-		}
+		return Option<U>::none();
 	}
 
 	bool is_some() const {
@@ -108,19 +145,25 @@ struct Option {
 		return !_is_some;
 	}
 
-	Option<T> insert(T&& item) {
+	Option<T> insert(T&& item) requires std::movable<T> {
 		Option res(std::move(*this));
 		_is_some = true;
-		_v = item;
+		_v = std::move(item);
 		return res;
 	}
 
 private:
-	Option() : _is_some(false) { }
 	Option(const T& v) : _is_some(true), _v(v) {}
 
+	void zero() {
+		memset(__t, 0, sizeof(T));
+	}
+
 	bool _is_some;
-	T _v;
+	union {
+		T _v;
+		char __t[sizeof(T)];
+	};
 };
 
 
@@ -134,7 +177,7 @@ Option<T> some(const T& v) requires std::copyable<T> {
 }
 template<typename T>
 Option<T> some(T&& v) requires std::movable<T> {
-	return Option<T>::some(v);
+	return Option<T>::some(std::move(v));
 }
 
 template<typename T>

@@ -1,4 +1,4 @@
-#include"assets.h"
+#include<assets/assets.h>
 #include<rstd/panic.h>
 #include<iostream>
 #include<fstream>
@@ -6,7 +6,7 @@
 #include<unordered_map>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include"stb_image.h"
+#include<assets/stb_image.h>
 
 Image Image::load(const std::string& path) {
 	int width, height, comp;
@@ -15,17 +15,18 @@ Image Image::load(const std::string& path) {
 	if (data == nullptr) {
 		PANIC("Failed to load image file");
 	}
-
-	return Image{
-		data,
-		(u32)width,
-		(u32)height,
-		(u32)comp,
-		none<Binded>()
-	};
+	Image image;
+	image.data = data;
+	image.width = width;
+	image.height = height;
+	image.channels = comp;
+	return image;
 }
 
 void Image::bind(ID3D11Device* device) {
+	if (binded.is_some()) {
+		return;
+	}
 	D3D11_TEXTURE2D_DESC desc;
 	desc.ArraySize = 1;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -66,16 +67,62 @@ void Image::bind(ID3D11Device* device) {
 	if (FAILED(res)) {
 		PANIC("Failed to create loaded texture.");
 	}
+	D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc;
+	resource_desc.Texture2D = { 0, 1 };
+	resource_desc.Format = desc.Format;
+	resource_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	ID3D11ShaderResourceView* rsv;
-	res = device->CreateShaderResourceView(texture, nullptr, &rsv);
+	res = device->CreateShaderResourceView(texture, &resource_desc, &rsv);
 	if (FAILED(res)) {
 		PANIC("Failed to create shader resource view for texture.");
 	}
 
+
+	D3D11_SAMPLER_DESC sampler_desc;
+	ZeroMemory(&sampler_desc, sizeof(D3D11_SAMPLER_DESC));
+	sampler_desc.Filter = D3D11_FILTER_ANISOTROPIC;
+	sampler_desc.MaxAnisotropy = 4;
+	sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampler_desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	sampler_desc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	ID3D11SamplerState* sampler_state;
+	res = device->CreateSamplerState(&sampler_desc, &sampler_state);
+	if (FAILED(res)) {
+		PANIC("Failed to create sampler state for texture.");
+	}
+
 	binded.insert(Binded{
 			texture,
-			rsv
+			rsv,
+			sampler_state
 		});
+}
+
+
+Image Image::default_asset() {
+	Image image;
+	image.data = new u8[4] { 1, 1, 1, 1 };
+	image.width = 1;
+	image.height = 1;
+	image.channels = 4;
+	return image;
+}
+
+void Image::clean_up() {
+	if (binded.is_some()) {
+		Binded b = binded.take().unwrap_unchecked();
+		b.rsv->Release();
+		b.texture->Release();
+		b.sampler_state->Release();
+	}
+	stbi_image_free(data);
+	data = nullptr;
+	width = 0;
+	height = 0;
+	channels = 0;
 }
 
 
@@ -113,7 +160,7 @@ struct std::hash<IndexTuple> {
 };
 
 Mesh Mesh::load(const std::string& path) {
-
+	/*
 	auto file = std::ifstream{path};
 	std::string line;
 	Vec<SubMesh> submeshes;
@@ -241,4 +288,73 @@ Mesh Mesh::load(const std::string& path) {
 	return Mesh{
 		submeshes
 	};
+	*/
+	TODO;
+}
+
+void SubMesh::bind(ID3D11Device* device) {
+	if (binded.is_some()) {
+		return;
+	}
+	D3D11_BUFFER_DESC bufferDesc;
+	bufferDesc.ByteWidth = sizeof(Vertex) * vertices.len();
+	bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bufferDesc.CPUAccessFlags = NULL;
+	bufferDesc.MiscFlags = 0;
+	bufferDesc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA data;
+	data.pSysMem = vertices.raw();
+	data.SysMemPitch = 0;
+	data.SysMemSlicePitch = 0;
+
+	ID3D11Buffer* vertex_buffer;
+	if (FAILED(device->CreateBuffer(&bufferDesc, &data, &vertex_buffer))) {
+		PANIC("Failed to create vertex buffer for model");
+	}
+
+	bufferDesc.ByteWidth = sizeof(u16) * indices.len();
+	bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	bufferDesc.CPUAccessFlags = NULL;
+	bufferDesc.MiscFlags = 0;
+	bufferDesc.StructureByteStride = 0;
+
+	data.pSysMem = indices.raw();
+	data.SysMemPitch = 0;
+	data.SysMemSlicePitch = 0;
+	ID3D11Buffer* index_buffer;
+	if (FAILED(device->CreateBuffer(&bufferDesc, &data, &index_buffer))) {
+		PANIC("Failed to create index buffer for model");
+	}
+
+	binded.insert(Binded{
+		vertex_buffer,
+		index_buffer
+	});
+}
+
+void SubMesh::clean_up() {
+	if (binded.is_some()) {
+		Binded b = binded.take().unwrap_unchecked();
+		b.vertex_buffer->Release();
+		b.index_buffer->Release();
+	}
+}
+
+void Mesh::bind(ID3D11Device* device) {
+	for (SubMesh& s : submeshes) {
+		s.bind(device);
+	}
+}
+
+Mesh Mesh::default_asset() {
+	return Mesh();
+}
+
+void Mesh::clean_up() {
+	for (SubMesh& submesh : submeshes) {
+		submesh.clean_up();
+	}
 }

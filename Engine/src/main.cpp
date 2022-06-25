@@ -4,6 +4,8 @@
 #include<Windows.h>
 #include<ui/ui.h>
 #include<math/consts.h>
+#include<renderer/transform.h>
+#include<assets/shape.h>
 
 
 struct Console {
@@ -43,8 +45,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	run_tests();
 #endif
 
-	World world;
-	world.camera = Camera::perspective(Transform::from_translation(Vec3<f32>(5.0, 5.0, 5.0)).looking_at(Vec3<f32>::zero(), Vec3<f32>::unit_y()), 60.0 * F32::TO_RAD);
+	AssetHandler assets {};
+
+	auto cube_mesh = assets.insert(unit_cube());
+
+	auto cam = Camera::perspective(Transform::from_translation(Vec3<f32>(5.0, 5.0, 5.0)).looking_at(Vec3<f32>::zero()), 120.0f * F32::TO_RAD);
+	auto dir_light = DirLight();
+	World world(cam, dir_light);
+	world.add(Object(Transform(), cube_mesh, Rgb(0.5, 0.5, 0.0)));
 
 	Window* window = create_window(hInstance, 600, 600, nCmdShow).unwrap();
 
@@ -52,7 +60,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	window->set_renderer(&renderer);
 
 	setup_ui(window, renderer);
-
 	MSG msg = { };
 	auto last_frame = std::chrono::high_resolution_clock::now();
 	while (!(GetKeyState(VK_ESCAPE) & 0x8000) && msg.message != WM_QUIT) {
@@ -60,7 +67,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
-			if (!handle_input(msg.hwnd, msg.message, msg.wParam, msg.lParam)) {
+			if (!ui_handle_input(msg.hwnd, msg.message, msg.wParam, msg.lParam)) {
 				switch (msg.message) {
 				case WM_DESTROY:
 					PostQuitMessage(0);
@@ -73,11 +80,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		float dt = std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(now - last_frame).count();
 		last_frame = now;
 
-		renderer.begin_draw();
-		update_ui(window);
+		renderer.begin_draw(world, assets);
+
+		renderer.draw_first_pass(window, world, assets);
+
+		update_ui(window, world);
 		renderer.present();
 	}
 	clean_up_ui();
+	assets.clean_up();
 	renderer.clean_up();
 	delete window;
 

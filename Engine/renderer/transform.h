@@ -8,11 +8,11 @@ struct Transform {
 	Transform&& with_translation(Vec3<f32> trans);
 	Transform&& with_scale(Vec3<f32> scale);
 	Transform&& with_rotation(Quat<f32> rot);
-	Transform&& looking_at(Vec3<f32> point, Vec3<f32> up);
+	Transform&& looking_at(Vec3<f32> point);
 
-	Vec3<f32> translation;
-	Vec3<f32> scale;
-	Quat<f32> rotation;
+	Vec3<f32> translation { 0.0, 0.0, 0.0 };
+	Vec3<f32> scale { 1.0, 1.0, 1.0 };
+	Quat<f32> rotation { 0.0, 0.0, 0.0, 1.0 };
 
 	Mat4<f32> get_mat() const;
 };

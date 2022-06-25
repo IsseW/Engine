@@ -136,6 +136,24 @@ Result<RendererCtx, RenderCreateError> create_renderer_ctx(const Window* window)
 	});
 }
 
+template<typename T>
+Result<Uniform<T>, RenderCreateError> create_uniform(RendererCtx& ctx) requires (sizeof(T) % 4 == 0) {
+	D3D11_BUFFER_DESC desc;
+	desc.ByteWidth = sizeof(T);
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
+
+	ID3D11Buffer* buffer;
+	if (FAILED(ctx.device->CreateBuffer(&desc, nullptr, &buffer))) {
+		return FailedBufferCreation;
+	}
+
+	return ok<Uniform<T>, RenderCreateError>(Uniform<T> { buffer });
+}
+
 Result<ObjectRenderer, RenderCreateError> create_object_renderer(RendererCtx& ctx)
 {
 	std::string vs_data;
@@ -182,8 +200,8 @@ Result<ObjectRenderer, RenderCreateError> create_object_renderer(RendererCtx& ct
 	D3D11_INPUT_ELEMENT_DESC input_desc[3] =
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
 	ID3D11InputLayout* layout;
@@ -192,29 +210,15 @@ Result<ObjectRenderer, RenderCreateError> create_object_renderer(RendererCtx& ct
 		return FailedLayoutCreation;
 	}
 
+	Uniform<ObjectRenderer::Locals> locals;
+	TRY(locals, create_uniform<ObjectRenderer::Locals>(ctx));
+
 	return ok<ObjectRenderer, RenderCreateError>(ObjectRenderer {
 			vs,
 			ps,
 			layout,
+			locals
 		});
-}
-
-template<typename T>
-Result<Uniform<T>, RenderCreateError> create_uniform(RendererCtx& ctx) requires (sizeof(T) % 4 == 0) {
-	D3D11_BUFFER_DESC desc;
-	desc.ByteWidth = sizeof(T);
-	desc.Usage = D3D11_USAGE_DYNAMIC;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	desc.MiscFlags = 0;
-	desc.StructureByteStride = 0;
-
-	ID3D11Buffer* buffer;
-	if (FAILED(ctx.device->CreateBuffer(&desc, nullptr, &buffer))) {
-		return FailedBufferCreation;
-	}
-
-	return ok<Uniform<T>, RenderCreateError>(Uniform<T> { buffer });
 }
 
 Result<FirstPass, RenderCreateError> create_first_pass(RendererCtx& ctx) {

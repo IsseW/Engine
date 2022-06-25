@@ -1,34 +1,31 @@
 struct VertexShaderInput
 {
     float3 position : POSITION;
-    float2 uv : TEXCOORD0;
     float3 normal : NORMAL0;
+    float2 uv : TEXCOORD0;
 };
 
 struct VertexShaderOutput
 {
     float4 position : SV_POSITION;
-    float2 uv : TEXCOORD0;
-    float3 normal : TEXCOORD1;
-    float3 view_direction : TEXCOORD2;
-    float3 light_dir: TEXCOORD3;
+    float3 normal : TEXCOORD0;
+    float2 uv : TEXCOORD1;
 };
 
-struct Light {
-    float3 pos;
-    float strength;
-};
-
-cbuffer VS_CONSTANT_BUFFER : register(b0) {
-    float4x4 world_matrix;
+cbuffer GLOBALS : register(b0) {
     float4x4 view_matrix;
-    float4x4 projection_matrix;
-    Light light;
+    float4x4 proj_matrix;
 };
+
+cbuffer LOCALS : register(b1) {
+    float4x4 world_matrix;
+    float4 object_color;
+};
+
 
 float4 transform_to_camera(float4 vec) {
     float4 view = mul(view_matrix, vec);
-    float4 projected = mul(projection_matrix, view);
+    float4 projected = mul(proj_matrix, view);
     return projected;
 }
 
@@ -43,7 +40,5 @@ VertexShaderOutput main(VertexShaderInput input)
     output.position = transform(float4(input.position, 1.0));
     output.normal = normalize(transform(float4(input.normal, 0.0)).xyz);
     output.uv = input.uv;
-    output.view_direction = normalize(-output.position.xyz);
-    output.light_dir = normalize(output.position - transform_to_camera(float4(light.pos, 1.0)));
     return output;
 }

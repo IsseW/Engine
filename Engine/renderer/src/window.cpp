@@ -29,7 +29,7 @@ void Window::set_renderer(Renderer* renderer) {
 
 LRESULT CALLBACK window_proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	if (handle_input(hWnd, message, wParam, lParam)) {
+	if (ui_handle_input(hWnd, message, wParam, lParam)) {
 		return true;
 	}
 	switch (message)

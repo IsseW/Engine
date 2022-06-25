@@ -19,15 +19,22 @@ struct PointLight {
 };
 
 struct Object {
+	Object(Transform transform, Id<Mesh> mesh, Rgb color);
 	Transform transform;
 	Id<Mesh> mesh;
+	Rgb color;
+	Option<Id<Image>> image;
 };
 
 struct World {
+	World() = delete;
+	World(Camera camera, DirLight light);
+
+	Id<Object> add(Object&& object);
+	Id<PointLight> add(PointLight&& object);
+
 	Camera camera;
-
 	DirLight dir_light;
-	Vec<PointLight> point_lights;
-
-	Vec<Object> objects;
+	Depot<PointLight> point_lights;
+	Depot<Object> objects;
 };

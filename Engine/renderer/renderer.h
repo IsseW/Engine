@@ -4,12 +4,6 @@
 #include<rstd/result.h> 
 #include"world.h"
 
-struct ObjectRenderer {
-	ID3D11VertexShader* vs;
-	ID3D11PixelShader* ps;
-	ID3D11InputLayout* layout;
-};
-
 struct Globals {
 	static Globals from_world(const World& world, u32 width, u32 height);
 
@@ -35,6 +29,21 @@ struct Uniform {
 		buffer->Release();
 	}
 };
+
+struct ObjectRenderer {
+	struct Locals {
+		Mat4<f32> world_matrix;
+		Vec4<f32> color;
+
+		static Option<Locals> from_object(const Object& obj);
+	};
+	ID3D11VertexShader* vs;
+	ID3D11PixelShader* ps;
+	ID3D11InputLayout* layout;
+
+	Uniform<Locals> locals;
+};
+
 
 struct FirstPass {
 	ObjectRenderer object_renderer;
@@ -73,7 +82,7 @@ struct Renderer {
 	FirstPass first_pass;
 
 	void clean_up();
-	void begin_draw();
+	void begin_draw(const World& world, AssetHandler& assets);
 	void draw_first_pass(const Window* window, const World& world, const AssetHandler& assets);
 	void resize(u32 width, u32 height);
 	void present();

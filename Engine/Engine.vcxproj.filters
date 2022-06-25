@@ -66,13 +66,19 @@
     <ClCompile Include="ui\ui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="assets\loaders.cpp">
+    <ClCompile Include="assets\src\loaders.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="renderer\src\window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="renderer\src\transform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\src\world.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="assets\src\shape.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -88,9 +94,6 @@
     </ClInclude>
     <ClInclude Include="renderer\pipelines\object.h">
       <Filter>Header Files\Pipelines</Filter>
-    </ClInclude>
-    <ClInclude Include="assets.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="rstd\result.h">
       <Filter>Header Files\rstd</Filter>
@@ -165,6 +168,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="renderer\world.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="assets\shape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

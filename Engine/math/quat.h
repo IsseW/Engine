@@ -4,15 +4,15 @@
 namespace math {
 	template<typename T>
 	struct Quat {
-		constexpr Quat() : _v() {}
+		constexpr Quat() : _v(Vec<T, 4>::unit_w()) {}
 		constexpr Quat(const T& v) : _v(v) {}
 		constexpr Quat(const Vec4<T>& v) : _v(v) {}
 		constexpr Quat(T x, T y, T z, T w) : _v(x, y, z, w) {}
 
-		constexpr static Quat<f64> from_euler(Vec3<f64> euler) {
-			euler /= 2.0;
-			auto c = euler.map<f64>([](f64 e) { return cos(e); });
-			auto s = euler.map<f64>([](f64 e) { return sin(e); });
+		constexpr static Quat from_euler(Vec3<T> euler) {
+			euler /= (T)2;
+			auto c = euler.map<T>([](T e) { return std::cos(e); });
+			auto s = euler.map<T>([](T e) { return std::sin(e); });
 
 			return  Quat{
 				s.z * c.y * c.x - c.z * s.y * s.x,
@@ -20,6 +20,22 @@ namespace math {
 				c.z * c.y * s.x - s.z * s.y * c.x,
 				c.z * c.y * c.x + s.z * s.y * s.x,
 			};
+		}
+
+		constexpr static Quat<T> angle_axis(Vec3<T> axis, T angle) {
+			T s = std::sin(angle / (T)2);
+			Vec3<T> u = axis.normalized();
+			return Quat(u.x * s, u.y * s, u.z * s, std::cos(angle / (T)2));
+		}
+
+		constexpr static Quat<T> looking_dir(Vec3<T> dir, Vec3<T> forward, Vec3<T> up) {
+			Vec3<T> rot_axis = forward.cross(dir).normalized();
+			if (rot_axis.length_sqr() == 0.0f) {
+				rot_axis = up;
+			}
+			T dot = forward.dot(dir);
+			T angle = std::acos(dot);
+			return angle_axis(rot_axis, angle);
 		}
 
 		constexpr void normalize() {

@@ -5,13 +5,30 @@
 
 template<typename T>
 struct Id {
+	Id() = delete;
+	Id(const Id& id) = default;
 	Id(u32 idx, u32 gen) : _idx(idx), _gen(gen) {}
 	u32 idx() const { return _idx; }
 	u32 gen() const { return _gen; }
+
+	bool operator==(const Id& other) const {
+		return idx() == other.idx() && gen() == other.gen();
+	}
+	bool operator!=(const Id& other) const {
+		return idx() != other.idx() || gen() != other.gen();
+	}
 private:
 	u32 _idx;
 	u32 _gen;
 };
+
+template<typename T>
+struct std::hash<Id<T>> {
+	usize operator()(const Id<T>& k) const {
+		return (std::hash<u32>{}(k.idx())) ^ (std::hash<u32>{}(k.gen()));
+	}
+};
+
 template<typename T>
 struct Depot {
 	Depot() : _entries(), _free_entries() {}
@@ -23,17 +40,6 @@ struct Depot {
 			.unwrap_or(std::move(false));
 	}
 
-	Option<const T*> get(Id<T> id) const {
-		auto entry = _entries.get(id.idx());
-		if (entry.is_some()) {
-			const Entry* e = entry.unwrap_unchecked();
-			if (e->gen == id.gen()) {
-				return e->item.as_ptr();
-			}
-		}
-		return none<const T*>();
-	}
-
 	Option<T*> get(Id<T> id) {
 		auto entry = _entries.get(id.idx());
 		if (entry.is_some()) {
@@ -43,6 +49,17 @@ struct Depot {
 			}
 		}
 		return none<T*>();
+	}
+
+	Option<const T*> get(Id<T> id) const {
+		auto entry = _entries.get(id.idx());
+		if (entry.is_some()) {
+			const Entry* e = entry.unwrap_unchecked();
+			if (e->gen == id.gen()) {
+				return e->item.as_ptr();
+			}
+		}
+		return none<const T*>();
 	}
 
 	Id<T> insert(T&& item) {
@@ -77,11 +94,12 @@ struct Depot {
 			}));
 	}
 
+
 	template<typename F>
-	void values(F f) const {
-		for (const Entry& e : _entries) {
-			if (e.item.is_some()) {
-				f(e.item.as_ref().unwrap_unchecked());
+	void iter(F f) {
+		for (u32 i = 0; i < _entries.len(); ++i) {
+			if (_entries[i].item.is_some()) {
+				f(Id<T>(i, _entries[i].gen), _entries[i].item.as_ptr().unwrap_unchecked());
 			}
 		}
 	}
@@ -94,6 +112,16 @@ struct Depot {
 			}
 		}
 	}
+
+	template<typename F>
+	void values(F f) const {
+		for (const Entry& e : _entries) {
+			if (e.item.is_some()) {
+				f(e.item.as_ptr().unwrap_unchecked());
+			}
+		}
+	}
+
 	
 private:
 	struct Entry {

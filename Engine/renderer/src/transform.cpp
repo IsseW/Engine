@@ -28,8 +28,9 @@ Transform&& Transform::with_rotation(Quat<f32> rot) {
 	rotation = rot;
 	return std::move(*this);
 }
-Transform&& Transform::looking_at(Vec3<f32> point, Vec3<f32> up) {
-	TODO
+Transform&& Transform::looking_at(Vec3<f32> point) {
+	Vec3<f32> dir = (point - translation).normalized();
+	return this->with_rotation(Quat<f32>::looking_dir(dir, Vec3<f32>::unit_z(), Vec3<f32>::unit_y()));
 }
 
 Mat4<f32> Transform::get_mat() const {
@@ -85,6 +86,7 @@ Mat4<f32> Camera::get_proj(u32 width, u32 height) const {
 		f32 bottom = -top;
 		f32 right = top * ratio;
 		f32 left = -right;
+		return create_persp_proj(left, right, bottom, top, _near, _far);
 	}
 	else {
 		f32 top = _size;

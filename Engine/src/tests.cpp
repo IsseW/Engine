@@ -25,6 +25,12 @@ namespace math {
 		}
 	}
 
+	void test_vec() {
+		Vec3<i32> t(1, 2, 3);
+		
+		ASSERT_EQ(t.with_w(4), Vec4<i32>(1, 2, 3, 4));
+	}
+
 	void test_matrix() {
 		auto mat = Mat3<f64>(3.0, 2.0, 1.0, 1.0, 2.0, 3.0, 3.0, 1.0, 2.0);
 		test_inversion(mat);
@@ -38,6 +44,7 @@ namespace math {
 	}
 
 	void test() {
+		test_vec();
 		test_matrix();
 	}
 }
@@ -55,7 +62,7 @@ namespace files {
 
 void run_tests() {
 	math::test();
-	files::test();
+	// files::test();
 	std::cout << "All tests passed." << std::endl;
 }
 
