@@ -4,7 +4,6 @@
 #include<iostream>
 #include<memory>
 #include<renderer/window.h>
-#include<renderer/rtv.h>
 #include<fstream>
 
 struct DeviceCreationRes {
@@ -228,8 +227,8 @@ Result<FirstPass, RenderCreateError> create_first_pass(RendererCtx& ctx) {
 	Uniform<Globals> globals;
 	TRY(globals, create_uniform<Globals>(ctx));
 	// Bind globals
-	ctx.context->VSSetConstantBuffers(0, 1, &globals.buffer);
-	ctx.context->PSSetConstantBuffers(0, 1, &globals.buffer);
+	//ctx.context->VSSetConstantBuffers(0, 1, &globals.buffer);
+	//ctx.context->PSSetConstantBuffers(0, 1, &globals.buffer);
 	
 	return ok<FirstPass, RenderCreateError>(FirstPass{
 			object_renderer,
@@ -248,4 +247,25 @@ Result<Renderer, RenderCreateError> create_renderer(const Window* window) {
 		ctx,
 		first_pass,
 	});
+}
+
+Result<ID3D11RenderTargetView*, RenderCreateError> create_render_target_view(ID3D11Device* device, IDXGISwapChain* swap_chain)
+{
+	// get the address of the back buffer
+	ID3D11Texture2D* backBuffer = nullptr;
+	if (FAILED(swap_chain->GetBuffer(0, IID_PPV_ARGS(&backBuffer))))
+	{
+		return err<ID3D11RenderTargetView*, RenderCreateError>(FailedBackBuffer);
+	}
+	ID3D11RenderTargetView* rtv;
+	// use the back buffer address to create the render target
+	// null as description to base it on the backbuffers values
+	HRESULT hr = device->CreateRenderTargetView(backBuffer, NULL, &rtv);
+	backBuffer->Release();
+	if (FAILED(hr)) {
+		return err<ID3D11RenderTargetView*, RenderCreateError>(FailedRTVCreation);
+	}
+	else {
+		return ok<ID3D11RenderTargetView*, RenderCreateError>(rtv);
+	}
 }

@@ -89,3 +89,6 @@ struct Renderer {
 };
 
 Result<Renderer, RenderCreateError> create_renderer(const Window* window);
+
+
+Result<ID3D11RenderTargetView*, RenderCreateError> create_render_target_view(ID3D11Device* device, IDXGISwapChain* swap_chain);

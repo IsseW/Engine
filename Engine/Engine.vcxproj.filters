@@ -27,7 +27,7 @@
     <ClCompile Include="src\PipelineHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="renderer\src\setup_renderer.cpp">
+    <ClCompile Include="renderer\src\setup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp">
@@ -159,9 +159,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="rstd\depot.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\rtv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="renderer\window.h">
