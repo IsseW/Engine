@@ -13,17 +13,11 @@ struct Vec {
 			this->_internal.push_back(elem);
 		}
 	}
-
-	Vec& operator=(const Vec& other) {
-		_internal = other._internal;
-		return *this;
-	}
-	Vec& operator=(Vec&& other) {
-		_internal = std::move(other._internal);
-		return *this;
-	}
-
 	usize len() const { return _internal.size(); }
+
+	void clear() {
+		this->_internal.clear();
+	}
 
 	bool is_empty() { return len() == 0; }
 

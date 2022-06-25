@@ -160,15 +160,15 @@ struct std::hash<IndexTuple> {
 };
 
 Mesh Mesh::load(const std::string& path) {
-	/*
 	auto file = std::ifstream{path};
 	std::string line;
 	Vec<SubMesh> submeshes;
 	Vec<Vec3<f32>> vertices;
 	Vec<Vec3<f32>> normals;
-	Vec<Vec3<f32>> uvs;
-	std::unordered_map<IndexTuple, Vertex> submesh_vertices;
-	Vec<IndexTuple> indices;
+	Vec<Vec2<f32>> uvs;
+	std::unordered_map<IndexTuple, usize> submesh_vertices;
+	Vec<Vertex> verts;
+	Vec<u16> indices;
 
 	while (std::getline(file, line)) {
 		auto split = split_string(std::move(line), ' ');
@@ -184,13 +184,12 @@ Mesh Mesh::load(const std::string& path) {
 			vertices.push(Vec3<f32>{a, b, c});
 		}
 		else if (first == "vt") {
-			if (split.len() != 4) {
+			if (split.len() != 3) {
 				PANIC("");
 			}
 			auto a = std::stof(split[1]);
 			auto b = std::stof(split[2]);
-			auto c = std::stof(split[3]);
-			uvs.push(Vec3<f32>{a, b, c});
+			uvs.push(Vec2<f32>{a, b});
 		}
 		else if (first == "vn") {
 			if (split.len() != 4) {
@@ -217,79 +216,46 @@ Mesh Mesh::load(const std::string& path) {
 			IndexTuple a_tuple{(u16)std::stoi(a_split[0]), (u16)std::stoi(a_split[1]), (u16)std::stoi(a_split[2])};
 			IndexTuple b_tuple{(u16)std::stoi(b_split[0]), (u16)std::stoi(b_split[1]), (u16)std::stoi(b_split[2])};
 			IndexTuple c_tuple{(u16)std::stoi(c_split[0]), (u16)std::stoi(c_split[1]), (u16)std::stoi(c_split[2])};
-			if (submesh_vertices.contains(a_tuple)) {
-				indices.push(std::move(a_tuple));
-			}
-			else {
-				auto vertex = vertices[a_tuple.a];
-				auto normal = normals[a_tuple.b];
-				auto texture = uvs[a_tuple.c];
-				auto vert = Vertex{
-					vertex,
-					normal,
-					texture,
-				};
-				submesh_vertices.insert({ std::move( a_tuple), std::move(vert)});
-				indices.push(std::move(a_tuple));
-			}
-			if (submesh_vertices.contains(b_tuple)) {
-				indices.push(std::move(b_tuple));
-			}
-			else {
-				auto vertex = vertices[b_tuple.a];
-				auto normal = normals[b_tuple.b];
-				auto texture = uvs[b_tuple.c];
-				auto vert = Vertex{
-					vertex,
-					normal,
-					texture,
-				};
-				submesh_vertices.insert({ std::move(b_tuple), std::move(vert) });
-				indices.push(std::move(b_tuple));
-			}
-			if (submesh_vertices.contains(c_tuple)) {
-				indices.push(std::move(c_tuple));
-			}
-			else {
-				auto vertex = vertices[c_tuple.a];
-				auto normal = normals[c_tuple.b];
-				auto texture = uvs[c_tuple.c];
-				auto vert = Vertex{
-					vertex,
-					normal,
-					texture,
-				};
-				submesh_vertices.insert({ std::move(c_tuple), std::move(vert) });
-				indices.push(std::move(c_tuple));
-			}
+			auto f = [&](IndexTuple tuple) {
+				if (submesh_vertices.contains(tuple)) {
+					indices.push(std::move(submesh_vertices[tuple]));
+				}
+				else {
+					auto vertex = vertices[tuple.a];
+					auto normal = normals[tuple.b];
+					auto texture = uvs[a_tuple.c];
+					auto vert = Vertex{
+						vertex,
+						normal,
+						texture,
+					};
+					auto len = vertices.len();
+					submesh_vertices.insert({ std::move(tuple), len });
+					indices.push(std::move(len));
+					verts.push(std::move(vert));
+				}
+			};
+			f(a_tuple);
+			f(b_tuple);
+			f(c_tuple);
 		}
 		else if (first == "o") {
-			//if (index_count != 0 && vertices.len() != 0) {
-			//	auto vec = Vec<Vertex>{ Vertex{0,0,0}, index_count };
-			//	//for (auto [vertex, index] : submesh_vertices) {
-			//	//	vec[index] = vertex;
-			//	//}
-			//	submeshes.push(SubMesh{
-			//		std::move(vec), std::move(indices)
-			//	});
-			//	vertices = Vec<Vec3<f32>>{};
-			//	normals = Vec<Vec3<f32>>{};
-			//	uvs = Vec<Vec3<f32>>{};
-			//	submesh_vertices = std::unordered_map<IndexTuple, Vertex>{};
-			//	indices = Vec<u16>{};
-			//	index_count = 0;
-			//}
-			//else {
-			//	PANIC("");
-			//}
+			if (submesh_vertices.size() != 0) {
+				submeshes.push(SubMesh{
+					std::move(verts), std::move(indices)
+				});
+				vertices.clear();
+				normals.clear();
+				uvs.clear();
+				submesh_vertices.clear();
+				indices.clear();
+			}
 		}
 	}
 	file.close();
 	return Mesh{
 		submeshes
 	};
-	*/
-	TODO;
 }
 
 void SubMesh::bind(ID3D11Device* device) {
