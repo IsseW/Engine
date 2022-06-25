@@ -181,5 +181,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+    <None Include="..\..\..\..\Documents\u.wavefront" />
   </ItemGroup>
 </Project>

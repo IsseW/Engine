@@ -75,17 +75,17 @@ struct Vec {
 		return _internal[i];
 	}
 
-	auto begin() {
-		return _internal.begin();
+	T* begin() {
+		return _internal.data();
 	}
-	auto begin() const {
-		return _internal.begin();
+	const T* begin() const {
+		return _internal.data();
 	}
-	auto end() {
-		return _internal.end();
+	T* end() {
+		return _internal.data() + len();
 	}
-	auto end() const {
-		return _internal.end();
+	const T* end() const {
+		return _internal.data() + len();
 	}
 
 	T* raw() {

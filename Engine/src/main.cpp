@@ -48,11 +48,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	AssetHandler assets {};
 
 	auto cube_mesh = assets.insert(unit_cube());
+	auto loaded_mesh = assets.load<Mesh>("resources/u.wavefront");
 
 	auto cam = Camera::perspective(Transform::from_translation(Vec3<f32>(5.0, 5.0, 5.0)).looking_at(Vec3<f32>::zero()), 120.0f * F32::TO_RAD);
 	auto dir_light = DirLight();
 	World world(cam, dir_light);
 	world.add(Object(Transform(), cube_mesh, Rgb(0.5, 0.5, 0.0)));
+	world.add(Object(Transform(), cube_mesh, Rgb(0.5, 0.5, 0.0)));
+	world.add(Object(Transform(), loaded_mesh, Rgb(0.5, 0.5, 0.0)));
 
 	Window* window = create_window(hInstance, 600, 600, nCmdShow).unwrap();
 

@@ -55,7 +55,7 @@ void Renderer::begin_draw(const World& world, AssetHandler& assets) {
 	// Do some setup and bind required resource before we draw.
 	world.objects.values([&](const Object* obj) {
 		assets.get(obj->mesh).unwrap()->bind(ctx.device);
-		auto img = obj->image;
+		Option<Id<Image>> img = obj->image;
 		img.map<char>([&](Id<Image> img) { assets.get(img).unwrap()->bind(ctx.device); return 0; });
 	});
 	
@@ -108,7 +108,7 @@ void Renderer::draw_first_pass(const Window* window, const World& world, const A
 		// ctx.context->PSSetSamplers(0, 1, &binded->sampler_state);
 
 		const Mesh* mesh = assets.get(obj->mesh).unwrap();
-		for (const SubMesh& sub_mesh : mesh->submeshes) {                                                                                                                                                                                                                                             
+		for (const SubMesh& sub_mesh : mesh->submeshes) {
 			if (sub_mesh.binded.is_none()) {
 				continue;
 			}
