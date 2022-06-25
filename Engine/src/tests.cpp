@@ -62,7 +62,7 @@ namespace files {
 
 void run_tests() {
 	math::test();
-	// files::test();
+	files::test();
 	std::cout << "All tests passed." << std::endl;
 }
 

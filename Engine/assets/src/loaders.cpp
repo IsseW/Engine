@@ -221,15 +221,15 @@ Mesh Mesh::load(const std::string& path) {
 					indices.push(std::move(submesh_vertices[tuple]));
 				}
 				else {
-					auto vertex = vertices[tuple.a];
-					auto normal = normals[tuple.b];
-					auto texture = uvs[a_tuple.c];
+					auto vertex = vertices[tuple.a - 1];
+					auto texture = uvs[tuple.b - 1];
+					auto normal = normals[tuple.c - 1];
 					auto vert = Vertex{
 						vertex,
 						normal,
 						texture,
 					};
-					auto len = vertices.len();
+					auto len = verts.len();
 					submesh_vertices.insert({ std::move(tuple), len });
 					indices.push(std::move(len));
 					verts.push(std::move(vert));
@@ -244,13 +244,9 @@ Mesh Mesh::load(const std::string& path) {
 				submeshes.push(SubMesh{
 					std::move(verts), std::move(indices)
 				});
-				vertices.clear();
-				normals.clear();
-				uvs.clear();
-				submesh_vertices.clear();
-				indices.clear();
+				break;
 			}
-		}
+		} 
 	}
 	file.close();
 	return Mesh{
