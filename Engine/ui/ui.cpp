@@ -47,10 +47,11 @@ void update_ui(const Window* window, World& world) {
 
 	ImGui::Begin("Editor", &active);
 	world.objects.iter([&](Id<Object> id, Object* obj) {
+		std::string id_s = std::to_string(id.gen());
+		id_s += ".";
+		id_s += std::to_string(id.idx());
 		std::string s("Object.");
-		s += std::to_string(id.gen());
-		s += ".";
-		s += std::to_string(id.idx());
+		s += id_s;
 		static std::unordered_set<Id<Object>> objects;
 		bool open = objects.contains(id);
 		ImGui::BeginGroup();
@@ -65,9 +66,15 @@ void update_ui(const Window* window, World& world) {
 		}
 		if (open) {
 			ImGui::BeginGroup();
-			ImGui::DragFloat3("Translation", obj->transform.translation.data());
-			ImGui::DragFloat3("Scale", obj->transform.scale.data());
-			ImGui::ColorEdit3("Color", obj->color.data());
+			std::string label = "Translation";
+			label += id_s;
+			ImGui::DragFloat3(label.data(), obj->transform.translation.data());
+			label = "Scale";
+			label += id_s;
+			ImGui::DragFloat3(label.data(), obj->transform.scale.data());
+			label = "Color";
+			label += id_s;
+			ImGui::ColorEdit3(label.data(), obj->color.data());
 			ImGui::EndGroup();
 		}
 		ImGui::EndGroup();

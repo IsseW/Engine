@@ -50,7 +50,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	auto cube_mesh = assets.insert(unit_cube());
 	auto loaded_mesh = assets.load<Mesh>("resources/u.wavefront");
 
-	auto cam = Camera::perspective(Transform::from_translation(Vec3<f32>(5.0, 5.0, 5.0)).looking_at(Vec3<f32>::zero()), 120.0f * F32::TO_RAD);
+	auto cam = Camera::orthographic(Transform::from_translation(Vec3<f32>(5.0, 5.0, 5.0)).looking_at(Vec3<f32>::zero()), 100.0f);
 	auto dir_light = DirLight();
 	World world(cam, dir_light);
 	world.add(Object(Transform(), cube_mesh, Rgb(0.5, 0.5, 0.0)));
