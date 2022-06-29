@@ -9,18 +9,46 @@ namespace math {
 		constexpr Quat(const Vec4<T>& v) : _v(v) {}
 		constexpr Quat(T x, T y, T z, T w) : _v(x, y, z, w) {}
 
-		constexpr static Quat from_euler(Vec3<T> euler) {
+		// yaw (z), pitch (y), roll (x)
+		static Quat from_euler(Vec3<T> euler) {
 			euler /= (T)2;
 			auto c = euler.map<T>([](T e) { return std::cos(e); });
 			auto s = euler.map<T>([](T e) { return std::sin(e); });
 
 			return  Quat{
-				s.z * c.y * c.x - c.z * s.y * s.x,
-				c.z * s.y * c.x + s.z * c.y * s.x,
-				c.z * c.y * s.x - s.z * s.y * c.x,
-				c.z * c.y * c.x + s.z * s.y * s.x,
+				s.x * c.y * c.z - c.x * s.y * s.z,
+				c.x * s.y * c.z + s.x * c.y * s.z,
+				c.x * c.y * s.z - s.x * s.y * c.z,
+				c.x * c.y * c.z + s.x * s.y * s.z,
 			};
 		}
+
+		// yaw (z), pitch (y), roll (x)
+		Vec3<T> to_euler() const {
+			Vec3<T> angles;
+			const T TWO = (T)2;
+			const T ONE = (T)1;
+			const T PI = (T)3.141592653589793238462643;
+			// roll
+			T sinr_cosp = TWO * (_v.w * _v.x + _v.y * _v.z);
+			T cosr_cosp = ONE - TWO * (_v.x * _v.x + _v.y * _v.y);
+			angles.x = std::atan2(sinr_cosp, cosr_cosp);
+
+			T sinp = TWO * (_v.w * _v.y - _v.z * _v.x);
+			if (std::abs(sinp) >= ONE) {
+				angles.y = std::copysign(PI / TWO, sinp);
+			}
+			else {
+				angles.y = std::asin(sinp);
+			}
+
+			T siny_cosp = TWO * (_v.w * _v.z + _v.x * _v.y);
+			T cosy_cosp = ONE - TWO * (_v.y * _v.y + _v.z * _v.z);
+			angles.z = std::atan2(siny_cosp, cosy_cosp);
+
+			return angles;
+		}
+
 
 		constexpr static Quat<T> angle_axis(Vec3<T> axis, T angle) {
 			T s = std::sin(angle / (T)2);
@@ -87,7 +115,7 @@ namespace math {
 			Quat c = this->operator*(p) * conjugate();
 			return c._v.xyz();
 		}
-		const Vec4<T> inner() const {
+		const Vec4<T>& inner() const {
 			return _v;
 		}
 	private:

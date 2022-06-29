@@ -38,13 +38,21 @@ namespace math {
 	f64 rand_f64() {
 		return (f64)rand() / (f64)RAND_MAX + (f64)rand() + (f64)rand() * (f64)RAND_MAX * (rand() < RAND_MAX / 2 ? -1.0 : 1.0);
 	}
+
+	template<const usize L>
+	Vec<f64, L> rand_vec() {
+		Vec<f64, L> res;
+		for (usize i = 0; i < L; ++i) {
+			res[i] = rand_f64();
+		}
+		return res;
+	}
+
 	template<const usize W, const usize H>
 	Mat<f64, W, H> rand_mat() {
 		Mat<f64, W, H> res;
 		for (usize y = 0; y < H; ++y) {
-			for (usize x = 0; x < W; ++x) {
-				res[y][x] = rand_f64();
-			}
+			res[y] = rand_vec<W>();
 		}
 		return res;
 	}
@@ -60,10 +68,6 @@ namespace math {
 			test_inversion(rand_mat<S, S>());
 		}
 	}
-
-
-
-
 
 	template<const usize W, const usize H>
 	void test_identities() {
@@ -105,9 +109,19 @@ namespace math {
 		test_inversions<4>();
 	}
 
+	void test_quat() {
+		for (usize i = 0; i < 1000; ++i) {
+			auto euler = rand_vec<3>().map<f64>([](f64 e) { return fmod(e, 90.0); });
+			auto quat = Quat<f64>::from_euler(euler * F64::TO_RAD);
+			
+			ASSERT(vfeq(euler, quat.to_euler() * F64::TO_DEG));
+		}
+	}
+
 	void test() {
 		test_vec();
 		test_matrix();
+		test_quat();
 	}
 }
 

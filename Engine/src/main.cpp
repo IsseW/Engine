@@ -57,7 +57,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	world.add(Object(Transform(), cube_mesh, Rgb(0.5, 0.0, 0.5)));
 	// world.add(Object(Transform(), loaded_mesh, Rgb(0.5, 0.5, 0.0)));
 
-	Window* window = create_window(hInstance, 600, 600, nCmdShow).unwrap();
+	Window* window = create_window(hInstance, 1600, 1600, nCmdShow).unwrap();
 
 	Renderer renderer = create_renderer(window).unwrap();
 	window->set_renderer(&renderer);
@@ -86,7 +86,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 		renderer.begin_draw(world, assets);
 
-		renderer.draw_first_pass(window, world, assets);
+		// renderer.draw_first_pass(window, world, assets);
 
 		update_ui(window, world, assets);
 		renderer.present();

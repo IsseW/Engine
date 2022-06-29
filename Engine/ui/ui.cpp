@@ -37,49 +37,69 @@ void end() {
 
 }
 
-void edit(const char* label, Vec2<f32>& v) {
-	ImGui::DragFloat2(label, v.data());
+bool edit(const char* label, Vec2<f32>& v) {
+	return ImGui::DragFloat2(label, v.data());
 }
 
-void edit(const char* label, Vec3<f32>& v) {
-	ImGui::DragFloat3(label, v.data());
+bool edit(const char* label, Vec3<f32>& v) {
+	return ImGui::DragFloat3(label, v.data());
 }
 
-void edit(const char* label, Vec4<f32>& v) {
-	ImGui::DragFloat4(label, v.data());
+bool edit(const char* label, Vec4<f32>& v) {
+	return ImGui::DragFloat4(label, v.data());
 }
 
-void edit(const char* label, Mat3<f32>& v) {
-	std::string s = label;
-	s += " row 0";
-	edit(s.data(), v[0]);
-	s = label;
-	s += " row 1";
-	edit(s.data(), v[1]);
-	s = label;
-	s += " row 2";
-	edit(s.data(), v[2]);
-}
-
-void edit(const char* label, Mat4<f32>& v) {
+bool edit(const char* label, Mat3<f32>& v) {
 	if (ImGui::CollapsingHeader(label)) {
+		bool edited = false;
 		ImGui::Indent();
 		std::string s = label;
 		s += " row 0";
-		edit(s.data(), v[0]);
+		edited |= edit(s.data(), v[0]);
 		s = label;
 		s += " row 1";
-		edit(s.data(), v[1]);
+		edited |= edit(s.data(), v[1]);
 		s = label;
 		s += " row 2";
-		edit(s.data(), v[2]);
-		s += " row 3";
-		edit(s.data(), v[3]);
+		edited |= edit(s.data(), v[2]);
 		ImGui::Unindent();
+		return edited;
 	}
+	return false;
 }
 
-void edit_vertices(Option<Mesh*> mesh, Mat4<f32> mat) {
+bool edit(const char* label, Mat4<f32>& v) {
+	if (ImGui::CollapsingHeader(label)) {
+		bool edited = false;
+		ImGui::Indent();
+		std::string s = label;
+		s += " row 0";
+		edited |= edit(s.data(), v[0]);
+		s = label;
+		s += " row 1";
+		edited |= edit(s.data(), v[1]);
+		s = label;
+		s += " row 2";
+		edited |= edit(s.data(), v[2]);
+		s += " row 3";
+		edited |= edit(s.data(), v[3]);
+		ImGui::Unindent();
+		return edited;
+	}
+	return false;
+}
+
+bool edit(const char* label, Quat<f32>& quat) {
+	auto euler = quat.to_euler() * F32::TO_DEG;
+	if (edit("Rotation", euler)) {
+		quat = Quat<f32>::from_euler(euler * F32::TO_RAD);
+		return true;
+	}
+	return false;
+}
+
+bool edit_vertices(Option<Mesh*> mesh, Mat4<f32> mat) {
+	bool edited = false;
 	ImGui::Indent();
 	mesh.then_do([&](Mesh* mesh) {
 		for (usize i = 0; i < mesh->submeshes.len(); ++i) {
@@ -88,13 +108,14 @@ void edit_vertices(Option<Mesh*> mesh, Mat4<f32> mat) {
 			for (usize j = 0; j < vertices.len(); ++j) {
 				ImGui::PushID(j);
 				auto t = mat.transform_point(vertices[j].v);
-				edit("vertex", t);
+				edited |= edit("vertex", t);
 				ImGui::PopID();
 			}
 			ImGui::PopID();
 		}
 	});
 	ImGui::Unindent();
+	return edited;
 }
 
 void update_ui(const Window* window, World& world, AssetHandler& assets) {
@@ -116,7 +137,11 @@ void update_ui(const Window* window, World& world, AssetHandler& assets) {
 
 	if (ImGui::CollapsingHeader("Camera")) {
 		ImGui::Indent();
-		ImGui::DragFloat3("Camera Pos", world.camera.transform.translation.data());
+		edit("Position", world.camera.transform.translation);
+		edit("Rotation", world.camera.transform.rotation);
+
+		// UB
+		ImGui::DragFloat2("near, far", &world.camera.cam_near);
 
 		ImGui::Checkbox("Perspective", &world.camera.is_perspective);
 
@@ -154,6 +179,9 @@ void update_ui(const Window* window, World& world, AssetHandler& assets) {
 				ImGui::Indent();
 				edit("Trans", obj->transform.translation);
 				edit("Scale", obj->transform.scale);
+				edit("Rotation", obj->transform.rotation);
+
+
 				ImGui::ColorEdit3("Color", obj->color.data());
 
 				if (ImGui::CollapsingHeader("Camera Relative")) {
