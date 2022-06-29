@@ -12,25 +12,40 @@ namespace math {
 			set_all(args...);
 		}
 
-		const Vec<Vec<T, H>, W>& rows() const {
+		static constexpr Mat identity() {
+			Mat res;
+			for (usize i = 0; i < W && i < H; ++i) {
+				res[i][i] = T{ 1 };
+			}
+			return res;
+		}
+
+		const Vec<Vec<T, W>, H>& rows() const {
 			return _rows;
 		}
 
 		constexpr Vec<T, W> row(const usize& y) const {
 			return _rows[y];
 		}
-		constexpr Vec<T, W> col(const usize& x) const {
-			Vec<T, W> col{};
-			for (usize y = 0; y < W; ++y) {
+		constexpr Vec<T, H> col(const usize& x) const {
+			Vec<T, H> col{};
+			for (usize y = 0; y < H; ++y) {
 				col[y] = _rows[y][x];
 			}
 			return col;
 		}
 
-		Vec<T, H>& operator[](usize i) {
+		Vec<T, W - 1> transform_point(Vec<T, W - 1> p) const requires(W == H) {
+			return Vec<T, W - 1>::from_higher(this->operator*(p.with<W - 1>(T{ 1 })));
+		}
+		Vec<T, W - 1> transform_dir(Vec<T, W - 1> p) const requires(W == H) {
+			return Vec<T, W - 1>::from_higher(this->operator*(p.with<W - 1>(T{})));
+		}
+
+		Vec<T, W>& operator[](usize i) {
 			return _rows[i];
 		}
-		const Vec<T, H>& operator[](usize i) const {
+		const Vec<T, W>& operator[](usize i) const {
 			return _rows[i];
 		}
 
@@ -250,8 +265,8 @@ namespace math {
 		constexpr T TWO = (T)2;
 		return Mat4<T>(
 			s.x * r[0][0], s.y * r[0][1], s.z * r[0][2], t.x,
-			s.x * r[1][0], s.y * r[1][1], s.z * r[1][2], t.x,
-			s.x * r[2][0], s.y * r[2][1], s.z * r[2][2], t.x,
+			s.x * r[1][0], s.y * r[1][1], s.z * r[1][2], t.y,
+			s.x * r[2][0], s.y * r[2][1], s.z * r[2][2], t.z,
 			ZERO, ZERO, ZERO, ONE
 		);
 	}

@@ -37,7 +37,7 @@ float4 transform(float4 vec) {
 VertexShaderOutput main(VertexShaderInput input)
 {
     VertexShaderOutput output;
-    output.position = float4(input.position, 1.0);// transform(float4(input.position, 1.0));
+    output.position =  transform(float4(input.position, 1.0));
     output.normal = normalize(transform(float4(input.normal, 0.0)).xyz);
     output.uv = input.uv;
     return output;

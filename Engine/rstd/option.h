@@ -129,6 +129,12 @@ struct Option {
 		}
 		return Option<const T*>::none();
 	}
+	template<typename F>
+	void then_do(F func) requires std::movable<T> {
+		if (_is_some) {
+			func(take().unwrap_unchecked());
+		}
+	}
 	
 	template<typename U, typename F>
 	Option<U> map(F map) requires std::movable<T> {

@@ -33,6 +33,8 @@ struct World {
 	Id<Object> add(Object&& object);
 	Id<PointLight> add(PointLight&& object);
 
+	void update(f32 dt);
+
 	Camera camera;
 	DirLight dir_light;
 	Depot<PointLight> point_lights;

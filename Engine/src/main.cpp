@@ -50,12 +50,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	auto cube_mesh = assets.insert(unit_cube());
 	auto loaded_mesh = assets.load<Mesh>("resources/u.wavefront");
 
-	auto cam = Camera::orthographic(Transform::from_translation(Vec3<f32>(5.0, 5.0, 5.0)).looking_at(Vec3<f32>::zero()), 100.0f);
+	auto cam = Camera::perspective(Transform::from_translation(Vec3<f32>(5.0, 0.0, 0.0)).looking_at(Vec3<f32>::unit_y()), 60.0f * F32::TO_RAD);
 	auto dir_light = DirLight();
 	World world(cam, dir_light);
 	world.add(Object(Transform(), cube_mesh, Rgb(0.5, 0.5, 0.0)));
-	world.add(Object(Transform(), cube_mesh, Rgb(0.5, 0.5, 0.0)));
-	world.add(Object(Transform(), loaded_mesh, Rgb(0.5, 0.5, 0.0)));
+	world.add(Object(Transform(), cube_mesh, Rgb(0.5, 0.0, 0.5)));
+	// world.add(Object(Transform(), loaded_mesh, Rgb(0.5, 0.5, 0.0)));
 
 	Window* window = create_window(hInstance, 600, 600, nCmdShow).unwrap();
 
@@ -81,13 +81,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			} 
 		}
 		float dt = std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(now - last_frame).count();
+		// world.update(dt);
 		last_frame = now;
 
 		renderer.begin_draw(world, assets);
 
 		renderer.draw_first_pass(window, world, assets);
 
-		update_ui(window, world);
+		update_ui(window, world, assets);
 		renderer.present();
 	}
 	clean_up_ui();

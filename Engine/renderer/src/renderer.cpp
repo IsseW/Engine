@@ -82,15 +82,17 @@ void Renderer::draw_first_pass(const Window* window, const World& world, const A
 	ctx.context->PSSetShader(first_pass.object_renderer.ps, nullptr, 0);
 
 	ID3D11Buffer* uniforms[2] = { first_pass.globals.buffer, first_pass.object_renderer.locals.buffer };
-	ctx.context->IASetInputLayout(first_pass.object_renderer.layout);
 	ctx.context->VSSetConstantBuffers(0, 2, uniforms);
 	ctx.context->PSSetConstantBuffers(0, 2, uniforms);
+	ctx.context->IASetInputLayout(first_pass.object_renderer.layout);
+	ctx.context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
 	world.objects.values([&](const Object* obj) {
 		auto maybe_locals = ObjectRenderer::Locals::from_object(*obj);
 		if (maybe_locals.is_none()) {
 			return;
 		}
-		auto locals = maybe_locals.unwrap_unchecked();
+		ObjectRenderer::Locals locals = maybe_locals.unwrap_unchecked();
 		first_pass.object_renderer.locals.update(ctx.context, &locals);
 
 		Option<Id<Image>> maybe_image = obj->image;
@@ -118,7 +120,6 @@ void Renderer::draw_first_pass(const Window* window, const World& world, const A
 			u32 offset = 0;
 			ctx.context->IASetVertexBuffers(0, 1, &binded->vertex_buffer, &stride, &offset);
 			ctx.context->IASetIndexBuffer(binded->index_buffer, DXGI_FORMAT_R16_UINT, 0);
-			ctx.context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			ctx.context->DrawIndexed(sub_mesh.indices.len(), 0, 0);
 		}

@@ -11,3 +11,7 @@ Id<Object> World::add(Object&& object) {
 Id<PointLight> World::add(PointLight&& object) {
 	return point_lights.insert(std::move(object));
 }
+
+void World::update(f32 dt) {
+
+}

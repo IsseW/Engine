@@ -195,7 +195,6 @@ Result<ObjectRenderer, RenderCreateError> create_object_renderer(RendererCtx& ct
 		return FailedShaderCreation;
 	}
 
-
 	D3D11_INPUT_ELEMENT_DESC input_desc[3] =
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},

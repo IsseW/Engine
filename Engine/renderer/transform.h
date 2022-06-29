@@ -23,13 +23,13 @@ struct Camera {
 
 	Mat4<f32> get_view() const;
 	Mat4<f32> get_proj(u32 width, u32 height) const;
-private:
-	Transform _transform;
-	f32 _near;
-	f32 _far;
-	bool _perspective;
+
+	Transform transform;
+	bool is_perspective;
+	f32 cam_near;
+	f32 cam_far;
 	// Only used when the camera is orthographic
-	f32 _size;
+	f32 size;
 	// Only used when the camera is perspective
-	f32 _fov;
+	f32 fov;
 };

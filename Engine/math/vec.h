@@ -66,6 +66,14 @@ Vec operator op() const {			\
 		template<typename... Args>
 		constexpr Vec(Args... args) : _elems({T(args)...}) { }
 
+		template<const usize OL>
+		static constexpr Vec from_higher(Vec<T, OL> higher) requires (OL > L) {
+			Vec res;
+			for (usize i = 0; i < L; ++i) {
+				res[i] = higher[i];
+			}
+			return res;
+		}
 
 		Vec& operator=(const Vec& other) {
 			_elems = other._elems;
@@ -225,6 +233,13 @@ Vec operator op() const {			\
 		constexpr static Vec<T, L> unit_z() { return unit<2>(); }
 		constexpr static Vec<T, L> unit_w() { return unit<3>(); }
 		constexpr static Vec<T, L> zero() { return Vec<T, L>(); }
+		constexpr static Vec<T, L> one() {
+			Vec<T, L> res;
+			for (usize i = 0; i < L; ++i) {
+				res[i] = T{ 1 };
+			}
+			return res;
+		}
 
 		auto begin() {
 			return _elems.begin();

@@ -161,10 +161,6 @@
     <ClCompile Include="ui\imgui\imgui_widgets.cpp" />
     <ClCompile Include="renderer\src\renderer.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\PipelineHelper.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="renderer\src\setup.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -216,7 +212,6 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\..\Documents\u.wavefront" />
     <None Include="cpp.hint" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
