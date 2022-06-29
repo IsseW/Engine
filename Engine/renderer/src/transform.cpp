@@ -59,7 +59,7 @@ Camera Camera::orthographic(Transform transform, f32 size) {
 }
 
 Mat4<f32> Camera::get_view() const {
-	return transform.get_mat();
+	return transform.get_mat().invert();
 }
 
 Mat4<f32> create_orth_proj(f32 left, f32 right, f32 bottom, f32 top, f32 cam_near, f32 cam_far) {

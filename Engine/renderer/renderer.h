@@ -35,7 +35,7 @@ struct ObjectRenderer {
 		Mat4<f32> world_matrix;
 		Vec4<f32> color;
 
-		static Option<Locals> from_object(const Object& obj);
+		static Locals from_object(const Object& obj);
 	};
 	ID3D11VertexShader* vs;
 	ID3D11PixelShader* ps;

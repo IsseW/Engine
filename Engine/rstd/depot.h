@@ -2,6 +2,7 @@
 #include"primitives.h"
 #include"option.h"
 #include"vector.h"
+#include<string>
 
 template<typename T>
 struct Id {
@@ -10,6 +11,13 @@ struct Id {
 	Id(u32 idx, u32 gen) : _idx(idx), _gen(gen) {}
 	u32 idx() const { return _idx; }
 	u32 gen() const { return _gen; }
+
+	std::string to_string() const {
+		std::string id_s = std::to_string(gen());
+		id_s += ".";
+		id_s += std::to_string(idx());
+		return id_s;
+	}
 
 	bool operator==(const Id& other) const {
 		return idx() == other.idx() && gen() == other.gen();
@@ -97,6 +105,15 @@ struct Depot {
 
 	template<typename F>
 	void iter(F f) {
+		for (u32 i = 0; i < _entries.len(); ++i) {
+			if (_entries[i].item.is_some()) {
+				f(Id<T>(i, _entries[i].gen), _entries[i].item.as_ptr().unwrap_unchecked());
+			}
+		}
+	}
+
+	template<typename F>
+	void iter(F f) const {
 		for (u32 i = 0; i < _entries.len(); ++i) {
 			if (_entries[i].item.is_some()) {
 				f(Id<T>(i, _entries[i].gen), _entries[i].item.as_ptr().unwrap_unchecked());

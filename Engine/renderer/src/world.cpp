@@ -1,7 +1,7 @@
 #include<renderer/world.h>
 
 
-Object::Object(Transform transform, Id<Mesh> mesh, Rgb color) : transform(transform), mesh(mesh), color(color) {}
+Object::Object(Transform transform, AId<Mesh> mesh, Rgb color) : transform(transform), mesh(mesh), color(color) {}
 
 World::World(Camera camera, DirLight light) : camera(camera), dir_light(light), point_lights(), objects() { }
 

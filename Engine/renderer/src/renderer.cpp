@@ -25,13 +25,11 @@ void clean_up_first_pass(FirstPass& first_pass) {
 	clean_up_object_renderer(first_pass.object_renderer);
 }
 
-Option<ObjectRenderer::Locals> ObjectRenderer::Locals::from_object(const Object& obj) {
-	return obj.transform.get_mat().try_invert().map<Locals>([&](Mat4<f32> mat) { 
-		return Locals {
-			mat,
-			obj.color.with_w(1.0)
-		};
-	});
+ObjectRenderer::Locals ObjectRenderer::Locals::from_object(const Object& obj) {
+	return Locals{
+		obj.transform.get_mat(),
+		obj.color.with_w(1.0)
+	};
 }
 
 void Renderer::clean_up() {
@@ -55,8 +53,8 @@ void Renderer::begin_draw(const World& world, AssetHandler& assets) {
 	// Do some setup and bind required resource before we draw.
 	world.objects.values([&](const Object* obj) {
 		assets.get(obj->mesh).unwrap()->bind(ctx.device);
-		Option<Id<Image>> img = obj->image;
-		img.map<char>([&](Id<Image> img) { assets.get(img).unwrap()->bind(ctx.device); return 0; });
+		Option<AId<Image>> img = obj->image;
+		img.map<char>([&](AId<Image> img) { assets.get(img).unwrap()->bind(ctx.device); return 0; });
 	});
 	
 
@@ -88,16 +86,12 @@ void Renderer::draw_first_pass(const Window* window, const World& world, const A
 	ctx.context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
 	world.objects.values([&](const Object* obj) {
-		auto maybe_locals = ObjectRenderer::Locals::from_object(*obj);
-		if (maybe_locals.is_none()) {
-			return;
-		}
-		ObjectRenderer::Locals locals = maybe_locals.unwrap_unchecked();
+		auto locals = ObjectRenderer::Locals::from_object(*obj);
 		first_pass.object_renderer.locals.update(ctx.context, &locals);
 
-		Option<Id<Image>> maybe_image = obj->image;
+		Option<AId<Image>> maybe_image = obj->image;
 		const Image* image = maybe_image
-			.map<Option<const Image*>>([&](Id<Image> image) { return assets.get(image); })
+			.map<Option<const Image*>>([&](AId<Image> image) { return assets.get(image); })
 			.flatten<const Image*>()
 			.unwrap_or_else([&]() { return assets.default_asset<Image>(); });
 

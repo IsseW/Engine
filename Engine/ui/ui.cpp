@@ -103,15 +103,13 @@ bool edit_vertices(Option<Mesh*> mesh, Mat4<f32> mat) {
 	ImGui::Indent();
 	mesh.then_do([&](Mesh* mesh) {
 		for (usize i = 0; i < mesh->submeshes.len(); ++i) {
-			ImGui::PushID(i);
 			auto& vertices = mesh->submeshes[i].vertices;
 			for (usize j = 0; j < vertices.len(); ++j) {
-				ImGui::PushID(j);
+				ImGui::PushID(i + j * mesh->submeshes.len());
 				auto t = mat.transform_point(vertices[j].v);
 				edited |= edit("vertex", t);
 				ImGui::PopID();
 			}
-			ImGui::PopID();
 		}
 	});
 	ImGui::Unindent();
@@ -169,11 +167,8 @@ void update_ui(const Window* window, World& world, AssetHandler& assets) {
 	if (ImGui::CollapsingHeader("Objects")) {
 		ImGui::Indent();
 		world.objects.iter([&](Id<Object> id, Object* obj) {
-			std::string id_s = std::to_string(id.gen());
-			id_s += ".";
-			id_s += std::to_string(id.idx());
 			std::string s("Object.");
-			s += id_s;
+			s += id.to_string();
 			if (ImGui::CollapsingHeader(s.data())) {
 				ImGui::PushID(id.idx());
 				ImGui::Indent();
@@ -184,16 +179,33 @@ void update_ui(const Window* window, World& world, AssetHandler& assets) {
 
 				ImGui::ColorEdit3("Color", obj->color.data());
 
+				if (ImGui::BeginListBox("Mesh")) {
+					assets.assets<Mesh>().iter([&](AId<Mesh> id, const Asset<Mesh>* asset) {
+						std::string s = id.to_string();
+						s += " ";
+						s += asset->path.as_ptr().map<const char*>([](const std::string* s) { return s->data(); }).unwrap_or("unnamed");
+						
+						if (ImGui::Selectable(s.data(), obj->mesh == id)) {
+							obj->mesh = id;
+						}
+
+					});
+					ImGui::EndListBox();
+				}
+				
+
 				if (ImGui::CollapsingHeader("Camera Relative")) {
 					ImGui::Indent();
 
-					auto view = (view_mat * obj->transform.translation.with_w(1.0)).xyz();
+					auto view = view_mat_inv.transform_point(obj->transform.translation);
 					edit("View", view);
-					auto proj = (proj_mat * view.with_w(1.0)).xyz();
+					auto proj = proj_mat_inv.transform_point(view);
 					edit("Proj", proj);
 
 					ImGui::Unindent();
 				}
+
+				auto mat = obj->transform.get_mat();
 
 				if (ImGui::CollapsingHeader("Vertices")) {
 					ImGui::Indent();
@@ -201,13 +213,13 @@ void update_ui(const Window* window, World& world, AssetHandler& assets) {
 						edit_vertices(assets.get(obj->mesh), Mat4<f32>::identity());
 					}
 					if (ImGui::CollapsingHeader("Global")) {
-						edit_vertices(assets.get(obj->mesh), obj->transform.get_mat());
+						edit_vertices(assets.get(obj->mesh), mat);
 					}
 					if (ImGui::CollapsingHeader("View")) {
-						edit_vertices(assets.get(obj->mesh), obj->transform.get_mat() * view_mat_inv);
+						edit_vertices(assets.get(obj->mesh), mat * view_mat);
 					}
 					if (ImGui::CollapsingHeader("Proj")) {
-						edit_vertices(assets.get(obj->mesh), obj->transform.get_mat() * view_mat_inv * proj_mat_inv);
+						edit_vertices(assets.get(obj->mesh), mat * view_mat * proj_mat);
 					}
 					ImGui::Unindent();
 				}

@@ -1,5 +1,6 @@
 #pragma once
 #include<string>
+#include<unordered_map>
 #include<rstd/primitives.h>
 #include<rstd/depot.h>
 #include<rstd/vector.h>
@@ -55,22 +56,39 @@ struct Mesh {
 };
 
 template<typename T>
+struct Asset {
+	Option<std::string> path;
+	T asset;
+};
+
+template<typename T>
+using AId = Id<Asset<T>>;
+
+template<typename T>
 struct Assets {
 	Assets() : _items(), _default_asset(T::default_asset()) { }
 
-	Id<T> load(const std::string& asset) {
-		return _items.insert(std::move(T::load(asset)));
+	AId<T> load(const std::string& asset) {
+		auto got = loaded_paths.find(asset);
+		if (got == loaded_paths.end()) {
+			auto id = _items.insert(std::move(Asset<T> { some(asset), T::load(asset) }));
+			loaded_paths.insert({ asset, id });
+			return id;
+		}
+		else {
+			return got->second;
+		}
 	}
-	Id<T> insert(T&& asset) {
-		return _items.insert(std::move(asset));
+	AId<T> insert(T&& asset) {
+		return _items.insert(std::move(Asset<T> { none<std::string>(), asset }));
 	}
 
-	Option<const T*> get(Id<T> handle) const {
-		return _items.get(handle);
+	Option<const T*> get(AId<T> handle) const {
+		return _items.get(handle).map<const T*>([&](const Asset<T>* asset) { return &asset->asset; });
 	}
 
-	Option<T*> get(Id<T> handle) {
-		return _items.get(handle);
+	Option<T*> get(AId<T> handle) {
+		return _items.get(handle).map<T*>([&](Asset<T>* asset) { return &asset->asset; });
 	}
 
 	T* default_asset() {
@@ -80,32 +98,38 @@ struct Assets {
 		return &_default_asset;
 	}
 
+	template<typename F>
+	void iter(F f) const {
+		_items.iter(f);
+	}
+
 	void clean_up() {
 		_default_asset.clean_up();
-		_items.values([](T* item) {
-			item->clean_up();
+		_items.values([](Asset<T>* item) {
+			item->asset.clean_up();
 		});
 	}
 
 private:
 	T _default_asset;
-	Depot<T> _items;
+	Depot<Asset<T>> _items;
+	std::unordered_map<std::string, AId<T>> loaded_paths;
 };
 
 // Could implement hot reloading
 struct AssetHandler {
 	template<typename T>
-	Id<T> load(const std::string& asset) {
+	AId<T> load(const std::string& asset) {
 		return assets<T>().load(asset);
 	}
 
 	template<typename T>
-	Option<const T*> get(Id<T> handle) const {
+	Option<const T*> get(AId<T> handle) const {
 		return assets<T>().get(handle);
 	}
 
 	template<typename T>
-	Option<T*> get(Id<T> handle) {
+	Option<T*> get(AId<T> handle) {
 		return assets<T>().get(handle);
 	}
 
@@ -120,7 +144,7 @@ struct AssetHandler {
 	}
 
 	template<typename T>
-	Id<T> insert(T&& asset) {
+	AId<T> insert(T&& asset) {
 		return assets<T>().insert(std::move(asset));
 	}
 

@@ -98,7 +98,7 @@ struct Option {
 		}
 	}
 
-	T&& unwrap_or(T&& v) requires std::movable<T> {
+	T&& unwrap_or(T v) {
 		if (_is_some) {
 			return take()._v;
 		}

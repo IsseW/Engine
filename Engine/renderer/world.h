@@ -19,11 +19,11 @@ struct PointLight {
 };
 
 struct Object {
-	Object(Transform transform, Id<Mesh> mesh, Rgb color);
+	Object(Transform transform, AId<Mesh> mesh, Rgb color);
 	Transform transform;
-	Id<Mesh> mesh;
+	AId<Mesh> mesh;
 	Rgb color;
-	Option<Id<Image>> image;
+	Option<AId<Image>> image;
 };
 
 struct World {
