@@ -25,7 +25,7 @@ void clean_up_first_pass(FirstPass& first_pass) {
 
 ObjectRenderer::Locals ObjectRenderer::Locals::from_object(const Object& obj) {
 	return Locals{
-		obj.transform.get_mat(),
+		obj.transform.get_mat().transposed(),
 		obj.color.with_w(1.0)
 	};
 }
@@ -67,8 +67,8 @@ void Renderer::begin_draw(const World& world, AssetHandler& assets) {
 
 Globals Globals::from_world(const World& world, u32 width, u32 height) {
 	return Globals{
-		world.camera.get_proj(width, height),
-		world.camera.get_view()
+		world.camera.get_proj(width, height).transposed(),
+		world.camera.get_view().transposed()
 	};
 }
 
