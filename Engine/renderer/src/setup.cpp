@@ -61,11 +61,6 @@ create_interfaces(const Window* window)
 	}
 }
 
-struct DepthStencilRes {
-	ID3D11Texture2D* ds_texture;
-	ID3D11DepthStencilView* ds_view;
-};
-
 Result<DepthStencilRes, RenderCreateError>  create_depth_stencil(ID3D11Device* device, u32 width, u32 height)
 {
 	D3D11_TEXTURE2D_DESC textureDesc;

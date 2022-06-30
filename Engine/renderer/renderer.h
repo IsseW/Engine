@@ -88,7 +88,13 @@ struct Renderer {
 	void present();
 };
 
+struct DepthStencilRes {
+	ID3D11Texture2D* ds_texture;
+	ID3D11DepthStencilView* ds_view;
+};
+
 Result<Renderer, RenderCreateError> create_renderer(const Window* window);
 
-
 Result<ID3D11RenderTargetView*, RenderCreateError> create_render_target_view(ID3D11Device* device, IDXGISwapChain* swap_chain);
+
+Result<DepthStencilRes, RenderCreateError> create_depth_stencil(ID3D11Device* device, u32 width, u32 height);
