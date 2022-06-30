@@ -104,8 +104,6 @@ void Renderer::draw_first_pass(const Window* window, const World& world, const A
 		}
 		auto binded = image->binded.as_ptr().unwrap_unchecked();
 
-		auto t = binded->rsv;
-
 		ctx.context->PSSetShaderResources(0, 1, &binded->rsv);
 		ctx.context->PSSetSamplers(0, 1, &binded->sampler_state);
 

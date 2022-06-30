@@ -24,7 +24,7 @@ struct Option {
 
 	Option() : _is_some(false) { zero(); }
 
-	Option(Option&& other) {
+	Option(Option&& other) noexcept {
 		if (other.is_some()) {
 			_is_some = true;
 			zero();
