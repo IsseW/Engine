@@ -2,7 +2,7 @@
 #include<ui/ui.h>
 
 
-Window::Window(HWND window, u32 width, u32 height) : _window(window), _width(width), _height(height) { }
+Window::Window(HWND window, u32 width, u32 height) : _window(window), _width(width), _height(height), _renderer{nullptr}{}
 u32 Window::width() const {
 	return _width;
 }

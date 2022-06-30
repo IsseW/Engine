@@ -39,12 +39,15 @@ void Renderer::resize(u32 width, u32 height)  {
 	if (width <= 0 || height <= 0) {
 		return;
 	}
-	if (ctx.rtv) { ctx.rtv->Release();  }
-	std::cout << width << " " << height << "\n";
-	ctx.swap_chain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
 	ctx.viewport.Width = (f32)width;
 	ctx.viewport.Height = (f32)height;
+	if (ctx.rtv) { ctx.rtv->Release();  }
+	if (ctx.ds_texture) ctx.ds_texture->Release();
+	if (ctx.ds_view)ctx.ds_view->Release();
 	auto depth_stencil = create_depth_stencil(ctx.device, width, height).unwrap();
+	ctx.ds_view = depth_stencil.ds_view;
+	ctx.ds_texture = depth_stencil.ds_texture;
+	ctx.swap_chain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
 	ctx.rtv = create_render_target_view(ctx.device, ctx.swap_chain).unwrap();
 }
 

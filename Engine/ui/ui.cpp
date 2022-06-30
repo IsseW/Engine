@@ -12,6 +12,8 @@ void setup_ui(const Window* window, Renderer& renderer) {
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
+	//ImGuiIO& io = ImGui::GetIO();
+	
 
 	// Prevents Dear ImGui from creating an .ini file.
 	ImGui::SaveIniSettingsToDisk(NULL);

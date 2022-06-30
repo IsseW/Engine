@@ -57,7 +57,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	world.add(Object(Transform(), cube_mesh, Rgb(0.5, 0.5, 0.0)));
 	world.add(Object(Transform(), cube_mesh, Rgb(0.5, 0.0, 0.5)));
 
-	Window* window = create_window(hInstance, 1600, 1600, nCmdShow).unwrap();
+	Window* window = create_window(hInstance, 1000, 1000, nCmdShow).unwrap();
 
 	Renderer renderer = create_renderer(window).unwrap();
 	window->set_renderer(&renderer);
@@ -70,14 +70,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
-			if (!ui_handle_input(msg.hwnd, msg.message, msg.wParam, msg.lParam)) {
-				switch (msg.message) {
-				case WM_DESTROY:
-					PostQuitMessage(0);
-					return 0;
-				default:
-					break;
-				}
+			switch (msg.message) {
+			case WM_DESTROY:
+				PostQuitMessage(0);
+				return 0;
+			default:
+				break;
 			} 
 		}
 		float dt = std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(now - last_frame).count();
