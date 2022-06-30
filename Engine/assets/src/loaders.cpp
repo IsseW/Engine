@@ -243,9 +243,15 @@ Mesh Mesh::load(const std::string& path) {
 				submeshes.push(SubMesh{
 					std::move(verts), std::move(indices)
 				});
-				break;
 			}
+			verts = Vec<Vertex>{};
+			indices = Vec<u16>{};
 		} 
+	}
+	if (submesh_vertices.size() != 0) {
+		submeshes.push(SubMesh{
+			std::move(verts), std::move(indices)
+		});
 	}
 	file.close();
 	return Mesh{
