@@ -78,11 +78,11 @@ struct Option {
 	}
 
 	template<typename U>
-	Option<U>&& flatten() requires std::same_as<Option<U>, T> {
+	Option<U> flatten() requires std::same_as<Option<U>, T> {
 		if (_is_some) {
-			return std::move(unwrap_unchecked());
+			return unwrap_unchecked();
 		}
-		return std::move(Option<U>::none());
+		return Option<U>::none();
 	}
 
 	T&& unwrap_unchecked() requires std::movable<T> {

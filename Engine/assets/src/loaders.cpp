@@ -75,8 +75,6 @@ void Image::bind(ID3D11Device* device) {
 	if (FAILED(res)) {
 		PANIC("Failed to create shader resource view for texture.");
 	}
-	D3D11_SHADER_RESOURCE_VIEW_DESC* dd = nullptr;
-	rsv->GetDesc(dd);
 
 	D3D11_SAMPLER_DESC sampler_desc;
 	ZeroMemory(&sampler_desc, sizeof(D3D11_SAMPLER_DESC));

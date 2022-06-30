@@ -95,9 +95,9 @@ void Renderer::draw_first_pass(const Window* window, const World& world, const A
 
 		Option<AId<Image>> maybe_image = obj->image;
 		const Image* image = maybe_image
-			.map<Option<const Image*>>([&](AId<Image> image) { return assets.get(image); })
+			.map<Option<const Image*>>([&](AId<Image> image) { std::cout << "a" << std::endl; return assets.get(image); })
 			.flatten<const Image*>()
-			.unwrap_or_else([&]() { return assets.default_asset<Image>(); });
+			.unwrap_or_else([&]() { std::cout << "b" << std::endl; return assets.default_asset<Image>(); });
 
 		if (image->binded.is_none()) {
 			return;
