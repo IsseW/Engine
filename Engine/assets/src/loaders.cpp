@@ -160,6 +160,9 @@ struct std::hash<IndexTuple> {
 
 Mesh Mesh::load(const std::string& path) {
 	auto file = std::ifstream{path};
+	if (!file.is_open()) {
+		PANIC("Unable to load mesh!");
+	}
 	std::string line;
 	Vec<SubMesh> submeshes;
 	Vec<Vec3<f32>> vertices;
