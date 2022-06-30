@@ -101,8 +101,10 @@ void Renderer::draw_first_pass(const Window* window, const World& world, const A
 		}
 		auto binded = image->binded.as_ptr().unwrap_unchecked();
 
-		// ctx.context->PSSetShaderResources(0, 1, &binded->rsv);
-		// ctx.context->PSSetSamplers(0, 1, &binded->sampler_state);
+		auto t = binded->rsv;
+
+		ctx.context->PSSetShaderResources(0, 1, &binded->rsv);
+		ctx.context->PSSetSamplers(0, 1, &binded->sampler_state);
 
 		const Mesh* mesh = assets.get(obj->mesh).unwrap();
 		for (const SubMesh& sub_mesh : mesh->submeshes) {
