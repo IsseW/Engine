@@ -13,7 +13,7 @@ struct DeviceCreationRes {
 };
 
 Result<DeviceCreationRes, RenderCreateError>
-create_interfaces(const Window* window)
+create_interfaces(const Window& window)
 {
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 
@@ -25,7 +25,7 @@ create_interfaces(const Window* window)
 	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
 	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.OutputWindow = window->window();
+	swapChainDesc.OutputWindow = window.window();
 	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.SampleDesc.Quality = 0;
 	swapChainDesc.Windowed = TRUE;
@@ -102,7 +102,7 @@ D3D11_VIEWPORT create_viewport(uint32_t width, uint32_t height)
 	return viewport;
 }
 
-Result<RendererCtx, RenderCreateError> create_renderer_ctx(const Window* window) {
+Result<RendererCtx, RenderCreateError> create_renderer_ctx(const Window& window) {
 	
 	DeviceCreationRes device_res;
 	TRY(device_res, create_interfaces(window));
@@ -113,11 +113,11 @@ Result<RendererCtx, RenderCreateError> create_renderer_ctx(const Window* window)
 	TRY(rtv, create_render_target_view(device, swap_chain));
 
 	DepthStencilRes depth_res;
-	TRY(depth_res, create_depth_stencil(device, window->width(), window->height()));
+	TRY(depth_res, create_depth_stencil(device, window.size().x, window.size().y));
 	auto ds_texture = depth_res.ds_texture;
 	auto ds_view = depth_res.ds_view;
 
-	auto view_port = create_viewport(window->width(), window->height());
+	auto view_port = create_viewport(window.size().x, window.size().y);
 
 	return ok<RendererCtx, RenderCreateError>(RendererCtx{
 		device,
@@ -230,7 +230,7 @@ Result<FirstPass, RenderCreateError> create_first_pass(RendererCtx& ctx) {
 		});
 }
 
-Result<Renderer, RenderCreateError> create_renderer(const Window* window) {
+Result<Renderer, RenderCreateError> create_renderer(const Window& window) {
 	RendererCtx ctx;
 	TRY(ctx, create_renderer_ctx(window));
 

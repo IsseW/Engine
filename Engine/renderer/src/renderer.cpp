@@ -68,16 +68,16 @@ void Renderer::begin_draw(const World& world, AssetHandler& assets) {
 	ctx.context->ClearDepthStencilView(ctx.ds_view, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
-Globals Globals::from_world(const World& world, u32 width, u32 height) {
+Globals Globals::from_world(const World& world, f32 ratio) {
 	return Globals{
-		world.camera.get_proj(width, height).transposed(),
+		world.camera.get_proj(ratio).transposed(),
 		world.camera.get_view().transposed()
 	};
 }
 
-void Renderer::draw_first_pass(const Window* window, const World& world, const AssetHandler& assets) {
+void Renderer::draw_first_pass(const Window& window, const World& world, const AssetHandler& assets) {
 	// First update the globals buffer
-	auto globals = Globals::from_world(world, window->width(), window->height());
+	auto globals = Globals::from_world(world, window.ratio());
 	first_pass.globals.update(ctx.context, &globals);
 
 	ctx.context->VSSetShader(first_pass.object_renderer.vs, nullptr, 0);
@@ -95,7 +95,7 @@ void Renderer::draw_first_pass(const Window* window, const World& world, const A
 
 		Option<AId<Image>> maybe_image = obj->image;
 		const Image* image = maybe_image
-			.map<Option<const Image*>>([&](AId<Image> image) { std::cout << "a" << std::endl; return assets.get(image); })
+			.map<Option<const Image*>>([&](AId<Image> image) { return assets.get(image); })
 			.flatten<const Image*>()
 			.unwrap_or_else([&]() { std::cout << "b" << std::endl; return assets.default_asset<Image>(); });
 

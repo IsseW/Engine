@@ -7,7 +7,6 @@
 #include<renderer/transform.h>
 #include<assets/shape.h>
 
-
 struct Console {
 	Console() {
 		AllocConsole();
@@ -51,48 +50,59 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	assets.load<Mesh>("resources/u.wavefront");
 	assets.load<Mesh>("resources/test.wavefront");
 
+	auto test_texture = assets.load<Image>("resources/test_texture.png");
+
 	auto cam = Camera::perspective(Transform::from_translation(Vec3<f32>(5.0, 0.0, 0.0)).looking_at(Vec3<f32>::unit_y()), 60.0f * F32::TO_RAD);
 	auto dir_light = DirLight();
 	World world(cam, dir_light);
-	world.add(Object(Transform(), cube_mesh, Rgb(0.5, 0.5, 0.0)));
-	world.add(Object(Transform(), cube_mesh, Rgb(0.5, 0.0, 0.5)));
+	world.add(Object(Transform(), cube_mesh, Rgb(0.5, 0.5, 0.0)).with_image(test_texture));
+	world.add(Object(Transform(), cube_mesh, Rgb(0.5, 0.0, 0.5)).with_image(test_texture));
 
 	Window* window = create_window(hInstance, 1000, 1000, nCmdShow).unwrap();
 
-	Renderer renderer = create_renderer(window).unwrap();
+	Renderer renderer = create_renderer(*window).unwrap();
 	window->set_renderer(&renderer);
+
+	auto cleanup = [&]() {
+		clean_up_ui();
+		assets.clean_up();
+		renderer.clean_up();
+		delete window;
+	};
 
 	setup_ui(window, renderer);
 	MSG msg = { };
 	auto last_frame = std::chrono::high_resolution_clock::now();
-	while (!(GetKeyState(VK_ESCAPE) & 0x8000) && msg.message != WM_QUIT) {
-		auto now = std::chrono::high_resolution_clock::now();
-		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+	while (true) {
+		window->new_frame();
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
+
+			window->update(msg);
+
 			switch (msg.message) {
+			case WM_QUIT:
 			case WM_DESTROY:
+				cleanup();
 				PostQuitMessage(0);
 				return 0;
 			default:
 				break;
-			} 
+			}
 		}
-		float dt = std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(now - last_frame).count();
-		// world.update(dt);
+		auto now = std::chrono::high_resolution_clock::now();
+		float dt = std::chrono::duration_cast<std::chrono::duration<float, std::ratio<1, 1>>>(now - last_frame).count();
 		last_frame = now;
+
+		world.update(dt, *window);
 
 		renderer.begin_draw(world, assets);
 
-		renderer.draw_first_pass(window, world, assets);
+		renderer.draw_first_pass(*window, world, assets);
 
-		update_ui(window, world, assets);
+		update_ui(*window, world, assets);
 		renderer.present();
 	}
-	clean_up_ui();
-	assets.clean_up();
-	renderer.clean_up();
-	delete window;
-
 	return 0;
 }

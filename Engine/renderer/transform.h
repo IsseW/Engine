@@ -14,6 +14,13 @@ struct Transform {
 	Vec3<f32> scale { 1.0, 1.0, 1.0 };
 	Quat<f32> rotation { 0.0, 0.0, 0.0, 1.0 };
 
+	Vec3<f32> forward() const;
+	Vec3<f32> back() const;
+	Vec3<f32> right() const;
+	Vec3<f32> left() const;
+	Vec3<f32> up() const;
+	Vec3<f32> down() const;
+
 	Mat4<f32> get_mat() const;
 };
 
@@ -22,7 +29,7 @@ struct Camera {
 	static Camera orthographic(Transform transform, f32 size);
 
 	Mat4<f32> get_view() const;
-	Mat4<f32> get_proj(u32 width, u32 height) const;
+	Mat4<f32> get_proj(f32 ratio) const;
 
 	Transform transform;
 	bool is_perspective;

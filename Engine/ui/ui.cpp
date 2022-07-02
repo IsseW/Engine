@@ -5,6 +5,14 @@
 #include<sstream>
 #include<unordered_set>
 #include<math/consts.h>
+#include<renderer/window.h>
+
+bool capturing_keyboard() {
+	return ImGui::GetIO().WantCaptureKeyboard;
+}
+bool capturing_mouse() {
+	return ImGui::GetIO().WantCaptureMouse;
+}
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -118,21 +126,13 @@ bool edit_vertices(Option<Mesh*> mesh, Mat4<f32> mat) {
 	return edited;
 }
 
-void update_ui(const Window* window, World& world, AssetHandler& assets) {
-	start();
-
-	ImGui_ImplWin32_GetDpiScaleForHwnd(window->window());
-
+void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 	static bool active = true;
-	ImGui::BeginMainMenuBar();
-	ImGui::Button("hello!");
-	ImGui::EndMainMenuBar();
-
 	ImGui::Begin("Editor", &active);
 
 	auto view_mat = world.camera.get_view();
 	auto view_mat_inv = view_mat.invert();
-	auto proj_mat = world.camera.get_proj(window->width(), window->height());
+	auto proj_mat = world.camera.get_proj(window.ratio());
 	auto proj_mat_inv = proj_mat.invert();
 
 	if (ImGui::CollapsingHeader("Camera")) {
@@ -186,15 +186,15 @@ void update_ui(const Window* window, World& world, AssetHandler& assets) {
 						std::string s = id.to_string();
 						s += " ";
 						s += asset->path.as_ptr().map<const char*>([](const std::string* s) { return s->data(); }).unwrap_or("unnamed");
-						
+
 						if (ImGui::Selectable(s.data(), obj->mesh == id)) {
 							obj->mesh = id;
 						}
 
-					});
+						});
 					ImGui::EndListBox();
 				}
-				
+
 
 				if (ImGui::CollapsingHeader("Camera Relative")) {
 					ImGui::Indent();
@@ -229,11 +229,23 @@ void update_ui(const Window* window, World& world, AssetHandler& assets) {
 				ImGui::Unindent();
 				ImGui::PopID();
 			}
-		});
+			});
 		ImGui::Unindent();
 	}
 
 	ImGui::End();
+}
+
+void update_ui(const Window& window, World& world, AssetHandler& assets) {
+	start();
+
+	ImGui_ImplWin32_GetDpiScaleForHwnd(window.window());
+
+	ImGui::BeginMainMenuBar();
+	ImGui::Button("hello!");
+	ImGui::EndMainMenuBar();
+
+	editor_ui(window, world, assets);
 
 	end();
 }

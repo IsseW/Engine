@@ -4,8 +4,8 @@ SamplerState simpleSampler : register(s0);
 struct PixelShaderInput
 {
     float4 position : SV_POSITION;
-    float3 normal : TEXCOORD0;
-    float2 uv : TEXCOORD1;
+    float2 uv : TEXCOORD0;
+    float3 normal : TEXCOORD1;
 };
 
 cbuffer GLOBALS : register(b0) {
@@ -20,7 +20,7 @@ cbuffer LOCALS : register(b1) {
 
 float4 main(PixelShaderInput input) : SV_TARGET
 {
-    float3 color = object_color.xyz; //* simpleTexture.Sample(simpleSampler, input.uv);
+    float3 color = object_color.xyz * simpleTexture.Sample(simpleSampler, input.uv);
 
     return float4(color, 1.0f);
 }

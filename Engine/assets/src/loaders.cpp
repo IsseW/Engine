@@ -8,8 +8,8 @@
 #include<assets/stb_image.h>
 
 Image Image::load(const std::string& path) {
-	int width, height, comp;
-	u8* data = stbi_load(path.data(), &width, &height, &comp, 0);
+	int width, height;
+	u8* data = stbi_load(path.data(), &width, &height, nullptr, 4);
 
 	if (data == nullptr) {
 		PANIC("Failed to load image file");
@@ -18,7 +18,7 @@ Image Image::load(const std::string& path) {
 	image.data = data;
 	image.width = width;
 	image.height = height;
-	image.channels = comp;
+	image.channels = 4;
 	return image;
 }
 

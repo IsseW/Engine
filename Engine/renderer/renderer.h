@@ -5,7 +5,7 @@
 #include"world.h"
 
 struct Globals {
-	static Globals from_world(const World& world, u32 width, u32 height);
+	static Globals from_world(const World& world, f32 ratio);
 
 	Mat4<f32> view_matrix;
 	Mat4<f32> proj_matrix;
@@ -83,7 +83,7 @@ struct Renderer {
 
 	void clean_up();
 	void begin_draw(const World& world, AssetHandler& assets);
-	void draw_first_pass(const Window* window, const World& world, const AssetHandler& assets);
+	void draw_first_pass(const Window& window, const World& world, const AssetHandler& assets);
 	void resize(u32 width, u32 height);
 	void present();
 };
@@ -93,7 +93,7 @@ struct DepthStencilRes {
 	ID3D11DepthStencilView* ds_view;
 };
 
-Result<Renderer, RenderCreateError> create_renderer(const Window* window);
+Result<Renderer, RenderCreateError> create_renderer(const Window& window);
 
 Result<ID3D11RenderTargetView*, RenderCreateError> create_render_target_view(ID3D11Device* device, IDXGISwapChain* swap_chain);
 

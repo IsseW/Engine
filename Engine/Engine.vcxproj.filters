@@ -78,6 +78,9 @@
     <ClCompile Include="assets\src\shape.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="input\src\input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer\renderer.h">
@@ -167,6 +170,9 @@
     <ClInclude Include="assets\shape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="input\input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\VertexShader.hlsl">
@@ -178,5 +184,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resources\test_texture.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

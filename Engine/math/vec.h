@@ -117,7 +117,7 @@ Vec operator op() const {			\
 		constexpr Vec<U, L>&& as() const {
 			Vec<U, L> c;
 			for (usize i = 0; i < L; ++i) {
-				c[i] = const_cast<U>(std::move(_elems[i]));
+				c[i] = (U)std::move(_elems[i]);
 			}
 			return std::move(c);
 		}

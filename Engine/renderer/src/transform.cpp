@@ -33,6 +33,26 @@ Transform&& Transform::looking_at(Vec3<f32> point) {
 	return this->with_rotation(Quat<f32>::looking_dir(dir, Vec3<f32>::unit_z(), Vec3<f32>::unit_y()));
 }
 
+
+Vec3<f32> Transform::forward() const {
+	return rotation * Vec3<f32>::unit_z();
+}
+Vec3<f32> Transform::back() const {
+	return -forward();
+}
+Vec3<f32> Transform::right() const {
+	return rotation * Vec3<f32>::unit_x();
+}
+Vec3<f32> Transform::left() const {
+	return -right();
+}
+Vec3<f32> Transform::up() const {
+	return rotation * Vec3<f32>::unit_y();
+}
+Vec3<f32> Transform::down() const {
+	return -up();
+}
+
 Mat4<f32> Transform::get_mat() const {
 	return math::transformation(translation, scale, rotation);
 }
@@ -88,8 +108,7 @@ Mat4<f32> from_direct(DirectX::XMFLOAT4X4 mat) {
 	};
 }
 
-Mat4<f32> Camera::get_proj(u32 width, u32 height) const {
-	f32 ratio = (f32)width / (f32)height;
+Mat4<f32> Camera::get_proj(f32 ratio) const {
 	if (is_perspective) {
 		f32 top = tanf(fov / 2.0f) * cam_near;
 		f32 bottom = -top;

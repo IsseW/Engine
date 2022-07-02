@@ -101,7 +101,7 @@
     </Link>
     <PostBuildEvent>
       <Message>Copy resources</Message>
-      <Command>robocopy "$(ProjectDir)resources" "$(OutDir)resources" /s /e</Command>
+      <Command>robocopy "$(ProjectDir)resources" "$(OutDir)resources" /s /e /mir</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -121,7 +121,7 @@
     </Link>
     <PostBuildEvent>
       <Message>Copy resources</Message>
-      <Command>robocopy "$(ProjectDir)resources" "$(OutDir)resources" /s /e</Command>
+      <Command>robocopy "$(ProjectDir)resources" "$(OutDir)resources" /s /e /mir</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -138,7 +138,7 @@
     </Link>
     <PostBuildEvent>
       <Message>Copy resources</Message>
-      <Command>robocopy "$(ProjectDir)resources" "$(OutDir)resources" /s /e</Command>
+      <Command>robocopy "$(ProjectDir)resources" "$(OutDir)resources" /s /e /mir</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -158,12 +158,13 @@
     </Link>
     <PostBuildEvent>
       <Message>Copy resources</Message>
-      <Command>robocopy "$(ProjectDir)resources" "$(OutDir)resources" /s /e</Command>
+      <Command>robocopy "$(ProjectDir)resources" "$(OutDir)resources" /s /e /mir</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="assets\src\loaders.cpp" />
     <ClCompile Include="assets\src\shape.cpp" />
+    <ClCompile Include="input\src\input.cpp" />
     <ClCompile Include="renderer\src\transform.cpp" />
     <ClCompile Include="renderer\src\window.cpp" />
     <ClCompile Include="renderer\src\world.cpp" />
@@ -188,6 +189,7 @@
     <ClInclude Include="..\..\..\..\..\..\dev\c++\imgui\imconfig.h" />
     <ClInclude Include="assets\assets.h" />
     <ClInclude Include="assets\shape.h" />
+    <ClInclude Include="input\input.h" />
     <ClInclude Include="renderer\window.h" />
     <ClInclude Include="renderer\world.h" />
     <ClInclude Include="rstd\depot.h" />
@@ -229,6 +231,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resources\test_texture.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
