@@ -62,7 +62,6 @@ void update_camera(Camera& cam, f32 dt, const Window& window) {
 		pitch += SENSITIVITY * mouse_delta.y * F32::TO_RAD;
 		pitch = std::clamp(pitch, -F32::PI / 2.0f, F32::PI / 2.0f);
 		yaw += SENSITIVITY * mouse_delta.x * F32::TO_RAD;
-		std::cout << "{ pitch: " << pitch << ", yaw: " << yaw << " }" << std::endl;
 
 		cam.transform.rotation = Quat<f32>::angle_axis(Vec3<f32>::unit_y(), yaw) * Quat<f32>::angle_axis(Vec3<f32>::unit_x(), pitch);
 	}
