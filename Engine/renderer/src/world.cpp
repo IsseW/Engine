@@ -52,7 +52,7 @@ void update_camera(Camera& cam, f32 dt, const Window& window) {
 		cam.transform.translation += (move * MOVE_SPEED * dt);
 	}
 	// Rotation
-	const f32 SENSITIVITY = 1.0f;
+	const f32 SENSITIVITY = 0.01f;
 
 	static f32 pitch = 0.0f;
 	static f32 yaw = 0.0f;
@@ -68,5 +68,7 @@ void update_camera(Camera& cam, f32 dt, const Window& window) {
 }
 
 void World::update(f32 dt, const Window& window) {
-	update_camera(camera, dt, window);
+	if (window.input().mouse_locked()) {
+		update_camera(camera, dt, window);
+	}
 }

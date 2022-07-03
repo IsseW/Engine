@@ -9,16 +9,19 @@ void Input::new_frame(const Window* window) {
 		if (just_pressed(Key::Esc)) {
 			_mouse_locked = false;
 			SetCursor(LoadCursor(NULL, IDC_ARROW));
+			SetCursorPos(_mouse_point_before_lock.x, _mouse_point_before_lock.y);
 		}
 	}
 	else {
 		if (just_pressed(Key::Esc)) {
+			GetCursorPos(&_mouse_point_before_lock);
 			_mouse_locked = true;
 			SetCursor(NULL);
 		}
 	}
 
 	if (mouse_locked()) {
+		_mouse_pos = (window->size() / 2).as<f32>();
 		SetCursorPos(window->center().x, window->center().y);
 	}
 
@@ -58,41 +61,40 @@ void Input::handle_key(Key key, bool down) {
 void Input::handle_window_message(const MSG& msg, const Window* window) {
 	switch (msg.message) {
 	case WM_MOUSEMOVE: {
-		if (mouse_locked()) {
-			i16 x = LOWORD(msg.lParam);
-			i16 y = HIWORD(msg.lParam);
+		if (!capturing_mouse() || mouse_locked()) {
+			Vec2<u16> pos(LOWORD(msg.lParam), HIWORD(msg.lParam));
 
-			_mouse_pos = Vec2<f32>(x, window->size().y - y);
+			_mouse_pos = Vec2<f32>(pos.x, window->size().y - 12 - pos.y);
 		}
 		break;
 	}
 	case WM_MOUSEWHEEL: {
-		if (!capturing_mouse()) {
+		if (!capturing_mouse() || mouse_locked()) {
 			i16 delta = HIWORD(msg.wParam);
 			_scroll_delta += (f32)delta / (f32)WHEEL_DELTA;
 		}
 		break;
 	}
 	case WM_LBUTTONDOWN:
-		if (!capturing_mouse()) handle_key(Key::Mouse0, true);
+		if (!capturing_mouse() || mouse_locked()) handle_key(Key::Mouse0, true);
 		break;
 	case WM_LBUTTONUP:
-		if (!capturing_mouse()) handle_key(Key::Mouse0, false);
+		if (!capturing_mouse() || mouse_locked()) handle_key(Key::Mouse0, false);
 		break;
 	case WM_RBUTTONDOWN:
-		if (!capturing_mouse()) handle_key(Key::Mouse1, true);
+		if (!capturing_mouse() || mouse_locked()) handle_key(Key::Mouse1, true);
 		break;
 	case WM_RBUTTONUP:
-		if (!capturing_mouse()) handle_key(Key::Mouse1, false);
+		if (!capturing_mouse() || mouse_locked()) handle_key(Key::Mouse1, false);
 		break;
 	case WM_MBUTTONDOWN:
-		if (!capturing_mouse()) handle_key(Key::Mouse2, true);
+		if (!capturing_mouse() || mouse_locked()) handle_key(Key::Mouse2, true);
 		break;
 	case WM_MBUTTONUP:
-		if (!capturing_mouse()) handle_key(Key::Mouse2, false);
+		if (!capturing_mouse() || mouse_locked()) handle_key(Key::Mouse2, false);
 		break;
 	case WM_XBUTTONDOWN: {
-		if (!capturing_mouse()) {
+		if (!capturing_mouse() || mouse_locked()) {
 			switch (HIWORD(msg.wParam)) {
 			case XBUTTON1:
 				handle_key(Key::Mouse3, true);
@@ -105,7 +107,7 @@ void Input::handle_window_message(const MSG& msg, const Window* window) {
 		break;
 	}
 	case WM_XBUTTONUP: {
-		if (!capturing_mouse()) {
+		if (!capturing_mouse() || mouse_locked()) {
 			switch (HIWORD(msg.wParam)) {
 			case XBUTTON1:
 				handle_key(Key::Mouse3, false);
@@ -123,8 +125,6 @@ void Input::handle_window_message(const MSG& msg, const Window* window) {
 	case WM_KEYUP:
 		if (!capturing_keyboard()) handle_key(translate_vkey((u32)msg.wParam), false);
 		break;
-
-	// default: std::cout << msg.message << std::endl; break;
 	}
 
 	}

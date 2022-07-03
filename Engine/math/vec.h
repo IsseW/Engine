@@ -114,12 +114,12 @@ Vec operator op() const {			\
 		UNARY_OPERATOR(!);
 
 		template<typename U>
-		constexpr Vec<U, L>&& as() const {
+		constexpr Vec<U, L> as() const {
 			Vec<U, L> c;
 			for (usize i = 0; i < L; ++i) {
-				c[i] = (U)std::move(_elems[i]);
+				c[i] = (U)_elems[i];
 			}
-			return std::move(c);
+			return c;
 		}
 
 		template<typename U, typename F>

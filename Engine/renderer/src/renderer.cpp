@@ -35,19 +35,19 @@ void Renderer::clean_up() {
 	clean_up_first_pass(first_pass);
 }
 
-void Renderer::resize(u32 width, u32 height)  {
-	if (width <= 0 || height <= 0) {
+void Renderer::resize(Vec2<u16> size)  {
+	if (size.x <= 0 || size.y <= 0) {
 		return;
 	}
-	ctx.viewport.Width = (f32)width;
-	ctx.viewport.Height = (f32)height;
+	ctx.viewport.Width = (f32)size.x;
+	ctx.viewport.Height = (f32)size.y;
 	if (ctx.rtv) { ctx.rtv->Release();  }
 	if (ctx.ds_texture) ctx.ds_texture->Release();
 	if (ctx.ds_view)ctx.ds_view->Release();
-	auto depth_stencil = create_depth_stencil(ctx.device, width, height).unwrap();
+	auto depth_stencil = create_depth_stencil(ctx.device, size.x, size.y).unwrap();
 	ctx.ds_view = depth_stencil.ds_view;
 	ctx.ds_texture = depth_stencil.ds_texture;
-	ctx.swap_chain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
+	ctx.swap_chain->ResizeBuffers(0, size.x, size.y, DXGI_FORMAT_UNKNOWN, 0);
 	ctx.rtv = create_render_target_view(ctx.device, ctx.swap_chain).unwrap();
 }
 
@@ -97,7 +97,7 @@ void Renderer::draw_first_pass(const Window& window, const World& world, const A
 		const Image* image = maybe_image
 			.map<Option<const Image*>>([&](AId<Image> image) { return assets.get(image); })
 			.flatten<const Image*>()
-			.unwrap_or_else([&]() { std::cout << "b" << std::endl; return assets.default_asset<Image>(); });
+			.unwrap_or_else([&]() { return assets.default_asset<Image>(); });
 
 		if (image->binded.is_none()) {
 			return;

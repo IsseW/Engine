@@ -6,23 +6,27 @@
 
 struct Window {
 	Window(HWND window);
-	Vec2<u32> pos() const;
-	Vec2<u32> size() const;
-	Vec2<u32> center() const;
+	const Vec2<u16>& pos() const;
+	const Vec2<u16>& size() const;
+	const Vec2<u16>& window_size() const;
+	Vec2<u16> center() const;
 	f32 ratio() const;
 	const HWND& window() const;
 	void moved(u16, u16);
-	void resized();
+	void resized(u16, u16);
 	void set_renderer(Renderer* renderer);
 	void update(const MSG& msg);
 	void new_frame();
 	const Input& input() const;
 private:
+
+	void update_ps();
+
 	HWND _window;
-	u32 _x;
-	u32 _y;
-	u32 _width;
-	u32 _height;
+	Vec2<u16> _window_pos;
+	Vec2<u16> _window_size;
+	Vec2<u16> _client_pos;
+	Vec2<u16> _client_size;
 	Renderer* _renderer;
 	Input _input;
 };

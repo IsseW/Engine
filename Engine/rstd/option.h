@@ -28,7 +28,7 @@ struct Option {
 		if (other.is_some()) {
 			_is_some = true;
 			zero();
-			_v = std::move(other._v);
+			_v = other._v;
 		}
 		else {
 			_is_some = false;
@@ -61,10 +61,10 @@ struct Option {
 		return *this;
 	}
 
-	Option&& take() requires std::movable<T> {
-		Option res(std::move(*this));
+	Option take() {
+		Option res(*this);
 		_is_some = false;
-		return std::move(res);
+		return res;
 	}
 
 	template<typename U, typename F>
@@ -85,11 +85,11 @@ struct Option {
 		return Option<U>::none();
 	}
 
-	T&& unwrap_unchecked() requires std::movable<T> {
-		return std::move(take()._v);
+	T unwrap_unchecked() {
+		return take()._v;
 	}
 
-	T&& unwrap() requires std::movable<T> {
+	T unwrap() {
 		if (_is_some) {
 			return take()._v;
 		}
@@ -98,22 +98,22 @@ struct Option {
 		}
 	}
 
-	T&& unwrap_or(T v) {
+	T unwrap_or(T v) {
 		if (_is_some) {
 			return take()._v;
 		}
 		else {
-			return std::move(v);
+			return v;
 		}
 	}
 
 	template<typename F>
-	T&& unwrap_or_else(F els) requires std::movable<T> {
+	T unwrap_or_else(F els) {
 		if (_is_some) {
 			return take()._v;
 		}
 		else {
-			return std::move(els());
+			return els();
 		}
 	}
 
@@ -130,14 +130,14 @@ struct Option {
 		return Option<const T*>::none();
 	}
 	template<typename F>
-	void then_do(F func) requires std::movable<T> {
+	void then_do(F func) {
 		if (_is_some) {
 			func(take().unwrap_unchecked());
 		}
 	}
 	
 	template<typename U, typename F>
-	Option<U> map(F map) requires std::movable<T> {
+	Option<U> map(F map) {
 		if (_is_some) {
 			return Option<U>::some(map(take().unwrap_unchecked()));
 		}
@@ -151,10 +151,10 @@ struct Option {
 		return !_is_some;
 	}
 
-	Option<T> insert(T&& item) requires std::movable<T> {
-		Option res(std::move(*this));
+	Option<T> insert(T item) {
+		Option res(*this);
 		_is_some = true;
-		_v = std::move(item);
+		_v = item;
 		return res;
 	}
 

@@ -62,6 +62,7 @@ private:
 	f32 _scroll_delta;
 	Vec2<f32> _mouse_pos_last;
 	Vec2<f32> _mouse_pos;
+	POINT _mouse_point_before_lock;
 	bool _mouse_locked = false;
 
 	std::bitset<(usize)Key::NKEYS> _just_pressed;

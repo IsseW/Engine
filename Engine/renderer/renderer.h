@@ -84,7 +84,7 @@ struct Renderer {
 	void clean_up();
 	void begin_draw(const World& world, AssetHandler& assets);
 	void draw_first_pass(const Window& window, const World& world, const AssetHandler& assets);
-	void resize(u32 width, u32 height);
+	void resize(Vec2<u16>);
 	void present();
 };
 

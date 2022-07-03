@@ -2,14 +2,18 @@
 #include<ui/ui.h>
 
 
-Window::Window(HWND window) : _window(window), _x(0), _y(0), _width(0), _height(0), _renderer{nullptr} {
+Window::Window(HWND window) : _window(window), _renderer{nullptr} {
+	update_ps();
+}
+
+void Window::update_ps() {
 	RECT rect;
-	GetClientRect(window, &rect);
-	_width = rect.right - rect.left;
-	_height = rect.bottom - rect.top;
-	GetWindowRect(window, &rect);
-	_x = rect.left;
-	_y = rect.top;
+	GetWindowRect(_window, &rect);
+	_window_pos = Vec2<u16>(rect.left, rect.top);
+	_window_size = Vec2<u16>(rect.right - rect.left, rect.bottom - rect.top);
+	GetClientRect(_window, &rect);
+	_client_pos = Vec2<u16>(rect.left, rect.top);
+	_client_size = Vec2<u16>(rect.right - rect.left, rect.bottom - rect.top);
 }
 
 void Window::update(const MSG& msg) {
@@ -23,34 +27,33 @@ const Input& Window::input() const {
 	return _input;
 }
 
-Vec2<u32> Window::pos() const {
-	return Vec2<u32>(_x, _y);
+const Vec2<u16>& Window::pos() const {
+	return _window_pos;
 }
-Vec2<u32> Window::size() const {
-	return Vec2<u32>(_width, _height);
+const Vec2<u16>& Window::size() const {
+	return _client_size;
 }
-Vec2<u32> Window::center() const {
-	return pos() + size() / 2;
+const Vec2<u16>& Window::window_size() const {
+	return _window_size;
+}
+Vec2<u16> Window::center() const {
+	return pos() + window_size() / 2;
 }
 f32 Window::ratio() const {
-	return (f32)_width / (f32)_height;
+	return (f32)size().x / (f32)size().y;
 }
 const HWND& Window::window() const {
 	return _window;
 }
 
 void Window::moved(u16 x, u16 y) {
-	_x = x;
-	_y = y;
+	update_ps();
 }
 
-void Window::resized() {
-	RECT rect;
-	GetClientRect(_window, &rect);
-	_width = rect.right - rect.left;
-	_height = rect.bottom - rect.top;
+void Window::resized(u16 width, u16 height) {
+	update_ps();
 	if (_renderer) {
-		_renderer->resize(_width, _height);
+		_renderer->resize(size());
 	}
 }
 
@@ -73,7 +76,7 @@ LRESULT CALLBACK window_proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	case WM_SIZE: {
 		Window* window = (Window*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 		if (window) {
-			window->resized();
+			window->resized(LOWORD(lParam), HIWORD(lParam));
 		}
 		break;
 	}
