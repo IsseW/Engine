@@ -32,6 +32,8 @@ struct Camera {
 	Mat4<f32> get_proj(f32 ratio) const;
 
 	Transform transform;
+	f32 pitch = 0.0f;
+	f32 yaw = 0.0f;
 	bool is_perspective;
 	f32 cam_near;
 	f32 cam_far;

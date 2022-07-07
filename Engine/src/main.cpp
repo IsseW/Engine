@@ -52,7 +52,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 	auto test_texture = assets.load<Image>("resources/test_texture.png");
 
-	auto cam = Camera::perspective(Transform::from_translation(Vec3<f32>(5.0, 0.0, 0.0)).looking_at(Vec3<f32>::unit_y()), 60.0f * F32::TO_RAD);
+	auto cam = Camera::perspective(Transform::from_translation(Vec3<f32>(0.0, 0.0, -10.0)), 60.0f * F32::TO_RAD);
 	auto dir_light = DirLight();
 	World world(cam, dir_light);
 	world.add(Object(Transform(), cube_mesh, Rgb(0.5, 0.5, 0.0)).with_image(test_texture));

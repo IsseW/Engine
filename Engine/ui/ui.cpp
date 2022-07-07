@@ -138,9 +138,12 @@ void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 	if (ImGui::CollapsingHeader("Camera")) {
 		ImGui::Indent();
 		edit("Position", world.camera.transform.translation);
-		edit("Rotation", world.camera.transform.rotation);
+		Vec2<f32> rot = Vec2<f32>(world.camera.pitch, world.camera.yaw) * F32::TO_DEG;
+		edit("Rotation", rot);
+		world.camera.pitch = rot.x * F32::TO_RAD;
+		world.camera.yaw = rot.y * F32::TO_RAD;
 
-		// UB
+		// UB?
 		ImGui::DragFloat2("near, far", &world.camera.cam_near);
 
 		ImGui::Checkbox("Perspective", &world.camera.is_perspective);

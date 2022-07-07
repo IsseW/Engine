@@ -70,8 +70,8 @@ void Renderer::begin_draw(const World& world, AssetHandler& assets) {
 
 Globals Globals::from_world(const World& world, f32 ratio) {
 	return Globals{
+		world.camera.get_view().transposed(),
 		world.camera.get_proj(ratio).transposed(),
-		world.camera.get_view().transposed()
 	};
 }
 
