@@ -34,13 +34,15 @@ struct Vertex{
 	Vec2<f32> uv;
 };
 
+using Index = u16;
+
 struct SubMesh {
 	struct Binded {
 		ID3D11Buffer* vertex_buffer;
 		ID3D11Buffer* index_buffer;
 	};
 	Vec<Vertex> vertices;
-	Vec<u32> indices;
+	Vec<Index> indices;
 	Option<Binded> binded;
 
 	void bind(ID3D11Device* device);

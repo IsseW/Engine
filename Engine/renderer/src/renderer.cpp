@@ -84,7 +84,7 @@ void Renderer::draw_first_pass(const Window& window, const World& world, const A
 	ctx.context->VSSetConstantBuffers(0, 2, uniforms);
 	ctx.context->PSSetConstantBuffers(0, 2, uniforms);
 	ctx.context->IASetInputLayout(first_pass.object_renderer.layout);
-	ctx.context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	ctx.context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	world.objects.values([&](const Object* obj) {
 		auto locals = ObjectRenderer::Locals::from_object(*obj);
@@ -110,7 +110,7 @@ void Renderer::draw_first_pass(const Window& window, const World& world, const A
 			u32 stride = sizeof(Vertex);
 			u32 offset = 0;
 			ctx.context->IASetVertexBuffers(0, 1, &binded->vertex_buffer, &stride, &offset);
-			ctx.context->IASetIndexBuffer(binded->index_buffer, DXGI_FORMAT_R32_UINT, 0);
+			ctx.context->IASetIndexBuffer(binded->index_buffer, DXGI_FORMAT_R16_UINT, 0);
 
 			ctx.context->DrawIndexed(sub_mesh.indices.len(), 0, 0);
 		}

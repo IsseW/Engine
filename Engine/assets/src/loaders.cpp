@@ -169,7 +169,7 @@ Mesh Mesh::load(const std::string& path) {
 	Vec<Vec2<f32>> uvs;
 	std::unordered_map<IndexTuple, usize> submesh_vertices;
 	Vec<Vertex> verts;
-	Vec<u32> indices;
+	Vec<Index> indices;
 
 	while (std::getline(file, line)) {
 		auto split = split_string(std::move(line), ' ');
@@ -247,7 +247,7 @@ Mesh Mesh::load(const std::string& path) {
 				});
 			}
 			verts = Vec<Vertex>{};
-			indices = Vec<u32>{};
+			indices = Vec<Index>{};
 		} 
 	}
 	if (submesh_vertices.size() != 0) {
@@ -265,6 +265,7 @@ void SubMesh::bind(ID3D11Device* device) {
 	if (binded.is_some()) {
 		return;
 	}
+
 	D3D11_BUFFER_DESC bufferDesc;
 	bufferDesc.ByteWidth = sizeof(Vertex) * vertices.len();
 	bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
@@ -283,7 +284,7 @@ void SubMesh::bind(ID3D11Device* device) {
 		PANIC("Failed to create vertex buffer for model");
 	}
 
-	bufferDesc.ByteWidth = sizeof(u16) * indices.len();
+	bufferDesc.ByteWidth = sizeof(Index) * indices.len();
 	bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 	bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	bufferDesc.CPUAccessFlags = NULL;
