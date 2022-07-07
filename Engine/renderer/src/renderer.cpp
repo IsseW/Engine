@@ -52,13 +52,10 @@ void Renderer::resize(Vec2<u16> size)  {
 }
 
 void Renderer::begin_draw(const World& world, AssetHandler& assets) {
-	assets.default_asset<Image>()->bind(ctx.device);
-	assets.default_asset<Mesh>()->bind(ctx.device);
 	// Do some setup and bind required resource before we draw.
 	world.objects.values([&](const Object* obj) {
-		assets.get(obj->mesh).unwrap()->bind(ctx.device);
-		Option<AId<Image>> img = obj->image;
-		img.map<char>([&](AId<Image> img) { assets.get(img).unwrap()->bind(ctx.device); return 0; });
+		assets.get_or_default(obj->mesh)->bind(ctx.device);
+		assets.get_or_default(obj->image)->bind(ctx.device);
 	});
 	
 
@@ -93,11 +90,7 @@ void Renderer::draw_first_pass(const Window& window, const World& world, const A
 		auto locals = ObjectRenderer::Locals::from_object(*obj);
 		first_pass.object_renderer.locals.update(ctx.context, &locals);
 
-		Option<AId<Image>> maybe_image = obj->image;
-		const Image* image = maybe_image
-			.map<Option<const Image*>>([&](AId<Image> image) { return assets.get(image); })
-			.flatten<const Image*>()
-			.unwrap_or_else([&]() { return assets.default_asset<Image>(); });
+		const Image* image = assets.get_or_default(obj->image);
 
 		if (image->binded.is_none()) {
 			return;
@@ -107,7 +100,7 @@ void Renderer::draw_first_pass(const Window& window, const World& world, const A
 		ctx.context->PSSetShaderResources(0, 1, &binded->rsv);
 		ctx.context->PSSetSamplers(0, 1, &binded->sampler_state);
 
-		const Mesh* mesh = assets.get(obj->mesh).unwrap();
+		const Mesh* mesh = assets.get_or_default(obj->mesh);
 		for (const SubMesh& sub_mesh : mesh->submeshes) {
 			if (sub_mesh.binded.is_none()) {
 				continue;
@@ -117,7 +110,7 @@ void Renderer::draw_first_pass(const Window& window, const World& world, const A
 			u32 stride = sizeof(Vertex);
 			u32 offset = 0;
 			ctx.context->IASetVertexBuffers(0, 1, &binded->vertex_buffer, &stride, &offset);
-			ctx.context->IASetIndexBuffer(binded->index_buffer, DXGI_FORMAT_R16_UINT, 0);
+			ctx.context->IASetIndexBuffer(binded->index_buffer, DXGI_FORMAT_R32_UINT, 0);
 
 			ctx.context->DrawIndexed(sub_mesh.indices.len(), 0, 0);
 		}

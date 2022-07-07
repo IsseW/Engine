@@ -126,6 +126,38 @@ bool edit_vertices(Option<Mesh*> mesh, Mat4<f32> mat) {
 	return edited;
 }
 
+void object_ui(Object* obj, AssetHandler& assets) {
+	edit("Trans", obj->transform.translation);
+	edit("Scale", obj->transform.scale);
+	edit("Rotation", obj->transform.rotation);
+	ImGui::ColorEdit3("Color", obj->color.data());
+	if (ImGui::BeginListBox("Mesh")) {
+		assets.assets<Mesh>().iter([&](AId<Mesh> id, const Asset<Mesh>* asset) {
+			std::string s = id.to_string();
+			s += " ";
+			s += asset->path.as_ptr().map<const char*>([](const std::string* s) { return s->data(); }).unwrap_or("unnamed");
+
+			if (ImGui::Selectable(s.data(), obj->mesh.is_some() && *obj->mesh.as_ptr().unwrap_unchecked() == id)) {
+				obj->mesh = some(id);
+			}
+		});
+		ImGui::EndListBox();
+	}
+
+	if (ImGui::BeginListBox("Image")) {
+		assets.assets<Image>().iter([&](AId<Image> id, const Asset<Image>* asset) {
+			std::string s = id.to_string();
+			s += " ";
+			s += asset->path.as_ptr().map<const char*>([](const std::string* s) { return s->data(); }).unwrap_or("unnamed");
+
+			if (ImGui::Selectable(s.data(), obj->image.is_some() && *obj->image.as_ptr().unwrap_unchecked() == id)) {
+				obj->image = some(id);
+			}
+			});
+		ImGui::EndListBox();
+	}
+}
+
 void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 	static bool active = true;
 	ImGui::Begin("Editor", &active);
@@ -177,27 +209,10 @@ void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 			if (ImGui::CollapsingHeader(s.data())) {
 				ImGui::PushID(id.idx());
 				ImGui::Indent();
-				edit("Trans", obj->transform.translation);
-				edit("Scale", obj->transform.scale);
-				edit("Rotation", obj->transform.rotation);
 
+				object_ui(obj, assets);
 
-				ImGui::ColorEdit3("Color", obj->color.data());
-
-				if (ImGui::BeginListBox("Mesh")) {
-					assets.assets<Mesh>().iter([&](AId<Mesh> id, const Asset<Mesh>* asset) {
-						std::string s = id.to_string();
-						s += " ";
-						s += asset->path.as_ptr().map<const char*>([](const std::string* s) { return s->data(); }).unwrap_or("unnamed");
-
-						if (ImGui::Selectable(s.data(), obj->mesh == id)) {
-							obj->mesh = id;
-						}
-
-						});
-					ImGui::EndListBox();
-				}
-
+				auto mat = obj->transform.get_mat();
 
 				if (ImGui::CollapsingHeader("Camera Relative")) {
 					ImGui::Indent();
@@ -210,29 +225,44 @@ void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 					ImGui::Unindent();
 				}
 
-				auto mat = obj->transform.get_mat();
+				obj->mesh.as_ptr().then_do([&](AId<Mesh>* mesh) {
+					if (ImGui::CollapsingHeader("Vertices")) {
+						ImGui::Indent();
+						if (ImGui::CollapsingHeader("Local")) {
+							edit_vertices(assets.get(*mesh), Mat4<f32>::identity());
+						}
+						if (ImGui::CollapsingHeader("Global")) {
+							edit_vertices(assets.get(*mesh), mat);
+						}
+						if (ImGui::CollapsingHeader("View")) {
+							edit_vertices(assets.get(*mesh), mat * view_mat);
+						}
+						if (ImGui::CollapsingHeader("Proj")) {
+							edit_vertices(assets.get(*mesh), mat * view_mat * proj_mat);
+						}
+						ImGui::Unindent();
+					}
+				});
 
-				if (ImGui::CollapsingHeader("Vertices")) {
-					ImGui::Indent();
-					if (ImGui::CollapsingHeader("Local")) {
-						edit_vertices(assets.get(obj->mesh), Mat4<f32>::identity());
-					}
-					if (ImGui::CollapsingHeader("Global")) {
-						edit_vertices(assets.get(obj->mesh), mat);
-					}
-					if (ImGui::CollapsingHeader("View")) {
-						edit_vertices(assets.get(obj->mesh), mat * view_mat);
-					}
-					if (ImGui::CollapsingHeader("Proj")) {
-						edit_vertices(assets.get(obj->mesh), mat * view_mat * proj_mat);
-					}
-					ImGui::Unindent();
+				if (ImGui::Button("Remove")) {
+					world.remove(id);
 				}
 
 				ImGui::Unindent();
 				ImGui::PopID();
 			}
 			});
+		if (ImGui::CollapsingHeader("New Object")) {
+			static Object new_object = Object(Transform(), Vec3<f32>::zero());
+			ImGui::Indent();
+			object_ui(&new_object, assets);
+
+			if (ImGui::Button("Add")) {
+				world.add(std::move(new_object));
+				new_object = Object(Transform(), Vec3<f32>::zero());
+			}
+			ImGui::Unindent();
+		}
 		ImGui::Unindent();
 	}
 

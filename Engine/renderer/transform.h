@@ -34,6 +34,11 @@ struct Camera {
 	Transform transform;
 	f32 pitch = 0.0f;
 	f32 yaw = 0.0f;
+
+	f32 speed = 4.0f;
+	f32 speed_boost = 5.0f;
+	f32 sensitivity = 1.0f;
+
 	bool is_perspective;
 	f32 cam_near;
 	f32 cam_far;

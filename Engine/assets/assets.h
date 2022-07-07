@@ -6,6 +6,7 @@
 #include<rstd/vector.h>
 #include<math/vec.h>
 #include<d3d11.h>
+#include<array>
 
 struct Image {
 	struct Binded {
@@ -39,11 +40,13 @@ struct SubMesh {
 		ID3D11Buffer* index_buffer;
 	};
 	Vec<Vertex> vertices;
-	Vec<u16> indices;
+	Vec<u32> indices;
 	Option<Binded> binded;
 
 	void bind(ID3D11Device* device);
 	void clean_up();
+
+	void push_quad(std::array<Vec3<f32>, 4>);
 };
 
 struct Mesh {
@@ -141,6 +144,26 @@ struct AssetHandler {
 	template<typename T>
 	T* default_asset() {
 		return assets<T>().default_asset();
+	}
+
+	template<typename T>
+	const T* get_or_default(Option<AId<T>> handle) const {
+		return handle
+			.map<Option<const T*>>([&](AId<T> handle) {
+				return this->get<T>(handle);
+			})
+			.flatten<const T*>()
+			.unwrap_or_else([&]() { return this->default_asset<T>(); });
+	}
+
+	template<typename T>
+	T* get_or_default(Option<AId<T>> handle) {
+		return handle
+			.map<Option<T*>>([&](AId<T> handle) {
+				return this->get<T>(handle);
+			})
+			.flatten<T*>()
+			.unwrap_or_else([&]() { return this->default_asset<T>(); });
 	}
 
 	template<typename T>

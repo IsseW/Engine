@@ -169,7 +169,7 @@ Mesh Mesh::load(const std::string& path) {
 	Vec<Vec2<f32>> uvs;
 	std::unordered_map<IndexTuple, usize> submesh_vertices;
 	Vec<Vertex> verts;
-	Vec<u16> indices;
+	Vec<u32> indices;
 
 	while (std::getline(file, line)) {
 		auto split = split_string(std::move(line), ' ');
@@ -247,7 +247,7 @@ Mesh Mesh::load(const std::string& path) {
 				});
 			}
 			verts = Vec<Vertex>{};
-			indices = Vec<u16>{};
+			indices = Vec<u32>{};
 		} 
 	}
 	if (submesh_vertices.size() != 0) {

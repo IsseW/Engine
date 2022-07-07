@@ -19,12 +19,13 @@ struct PointLight {
 };
 
 struct Object {
-	Object(Transform transform, AId<Mesh> mesh, Rgb color);
+	Object(Transform transform, Rgb color);
 
+	Object&& with_mesh(AId<Mesh> mesh);
 	Object&& with_image(AId<Image> image);
 
 	Transform transform;
-	AId<Mesh> mesh;
+	Option<AId<Mesh>> mesh;
 	Rgb color;
 	Option<AId<Image>> image;
 };
@@ -37,6 +38,9 @@ struct World {
 
 	Id<Object> add(Object&& object);
 	Id<PointLight> add(PointLight&& object);
+
+	void remove(Id<Object> id);
+	void remove(Id<PointLight> id);
 
 	void update(f32 dt, const Window& window);
 

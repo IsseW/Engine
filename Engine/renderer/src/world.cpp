@@ -3,7 +3,13 @@
 #include<math/consts.h>
 #include<algorithm>
 
-Object::Object(Transform transform, AId<Mesh> mesh, Rgb color) : transform(transform), mesh(mesh), color(color) {}
+Object::Object(Transform transform, Rgb color) : transform(transform), color(color) {}
+
+Object&& Object::with_mesh(AId<Mesh> mesh) {
+	this->mesh = some(mesh);
+
+	return std::move(*this);
+}
 
 Object&& Object::with_image(AId<Image> image) {
 	this->image = some(image);
@@ -18,6 +24,13 @@ Id<Object> World::add(Object&& object) {
 }
 Id<PointLight> World::add(PointLight&& object) {
 	return point_lights.insert(std::move(object));
+}
+
+void World::remove(Id<Object> id) {
+	objects.remove(id);
+}
+void World::remove(Id<PointLight> id) {
+	point_lights.remove(id);
 }
 
 void update_camera(Camera& cam, f32 dt, const Window& window) {
@@ -48,21 +61,18 @@ void update_camera(Camera& cam, f32 dt, const Window& window) {
 		if (window.input().pressed(Key::A)) {
 			move -= move_right;
 		}
-		const f32 MOVE_SPEED = 3.0;
-		const f32 MOVE_SPEED_BOOST = 5.0;
-		if (move.length_sqr() > 0.0) {
+		if (move.length_sqr() > 0.0f) {
 			move.normalize();
-			move *= MOVE_SPEED * dt * (window.input().pressed(Key::Ctrl) ? MOVE_SPEED_BOOST : 1.0);
+			move *= cam.speed * dt * (window.input().pressed(Key::Ctrl) ? cam.speed_boost : 1.0f);
 			cam.transform.translation += move;
 		}
 		// Rotation
-		const f32 SENSITIVITY = 0.01f;
-
 		Vec2<f32> mouse_delta = window.input().mouse_delta();
 		if (mouse_delta.length_sqr() > 0.0) {
-			cam.pitch -= SENSITIVITY * mouse_delta.y * F32::TO_RAD;
+			f32 sensitivity = cam.sensitivity / 25.0f;
+			cam.pitch -= sensitivity * mouse_delta.y * F32::TO_RAD;
 			cam.pitch = std::clamp(cam.pitch, -F32::PI / 2.0f, F32::PI / 2.0f);
-			cam.yaw += SENSITIVITY * mouse_delta.x * F32::TO_RAD;
+			cam.yaw += sensitivity * mouse_delta.x * F32::TO_RAD;
 
 			cam.transform.rotation = Quat<f32>::angle_axis(Vec3<f32>::unit_y(), cam.yaw) * Quat<f32>::angle_axis(Vec3<f32>::unit_x(), cam.pitch);
 		}
