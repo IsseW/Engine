@@ -328,3 +328,12 @@ void Mesh::clean_up() {
 		submesh.clean_up();
 	}
 }
+
+
+void Mesh::calculate_bounds() {
+	for (const SubMesh& sm : submeshes) {
+		for (const Vertex& vertex : sm.vertices) {
+			bounds.grow_to_contain(vertex.v);
+		}
+	}
+}

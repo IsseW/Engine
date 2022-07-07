@@ -4,7 +4,7 @@
 #include<rstd/primitives.h>
 #include<rstd/depot.h>
 #include<rstd/vector.h>
-#include<math/vec.h>
+#include<math/aab.h>
 #include<d3d11.h>
 #include<array>
 
@@ -53,11 +53,13 @@ struct SubMesh {
 
 struct Mesh {
 	Vec<SubMesh> submeshes;
+	Aabb<f32> bounds {};
 
 	static Mesh default_asset();
 	static Mesh load(const std::string& path);
 	void bind(ID3D11Device* device);
 	void clean_up();
+	void calculate_bounds();
 };
 
 template<typename T>

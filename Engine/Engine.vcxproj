@@ -190,6 +190,7 @@
     <ClInclude Include="assets\assets.h" />
     <ClInclude Include="assets\shape.h" />
     <ClInclude Include="input\input.h" />
+    <ClInclude Include="math\aab.h" />
     <ClInclude Include="renderer\window.h" />
     <ClInclude Include="renderer\world.h" />
     <ClInclude Include="rstd\depot.h" />
