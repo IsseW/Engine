@@ -2,31 +2,30 @@
 #include"transform.h"
 #include<assets/assets.h>
 
-using Rgb = Vec3<f32>;
 struct Light {
-	Rgb _color;
-	f32 _strength;
+	Vec3<f32> color;
+	f32 strength;
 };
 
 struct DirLight {
-	Quat<f32> _rotation;
-	Light _light;
+	Quat<f32> rotation;
+	Light light;
 };
 
-struct PointLight {
-	Transform _transform;
-	Light _light;
+struct SpotLight {
+	Transform transform;
+	Light light;
 };
 
 struct Object {
-	Object(Transform transform, Rgb color);
+	Object(Transform transform, Vec3<f32> color);
 
 	Object&& with_mesh(AId<Mesh> mesh);
 	Object&& with_image(AId<Image> image);
 
 	Transform transform;
 	Option<AId<Mesh>> mesh;
-	Rgb color;
+	Vec3<f32> color;
 	Option<AId<Image>> image;
 };
 
@@ -34,18 +33,20 @@ struct Window;
 
 struct World {
 	World() = delete;
-	World(Camera camera, DirLight light);
+	World(Camera camera);
 
 	Id<Object> add(Object&& object);
-	Id<PointLight> add(PointLight&& object);
+	Id<SpotLight> add(SpotLight&& object);
+	Id<DirLight> add(DirLight&& object);
 
 	void remove(Id<Object> id);
-	void remove(Id<PointLight> id);
+	void remove(Id<SpotLight> id);
+	void remove(Id<DirLight> id);
 
 	void update(f32 dt, const Window& window);
 
 	Camera camera;
-	DirLight dir_light;
-	Depot<PointLight> point_lights;
+	Depot<SpotLight> point_lights;
+	Depot<DirLight> dir_lights;
 	Depot<Object> objects;
 };

@@ -3,7 +3,7 @@
 #include<math/consts.h>
 #include<algorithm>
 
-Object::Object(Transform transform, Rgb color) : transform(transform), color(color) {}
+Object::Object(Transform transform, Vec3<f32> color) : transform(transform), color(color) {}
 
 Object&& Object::with_mesh(AId<Mesh> mesh) {
 	this->mesh = some(mesh);
@@ -17,20 +17,28 @@ Object&& Object::with_image(AId<Image> image) {
 	return std::move(*this);
 }
 
-World::World(Camera camera, DirLight light) : camera(camera), dir_light(light), point_lights(), objects() { }
+World::World(Camera camera) : camera(camera) { }
 
 Id<Object> World::add(Object&& object) {
 	return objects.insert(std::move(object));
 }
-Id<PointLight> World::add(PointLight&& object) {
+Id<SpotLight> World::add(SpotLight&& object) {
 	return point_lights.insert(std::move(object));
+}
+
+Id<DirLight> World::add(DirLight&& object)
+{
+	return dir_lights.insert(std::move(object));
 }
 
 void World::remove(Id<Object> id) {
 	objects.remove(id);
 }
-void World::remove(Id<PointLight> id) {
+void World::remove(Id<SpotLight> id) {
 	point_lights.remove(id);
+}
+void World::remove(Id<DirLight> id) {
+	dir_lights.remove(id);
 }
 
 void update_camera(Camera& cam, f32 dt, const Window& window) {

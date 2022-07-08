@@ -1,68 +1,8 @@
 #pragma once
-#include<d3d11.h>
-#include<memory>
-#include<rstd/result.h> 
-#include"world.h"
 
-struct Globals {
-	static Globals from_world(const World& world, f32 ratio);
-
-	Mat4<f32> view_matrix;
-	Mat4<f32> proj_matrix;
-};
-
-template<typename T> requires (sizeof(T) % 4 == 0)
-struct Uniform {
-	ID3D11Buffer* buffer;
-
-	void update(ID3D11DeviceContext* ctx, const T* data) {
-		D3D11_MAPPED_SUBRESOURCE resource;
-
-		if (FAILED(ctx->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource))) {
-			PANIC("Failed to map uniform");
-		}
-		T* data_ptr = (T*)resource.pData;
-		memcpy(data_ptr, data, sizeof(T));
-		ctx->Unmap(buffer, 0);
-	}
-	void clean_up() {
-		buffer->Release();
-	}
-};
-
-struct ObjectRenderer {
-	struct Locals {
-		Mat4<f32> world_matrix;
-		Vec4<f32> color;
-
-		static Locals from_object(const Object& obj);
-	};
-	ID3D11VertexShader* vs;
-	ID3D11PixelShader* ps;
-	ID3D11InputLayout* layout;
-
-	Uniform<Locals> locals;
-};
-
-
-struct FirstPass {
-	ObjectRenderer object_renderer;
-	Uniform<Globals> globals;
-};
-
-enum RenderCreateError {
-	FailedWindowCreation,
-	FailedDeviceCreation,
-	FailedRTVCreation,
-	FailedDepthStencilViewCreation,
-	FailedTextureCreation,
-	FailedBackBuffer,
-	MissingShaderFile,
-	FailedShaderCreation,
-	FailedLayoutCreation,
-	FailedBufferCreation,
-};
-
+#include"passes/shadow_pass.h"
+#include"passes/first_pass.h"
+#include"passes/second_pass.h"
 
 struct RendererCtx {
 	ID3D11Device* device;
@@ -70,31 +10,34 @@ struct RendererCtx {
 	IDXGISwapChain* swap_chain;
 	D3D11_VIEWPORT viewport;
 
-	ID3D11RenderTargetView* rtv;
-	ID3D11Texture2D* ds_texture;
-	ID3D11DepthStencilView* ds_view;
+	RenderTarget screen;
+
+	static Result<RendererCtx, RenderCreateError> create(const Window& window);
+	void resize(Vec2<u16> size);
+	void clean_up();
+
+	Vec2<u16> size() const;
+	f32 ratio() const;
 };
 
 struct Window;
 
 struct Renderer {
 	RendererCtx ctx;
+
+	ShadowPass shadow_pass;
 	FirstPass first_pass;
+	SecondPass second_pass;
 
 	void clean_up();
-	void begin_draw(const World& world, AssetHandler& assets);
-	void draw_first_pass(const Window& window, const World& world, const AssetHandler& assets);
-	void resize(Vec2<u16>);
+	void draw(const World& world, AssetHandler& assets);
+	void resize(const Window& window, Vec2<u16>);
 	void present();
+
+	static Result<Renderer, RenderCreateError> create(const Window& window);
 };
 
 struct DepthStencilRes {
 	ID3D11Texture2D* ds_texture;
 	ID3D11DepthStencilView* ds_view;
 };
-
-Result<Renderer, RenderCreateError> create_renderer(const Window& window);
-
-Result<ID3D11RenderTargetView*, RenderCreateError> create_render_target_view(ID3D11Device* device, IDXGISwapChain* swap_chain);
-
-Result<DepthStencilRes, RenderCreateError> create_depth_stencil(ID3D11Device* device, u32 width, u32 height);

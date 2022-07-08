@@ -133,7 +133,7 @@ Mat4<f32> create_persp_proj(f32 left, f32 right, f32 bottom, f32 top, f32 cam_ne
 
 Mat4<f32> Camera::get_proj(f32 ratio) const {
 	if (is_perspective) {
-		f32 near = cam_near + 1.0;
+		f32 near = cam_near + 1.0f;
 		f32 top = tanf(fov / 2.0f) * near;
 		f32 bottom = -top;
 		f32 right = top * ratio;

@@ -44,7 +44,6 @@ void start() {
 void end() {
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-
 }
 
 bool edit(const char* label, Vec2<f32>& v) {
@@ -269,7 +268,7 @@ void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 	ImGui::End();
 }
 
-void update_ui(const Window& window, World& world, AssetHandler& assets) {
+void update_ui(const Window& window, Renderer& renderer, World& world, AssetHandler& assets) {
 	start();
 
 	ImGui_ImplWin32_GetDpiScaleForHwnd(window.window());
@@ -277,6 +276,20 @@ void update_ui(const Window& window, World& world, AssetHandler& assets) {
 	ImGui::BeginMainMenuBar();
 	ImGui::Button("hello!");
 	ImGui::EndMainMenuBar();
+	static bool renderer_open = false;
+	if (ImGui::Begin("Renderer", &renderer_open)) {
+		if (ImGui::BeginListBox("Render Mode")) {
+
+			for (usize i = 0; i < 5; ++i) {
+				if (ImGui::Selectable(MODES[i], (usize)renderer.second_pass.mode == i)) {
+					renderer.second_pass.mode = (RenderMode)i;
+				}
+			}
+
+			ImGui::EndListBox();
+		}
+	}
+	ImGui::End();
 
 	editor_ui(window, world, assets);
 

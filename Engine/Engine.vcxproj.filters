@@ -81,6 +81,21 @@
     <ClCompile Include="input\src\input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\passes\src\shadow_pass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\passes\src\first_pass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\src\util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\passes\src\second_pass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\src\shader_loading.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer\renderer.h">
@@ -91,9 +106,6 @@
     </ClInclude>
     <ClInclude Include="renderer\transform.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\pipelines\object.h">
-      <Filter>Header Files\Pipelines</Filter>
     </ClInclude>
     <ClInclude Include="rstd\result.h">
       <Filter>Header Files\rstd</Filter>
@@ -176,6 +188,18 @@
     <ClInclude Include="math\aab.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="renderer\passes\shadow_pass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\passes\first_pass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\passes\second_pass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\VertexShader.hlsl">
@@ -184,6 +208,7 @@
     <FxCompile Include="shaders\PixelShader.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
+    <FxCompile Include="shaders\Deferred.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

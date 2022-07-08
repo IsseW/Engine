@@ -53,7 +53,7 @@ void Window::moved(u16 x, u16 y) {
 void Window::resized(u16 width, u16 height) {
 	update_ps();
 	if (_renderer) {
-		_renderer->resize(size());
+		_renderer->resize(*this, size());
 	}
 }
 

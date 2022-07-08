@@ -53,13 +53,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	auto test_texture = assets.load<Image>("resources/test_texture.png");
 
 	auto cam = Camera::perspective(Transform::from_translation(Vec3<f32>(0.0, 0.0, -10.0)), 60.0f * F32::TO_RAD);
-	auto dir_light = DirLight();
-	World world(cam, dir_light);
-	world.add(Object(Transform(), Rgb(0.5, 0.5, 0.0)).with_mesh(cube_mesh).with_image(test_texture));
+	World world(cam);
+	world.add(Object(Transform(), Vec3<f32>(0.5f, 0.5f, 0.0f)).with_mesh(cube_mesh).with_image(test_texture));
 
 	Window* window = create_window(hInstance, 1000, 1000, nCmdShow).unwrap();
 
-	Renderer renderer = create_renderer(*window).unwrap();
+	auto maybe_renderer = Renderer::create(*window);
+
+	if (maybe_renderer.is_err()) {
+		std::cout << "Err: " << maybe_renderer.unwrap_err() << std::endl;
+	}
+
+	Renderer renderer = maybe_renderer.unwrap();
 	window->set_renderer(&renderer);
 
 	auto cleanup = [&]() {
@@ -96,11 +101,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 		world.update(dt, *window);
 
-		renderer.begin_draw(world, assets);
+		renderer.draw(world, assets);
 
-		renderer.draw_first_pass(*window, world, assets);
+		renderer.ctx.context->OMSetRenderTargets(1, &renderer.ctx.screen.rtv, nullptr);
 
-		update_ui(*window, world, assets);
+		update_ui(*window, renderer, world, assets);
 		renderer.present();
 	}
 	return 0;

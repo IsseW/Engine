@@ -165,7 +165,12 @@
     <ClCompile Include="assets\src\loaders.cpp" />
     <ClCompile Include="assets\src\shape.cpp" />
     <ClCompile Include="input\src\input.cpp" />
+    <ClCompile Include="renderer\passes\src\first_pass.cpp" />
+    <ClCompile Include="renderer\passes\src\second_pass.cpp" />
+    <ClCompile Include="renderer\passes\src\shadow_pass.cpp" />
+    <ClCompile Include="renderer\src\shader_loading.cpp" />
     <ClCompile Include="renderer\src\transform.cpp" />
+    <ClCompile Include="renderer\src\util.cpp" />
     <ClCompile Include="renderer\src\window.cpp" />
     <ClCompile Include="renderer\src\world.cpp" />
     <ClCompile Include="ui\ui.cpp" />
@@ -191,6 +196,10 @@
     <ClInclude Include="assets\shape.h" />
     <ClInclude Include="input\input.h" />
     <ClInclude Include="math\aab.h" />
+    <ClInclude Include="renderer\passes\second_pass.h" />
+    <ClInclude Include="renderer\passes\shadow_pass.h" />
+    <ClInclude Include="renderer\passes\first_pass.h" />
+    <ClInclude Include="renderer\util.h" />
     <ClInclude Include="renderer\window.h" />
     <ClInclude Include="renderer\world.h" />
     <ClInclude Include="rstd\depot.h" />
@@ -211,7 +220,6 @@
     <ClInclude Include="rstd\panic.h" />
     <ClInclude Include="rstd\primitives.h" />
     <ClInclude Include="rstd\result.h" />
-    <ClInclude Include="renderer\pipelines\object.h" />
     <ClInclude Include="renderer\transform.h" />
     <ClInclude Include="renderer\renderer.h" />
     <ClInclude Include="assets\stb_image.h" />
@@ -219,15 +227,35 @@
     <ClInclude Include="rstd\vector.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="shaders\Deferred.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="shaders\PixelShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="shaders\VertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
