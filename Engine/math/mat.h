@@ -282,4 +282,30 @@ namespace math {
 		auto r = mat_from_euler(euler);
 		return transformation(t, s, r);
 	}
+
+	template<typename T>
+	constexpr Mat4<T> create_orth_proj(T left, T right, T bottom, T top, T cam_near, T cam_far) {
+		constexpr T ZERO = (T)0;
+		constexpr T ONE = (T)1;
+		constexpr T TWO = (T)2;
+		return Mat4<f32> {
+			TWO / (right - left), ZERO, ZERO, ZERO,
+			ZERO, TWO / (top - bottom), ZERO, ZERO,
+			ZERO, ZERO, ONE / (cam_far - cam_near), ZERO,
+			(right + left) / (left - right), (top + bottom) / (bottom - top), (ONE + (cam_far + cam_near) / (cam_near - cam_far)) / TWO, ONE
+		};
+	}
+
+	template<typename T>
+	constexpr Mat4<T> create_persp_proj(T left, T right, T bottom, T top, T cam_near, T cam_far) {
+		constexpr T ZERO = (T)0;
+		constexpr T ONE = (T)1;
+		constexpr T TWO = (T)2;
+		return Mat4<f32> {
+			TWO * cam_near / (right - left), ZERO, ZERO, ZERO,
+			ZERO, TWO * cam_near / (top - bottom), ZERO, ZERO,
+			(right + left) / (right - left), (top + bottom) / (top - bottom), (cam_far + cam_near) / (cam_far - cam_near), -ONE,
+			ZERO, ZERO, cam_far* cam_near / (cam_far - cam_near), ZERO,
+		};
+	}
 }

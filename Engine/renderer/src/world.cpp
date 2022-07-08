@@ -23,7 +23,7 @@ Id<Object> World::add(Object&& object) {
 	return objects.insert(std::move(object));
 }
 Id<SpotLight> World::add(SpotLight&& object) {
-	return point_lights.insert(std::move(object));
+	return spot_lights.insert(std::move(object));
 }
 
 Id<DirLight> World::add(DirLight&& object)
@@ -35,7 +35,7 @@ void World::remove(Id<Object> id) {
 	objects.remove(id);
 }
 void World::remove(Id<SpotLight> id) {
-	point_lights.remove(id);
+	spot_lights.remove(id);
 }
 void World::remove(Id<DirLight> id) {
 	dir_lights.remove(id);

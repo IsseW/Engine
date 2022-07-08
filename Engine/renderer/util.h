@@ -152,7 +152,7 @@ struct VSIL {
 	ID3D11VertexShader* vs;
 	ID3D11InputLayout* il;
 };
-Result<VSIL, RenderCreateError> load_vertex(ID3D11Device* device, const char* file, std::vector<D3D11_INPUT_ELEMENT_DESC> input);
+Result<VSIL, RenderCreateError> load_vertex(ID3D11Device* device, const char* file, const std::vector<D3D11_INPUT_ELEMENT_DESC>& input);
 
 Result<ID3D11ComputeShader*, RenderCreateError> load_compute(ID3D11Device* device, const char* file);
 

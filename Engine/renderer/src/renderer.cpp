@@ -37,9 +37,9 @@ void Renderer::resize(const Window& window, Vec2<u16> size)  {
 }
 
 void Renderer::draw(const World& world, AssetHandler& assets) {
-	world.objects.values([&](const Object* obj) {
-		assets.get_or_default(obj->mesh)->bind(ctx.device);
-		assets.get_or_default(obj->image)->bind(ctx.device);
+	world.objects.values([&](const Object& obj) {
+		assets.get_or_default(obj.mesh)->bind(ctx.device);
+		assets.get_or_default(obj.image)->bind(ctx.device);
 	});
 
 	ctx.context->RSSetViewports(1, &ctx.viewport);

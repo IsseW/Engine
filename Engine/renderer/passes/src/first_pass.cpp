@@ -1,15 +1,10 @@
-#include<renderer/renderer.h>
+#include<renderer/passes/draw_objects.h>
 #include<fstream>
 
 Result<ObjectRenderer, RenderCreateError> ObjectRenderer::create(ID3D11Device* device)
 {
 	VSIL vsil;
-	TRY(vsil, load_vertex(device, "VertexShader.cso", 
-		{
-			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-			{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		}));
+	TRY(vsil, load_vertex(device, "VertexShader.cso", VERTEX_LAYOUT));
 
 	ID3D11PixelShader* ps;
 	TRY(ps, load_pixel(device, "PixelShader.cso"));
@@ -139,36 +134,20 @@ void FirstPass::draw(const RendererCtx& ctx, const World& world, const AssetHand
 	ctx.context->VSSetConstantBuffers(0, 2, uniforms);
 	ctx.context->PSSetConstantBuffers(0, 2, uniforms);
 	ctx.context->IASetInputLayout(object_renderer.layout);
-	ctx.context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	world.objects.values([&](const Object* obj) {
-		auto locals = ObjectRenderer::Locals::from_object(*obj);
+	draw_objects(ctx, world, assets, [&](const Object& obj) {
+		auto locals = ObjectRenderer::Locals::from_object(obj);
 		object_renderer.locals.update(ctx.context, &locals);
 
-		const Image* image = assets.get_or_default(obj->image);
+		const Image* image = assets.get_or_default(obj.image);
 
 		if (image->binded.is_none()) {
-			return;
+			return true;
 		}
 		auto binded = image->binded.as_ptr().unwrap_unchecked();
 
 		ctx.context->PSSetShaderResources(0, 1, &binded->rsv);
 		ctx.context->PSSetSamplers(0, 1, &binded->sampler_state);
-
-		const Mesh* mesh = assets.get_or_default(obj->mesh);
-		for (const SubMesh& sub_mesh : mesh->submeshes) {
-			if (sub_mesh.binded.is_none()) {
-				continue;
-			}
-
-			auto binded = sub_mesh.binded.as_ptr().unwrap_unchecked();
-			u32 stride = sizeof(Vertex);
-			u32 offset = 0;
-			ctx.context->IASetVertexBuffers(0, 1, &binded->vertex_buffer, &stride, &offset);
-			ctx.context->IASetIndexBuffer(binded->index_buffer, DXGI_FORMAT_R16_UINT, 0);
-
-			ctx.context->DrawIndexed(sub_mesh.indices.len(), 0, 0);
-		}
-
+		return false;
 	});
 }

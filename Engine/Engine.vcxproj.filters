@@ -200,6 +200,9 @@
     <ClInclude Include="renderer\passes\second_pass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="renderer\passes\draw_objects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\VertexShader.hlsl">
@@ -209,6 +212,7 @@
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="shaders\Deferred.hlsl" />
+    <FxCompile Include="shaders\ShadowVertex.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

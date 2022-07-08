@@ -100,11 +100,26 @@ bool edit(const char* label, Mat4<f32>& v) {
 
 bool edit(const char* label, Quat<f32>& quat) {
 	auto euler = quat.to_euler() * F32::TO_DEG;
-	if (edit("Rotation", euler)) {
+	if (edit(label, euler)) {
 		quat = Quat<f32>::from_euler(euler * F32::TO_RAD);
 		return true;
 	}
 	return false;
+}
+
+bool edit(Transform& transform) {
+	bool e = edit("Trans", transform.translation);
+	e |= edit("Scale", transform.scale);
+	e |= edit("Rotation", transform.rotation);
+
+	return e;
+}
+
+bool edit(Light& light) {
+	bool e = ImGui::ColorEdit3("Color", light.color.data());
+	e |= ImGui::DragFloat("Strength", &light.strength);
+
+	return e;
 }
 
 bool edit_vertices(Option<Mesh*> mesh, Mat4<f32> mat) {
@@ -125,36 +140,48 @@ bool edit_vertices(Option<Mesh*> mesh, Mat4<f32> mat) {
 	return edited;
 }
 
-void object_ui(Object* obj, AssetHandler& assets) {
-	edit("Trans", obj->transform.translation);
-	edit("Scale", obj->transform.scale);
-	edit("Rotation", obj->transform.rotation);
-	ImGui::ColorEdit3("Color", obj->color.data());
+
+
+void object_ui(Object& obj, AssetHandler& assets) {
+	edit(obj.transform);
+
+	ImGui::ColorEdit3("Color", obj.color.data());
+
 	if (ImGui::BeginListBox("Mesh")) {
-		assets.assets<Mesh>().iter([&](AId<Mesh> id, const Asset<Mesh>* asset) {
+		assets.assets<Mesh>().iter([&](AId<Mesh> id, const Asset<Mesh>& asset) {
 			std::string s = id.to_string();
 			s += " ";
-			s += asset->path.as_ptr().map<const char*>([](const std::string* s) { return s->data(); }).unwrap_or("unnamed");
+			s += asset.path.as_ptr().map<const char*>([](const std::string* s) { return s->data(); }).unwrap_or("unnamed");
 
-			if (ImGui::Selectable(s.data(), obj->mesh.is_some() && *obj->mesh.as_ptr().unwrap_unchecked() == id)) {
-				obj->mesh = some(id);
+			if (ImGui::Selectable(s.data(), obj.mesh.is_some() && *obj.mesh.as_ptr().unwrap_unchecked() == id)) {
+				obj.mesh = some(id);
 			}
 		});
 		ImGui::EndListBox();
 	}
 
 	if (ImGui::BeginListBox("Image")) {
-		assets.assets<Image>().iter([&](AId<Image> id, const Asset<Image>* asset) {
+		assets.assets<Image>().iter([&](AId<Image> id, const Asset<Image>& asset) {
 			std::string s = id.to_string();
 			s += " ";
-			s += asset->path.as_ptr().map<const char*>([](const std::string* s) { return s->data(); }).unwrap_or("unnamed");
+			s += asset.path.as_ptr().map<const char*>([](const std::string* s) { return s->data(); }).unwrap_or("unnamed");
 
-			if (ImGui::Selectable(s.data(), obj->image.is_some() && *obj->image.as_ptr().unwrap_unchecked() == id)) {
-				obj->image = some(id);
+			if (ImGui::Selectable(s.data(), obj.image.is_some() && *obj.image.as_ptr().unwrap_unchecked() == id)) {
+				obj.image = some(id);
 			}
 			});
 		ImGui::EndListBox();
 	}
+}
+
+void dir_light_ui(DirLight& light) {
+	edit(light.transform);
+	edit(light.light);
+}
+
+void spot_light_ui(SpotLight& light) {
+	edit(light.transform);
+	edit(light.light);
 }
 
 void editor_ui(const Window& window, World& world, AssetHandler& assets) {
@@ -167,6 +194,7 @@ void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 	auto proj_mat_inv = proj_mat.invert();
 
 	if (ImGui::CollapsingHeader("Camera")) {
+		ImGui::PushID(0);
 		ImGui::Indent();
 		edit("Position", world.camera.transform.translation);
 		Vec2<f32> rot = Vec2<f32>(world.camera.pitch, world.camera.yaw) * F32::TO_DEG;
@@ -198,11 +226,13 @@ void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 			ImGui::Unindent();
 		}
 		ImGui::Unindent();
+		ImGui::PopID();
 	}
 
 	if (ImGui::CollapsingHeader("Objects")) {
+		ImGui::PushID(1);
 		ImGui::Indent();
-		world.objects.iter([&](Id<Object> id, Object* obj) {
+		world.objects.iter([&](Id<Object> id, Object& obj) {
 			std::string s("Object.");
 			s += id.to_string();
 			if (ImGui::CollapsingHeader(s.data())) {
@@ -211,20 +241,9 @@ void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 
 				object_ui(obj, assets);
 
-				auto mat = obj->transform.get_mat();
+				auto mat = obj.transform.get_mat();
 
-				if (ImGui::CollapsingHeader("Camera Relative")) {
-					ImGui::Indent();
-
-					auto view = view_mat_inv.transform_point(obj->transform.translation);
-					edit("View", view);
-					auto proj = proj_mat_inv.transform_point(view);
-					edit("Proj", proj);
-
-					ImGui::Unindent();
-				}
-
-				obj->mesh.as_ptr().then_do([&](AId<Mesh>* mesh) {
+				obj.mesh.as_ptr().then_do([&](AId<Mesh>* mesh) {
 					if (ImGui::CollapsingHeader("Vertices")) {
 						ImGui::Indent();
 						if (ImGui::CollapsingHeader("Local")) {
@@ -254,7 +273,7 @@ void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 		if (ImGui::CollapsingHeader("New Object")) {
 			static Object new_object = Object(Transform(), Vec3<f32>::zero());
 			ImGui::Indent();
-			object_ui(&new_object, assets);
+			object_ui(new_object, assets);
 
 			if (ImGui::Button("Add")) {
 				world.add(std::move(new_object));
@@ -263,6 +282,81 @@ void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 			ImGui::Unindent();
 		}
 		ImGui::Unindent();
+		ImGui::PopID();
+	}
+
+	if (ImGui::CollapsingHeader("Dir Lights")) {
+		ImGui::PushID(2);
+		ImGui::Indent();
+		world.dir_lights.iter([&](Id<DirLight> id, DirLight& light) {
+			std::string s("Light.");
+			s += id.to_string();
+			if (ImGui::CollapsingHeader(s.data())) {
+				ImGui::PushID(id.idx());
+				ImGui::Indent();
+
+				dir_light_ui(light);
+
+				if (ImGui::Button("Remove")) {
+					world.remove(id);
+				}
+
+				ImGui::Unindent();
+				ImGui::PopID();
+			}
+		});
+		if (ImGui::CollapsingHeader("New Light")) {
+			static DirLight light = DirLight{};
+			ImGui::Indent();
+
+			dir_light_ui(light);
+
+			if (ImGui::Button("Add")) {
+				world.add(std::move(light));
+				light = DirLight{};
+			}
+
+			ImGui::Unindent();
+		}
+		ImGui::Unindent();
+		ImGui::PopID();
+	}
+
+	if (ImGui::CollapsingHeader("Spot Lights")) {
+		ImGui::PushID(3);
+		ImGui::Indent();
+		world.spot_lights.iter([&](Id<SpotLight> id, SpotLight& light) {
+			std::string s("Light.");
+			s += id.to_string();
+			if (ImGui::CollapsingHeader(s.data())) {
+				ImGui::PushID(id.idx());
+				ImGui::Indent();
+
+				spot_light_ui(light);
+
+				if (ImGui::Button("Remove")) {
+					world.remove(id);
+				}
+
+				ImGui::Unindent();
+				ImGui::PopID();
+			}
+			});
+		if (ImGui::CollapsingHeader("New Light")) {
+			static SpotLight light = SpotLight{};
+			ImGui::Indent();
+
+			spot_light_ui(light);
+
+			if (ImGui::Button("Add")) {
+				world.add(std::move(light));
+				light = SpotLight{};
+			}
+
+			ImGui::Unindent();
+		}
+		ImGui::Unindent();
+		ImGui::PopID();
 	}
 
 	ImGui::End();

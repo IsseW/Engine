@@ -51,6 +51,12 @@ struct SubMesh {
 	void push_quad(std::array<Vec3<f32>, 4>);
 };
 
+static std::vector<D3D11_INPUT_ELEMENT_DESC> VERTEX_LAYOUT = {
+			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+			{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+};
+
 struct Mesh {
 	Vec<SubMesh> submeshes;
 	Aabb<f32> bounds {};
@@ -112,8 +118,8 @@ struct Assets {
 
 	void clean_up() {
 		_default_asset.clean_up();
-		_items.values([](Asset<T>* item) {
-			item->asset.clean_up();
+		_items.values([](Asset<T>& item) {
+			item.asset.clean_up();
 		});
 	}
 

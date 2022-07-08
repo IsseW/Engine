@@ -40,8 +40,8 @@ struct std::hash<Id<T>> {
 template<typename T>
 struct Depot {
 	Depot() : _entries(), _free_entries() {}
-	bool is_empty() { return len() == 0; }
-	usize len() { return _entries.len() - _free_entries.len(); }
+	bool is_empty() const { return len() == 0; }
+	usize len() const { return _entries.len() - _free_entries.len(); }
 	bool contains(Id<T> id) {
 		return _entries.get(id.idx())
 			.map([&](const Entry& e) { return e.gen == id.gen() && e.item.is_some(); })
@@ -107,7 +107,7 @@ struct Depot {
 	void iter(F f) {
 		for (u32 i = 0; i < _entries.len(); ++i) {
 			if (_entries[i].item.is_some()) {
-				f(Id<T>(i, _entries[i].gen), _entries[i].item.as_ptr().unwrap_unchecked());
+				f(Id<T>(i, _entries[i].gen), *_entries[i].item.as_ptr().unwrap_unchecked());
 			}
 		}
 	}
@@ -116,7 +116,7 @@ struct Depot {
 	void iter(F f) const {
 		for (u32 i = 0; i < _entries.len(); ++i) {
 			if (_entries[i].item.is_some()) {
-				f(Id<T>(i, _entries[i].gen), _entries[i].item.as_ptr().unwrap_unchecked());
+				f(Id<T>(i, _entries[i].gen), *_entries[i].item.as_ptr().unwrap_unchecked());
 			}
 		}
 	}
@@ -125,7 +125,7 @@ struct Depot {
 	void values(F f) {
 		for (Entry& e : _entries) {
 			if (e.item.is_some()) {
-				f(e.item.as_ptr().unwrap_unchecked());
+				f(*e.item.as_ptr().unwrap_unchecked());
 			}
 		}
 	}
@@ -134,7 +134,7 @@ struct Depot {
 	void values(F f) const {
 		for (const Entry& e : _entries) {
 			if (e.item.is_some()) {
-				f(e.item.as_ptr().unwrap_unchecked());
+				f(*e.item.as_ptr().unwrap_unchecked());
 			}
 		}
 	}

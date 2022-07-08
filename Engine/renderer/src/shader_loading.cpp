@@ -35,7 +35,7 @@ Result<ID3D11PixelShader*, RenderCreateError> load_pixel(ID3D11Device* device, c
 	return ok<ID3D11PixelShader*, RenderCreateError>(shader);
 }
 
-Result<VSIL, RenderCreateError> load_vertex(ID3D11Device* device, const char* file, std::vector<D3D11_INPUT_ELEMENT_DESC> input) {
+Result<VSIL, RenderCreateError> load_vertex(ID3D11Device* device, const char* file, const std::vector<D3D11_INPUT_ELEMENT_DESC>& input) {
 	auto maybe_data = load_file_text(file);
 	if (maybe_data.is_none()) {
 		return MissingShaderFile;

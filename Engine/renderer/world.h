@@ -8,7 +8,7 @@ struct Light {
 };
 
 struct DirLight {
-	Quat<f32> rotation;
+	Transform transform;
 	Light light;
 };
 
@@ -46,7 +46,7 @@ struct World {
 	void update(f32 dt, const Window& window);
 
 	Camera camera;
-	Depot<SpotLight> point_lights;
+	Depot<SpotLight> spot_lights;
 	Depot<DirLight> dir_lights;
 	Depot<Object> objects;
 };
