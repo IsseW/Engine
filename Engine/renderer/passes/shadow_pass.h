@@ -15,6 +15,8 @@ struct ShadowPass {
 
 	};
 
+	ID3D11VertexShader* vs;
+
 	DepthTextures directional_shadows;
 
 	SBuffer<DirectionalLight> directional_lights;

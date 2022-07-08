@@ -1,7 +1,7 @@
 #include<assets/shape.h>
 
 void SubMesh::push_quad(std::array<Vec3<f32>, 4> points) {
-	Vec3<f32> normal = (points[1] - points[0]).cross(points[2] - points[0]);
+	Vec3<f32> normal = (points[2] - points[0]).cross(points[1] - points[0]);
 	Index i = (Index)vertices.len();
 	vertices.push(Vertex{
 			points[0],

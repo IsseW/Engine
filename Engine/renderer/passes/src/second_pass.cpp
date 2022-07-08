@@ -44,8 +44,4 @@ void SecondPass::draw(Renderer& rend, const World& world) {
 
 	auto size = rend.ctx.size();
 	rend.ctx.context->Dispatch(size.x, size.y, 1);
-
-	// ID3D11UnorderedAccessView* null_uav = nullptr;
-	// rend.ctx.context->CSSetUnorderedAccessViews(0, 1, &null_uav, nullptr);
-	// rend.ctx.context->CopyResource(rend.ctx.screen.texture, rend.first_pass.gbuffer.albedo.texture);
 }

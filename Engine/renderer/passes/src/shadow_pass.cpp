@@ -29,6 +29,7 @@ Result<ShadowPass, RenderCreateError> ShadowPass::create(ID3D11Device* device, V
 	TRY(directional_lights, SBuffer<DirectionalLight>::create(device));
 
 	return ok<ShadowPass, RenderCreateError>(ShadowPass{
+			nullptr,
 			directional_shadows,
 			directional_lights,
 		});

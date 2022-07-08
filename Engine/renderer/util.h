@@ -79,7 +79,7 @@ struct SBuffer {
 		D3D11_BUFFER_DESC desc;
 		desc.ByteWidth = sizeof(T);
 		desc.Usage = D3D11_USAGE_DYNAMIC;
-		desc.BindFlags = 0;
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		desc.MiscFlags = 0;
 		desc.StructureByteStride = sizeof(T);
