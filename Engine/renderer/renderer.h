@@ -22,6 +22,13 @@ struct RendererCtx {
 
 struct Window;
 
+struct DrawingContext {
+	Vec<Id<Object>> objects_in_camera;
+	Aabb<f32> psr_bounds;
+
+	static DrawingContext create(const World& world, const AssetHandler& assets);
+};
+
 struct Renderer {
 	RendererCtx ctx;
 

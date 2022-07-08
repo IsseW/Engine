@@ -341,7 +341,7 @@ void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 				ImGui::Unindent();
 				ImGui::PopID();
 			}
-			});
+		});
 		if (ImGui::CollapsingHeader("New Light")) {
 			static SpotLight light = SpotLight{};
 			ImGui::Indent();

@@ -107,8 +107,8 @@ Result<Renderer, RenderCreateError> Renderer::create(const Window& window) {
 	RendererCtx ctx;
 	TRY(ctx, RendererCtx::create(window));
 
-	ShadowPass shadow_pass {};
-	// TRY(shadow_pass, ShadowPass::create(ctx.device, window.size()));
+	ShadowPass shadow_pass;
+	TRY(shadow_pass, ShadowPass::create(ctx.device, window.size()));
 
 	FirstPass first_pass;
 	TRY(first_pass, FirstPass::create(ctx.device, window.size()));

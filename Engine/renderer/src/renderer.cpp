@@ -36,13 +36,27 @@ void Renderer::resize(const Window& window, Vec2<u16> size)  {
 	first_pass.resize(ctx.device, size);
 }
 
+DrawingContext DrawingContext::create(const World& world, const AssetHandler& assets) {
+	Vec<Id<Object>> objects_in_camera{};
+
+	world.objects.values([&](const Object& obj) {
+		// TODO: collect info from scene.
+	});
+
+	TODO;
+}
+
 void Renderer::draw(const World& world, AssetHandler& assets) {
 	world.objects.values([&](const Object& obj) {
 		assets.get_or_default(obj.mesh)->bind(ctx.device);
 		assets.get_or_default(obj.image)->bind(ctx.device);
 	});
 
+	// DrawingContext context = DrawingContext::create(world, assets);
+
 	ctx.context->RSSetViewports(1, &ctx.viewport);
+
+	shadow_pass.draw(ctx, world, assets);
 
 	first_pass.draw(ctx, world, assets);
 

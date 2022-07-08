@@ -1,7 +1,13 @@
 #include<renderer/passes/draw_objects.h>
 
 void ShadowPass::clean_up() {
+	vs->Release();
+	il->Release();
+
+	globals.clean_up();
+	locals.clean_up();
 	directional_shadows.clean_up();
+	spot_shadows.clean_up();
 }
 
 Vec2<u16> get_size(Vec2<u16> size) {
@@ -21,10 +27,15 @@ ShadowPass::Locals ShadowPass::Locals::from_object(const Object& obj) {
 
 void ShadowPass::draw(const RendererCtx& ctx, const World& world, const AssetHandler& assets) {
 	if (world.dir_lights.len() > directional_shadows.size.z) {
+		std::cout << "truthers " << directional_shadows.size << std::endl;
 		directional_shadows.resize(ctx.device, directional_shadows.size.with_z((u16)world.dir_lights.len() + 5));
 	}
 	if (world.spot_lights.len() > spot_shadows.size.z) {
 		spot_shadows.resize(ctx.device, spot_shadows.size.with_z((u16)world.spot_lights.len() + 5));
+	}
+
+	if (vs == nullptr) {
+		std::cout << "Bruh" << std::endl;
 	}
 
 	ctx.context->VSSetShader(vs, nullptr, 0);

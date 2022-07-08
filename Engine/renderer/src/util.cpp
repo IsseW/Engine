@@ -118,6 +118,7 @@ Result<DepthTextures, RenderCreateError> DepthTextures::create(ID3D11Device* dev
 			view,
 			texture,
 			rsv,
+			size,
 		});
 }
 

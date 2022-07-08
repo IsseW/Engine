@@ -42,8 +42,8 @@ Result<VSIL, RenderCreateError> load_vertex(ID3D11Device* device, const char* fi
 	}
 	auto data = maybe_data.unwrap_unchecked();
 	ID3D11VertexShader* shader;
-	if (FAILED(device->CreateVertexShader(data.c_str(), data.length(), nullptr, &shader)))
-	{
+	auto hr = device->CreateVertexShader(data.c_str(), data.length(), nullptr, &shader);
+	if (FAILED(hr)) {
 		return FailedShaderCreation;
 	}
 	ID3D11InputLayout* input_layout;
