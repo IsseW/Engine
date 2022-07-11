@@ -28,6 +28,12 @@ namespace math {
 			}, min, max).reduce_and();
 		}
 
+		bool intersects(const Aab& other ) const {
+			return this->min.map<bool>([](auto amin, auto amax, auto bmin, auto bmax) {
+				return (amin > bmin && amin < bmax) || (bmin > amin && bmin < amax) || (bmin > amin && bmin < amax) || (bmax > amin && bmax < amax);
+			}, this->max, other.min, other.max).reduce_and();
+		}
+
 		void grow_to_contain(const Vec<T, L>& point) {
 			for (usize i = 0; i < L; ++i) {
 				if (min[i] > point[i]) {
