@@ -178,7 +178,7 @@ Vec operator op() const {			\
 		constexpr T reduce(F f) const {
 			T acc = _elems[0];
 			for (usize i = 1; i < L; ++i) {
-				acc = f(acc, _elems[1]);
+				acc = f(acc, _elems[i]);
 			}
 			return acc;
 		}

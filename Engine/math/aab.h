@@ -28,9 +28,9 @@ namespace math {
 			}, min, max).reduce_and();
 		}
 
-		bool intersects(const Aab& other ) const {
-			return this->min.map<bool>([](auto amin, auto amax, auto bmin, auto bmax) {
-				return (amin > bmin && amin < bmax) || (bmin > amin && bmin < amax) || (bmin > amin && bmin < amax) || (bmax > amin && bmax < amax);
+		bool intersects(const Aab& other) const {
+			return this->min.map<bool>([&](const auto& amin, const auto& amax, const auto& bmin, const auto& bmax) {
+				return (amin >= bmin && amin < bmax) || (amax > bmin && amax <= bmax) || (bmin >= amin && bmin < amax) || (bmax > amin && bmax <= amax);
 			}, this->max, other.min, other.max).reduce_and();
 		}
 

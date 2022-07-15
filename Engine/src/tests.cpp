@@ -4,7 +4,7 @@
 #include<math/consts.h>
 #include<math/mat.h>
 #include<assets/assets.h>
-
+#include<data_structures/sparse_octree.h>
 #include<renderer/world.h>
 
 template<typename F>
@@ -125,6 +125,18 @@ namespace math {
 	}
 }
 
+namespace data_structures {
+	void test_sparse_octree() {
+		SparseOctree<4> octree{ Aabb<f32>{Vec3<f32>::zero(), Vec3<f32>::one()}};
+		auto val = octree.insert_absolute(Aabb<f32>{Vec3<f32>::one() / 2, Vec3<f32>::one() / 2}, 1);
+		ASSERT(val);
+	}
+
+	void test() {
+		test_sparse_octree();
+	}
+}
+
 namespace files {
 	void test_obj_load() {
 		auto mesh = Mesh::load("resources/test.wavefront");
@@ -159,6 +171,7 @@ void run_tests() {
 	math::test();
 	files::test();
 	world::test();
+	data_structures::test();
 	std::cout << "All tests passed." << std::endl;
 }
 
