@@ -75,9 +75,9 @@ struct SBuffer {
 		if (buffer) buffer->Release();
 	}
 
-	static Result<SBuffer, RenderCreateError> create(ID3D11Device* device) {
+	static Result<SBuffer, RenderCreateError> create(ID3D11Device* device, usize count) {
 		D3D11_BUFFER_DESC desc;
-		desc.ByteWidth = sizeof(T);
+		desc.ByteWidth = sizeof(T) * count;
 		desc.Usage = D3D11_USAGE_DYNAMIC;
 		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -97,19 +97,21 @@ struct SBuffer {
 struct DepthTexture {
 	ID3D11DepthStencilView* view;
 	ID3D11Texture2D* texture;
-	ID3D11ShaderResourceView* rsv;
+	ID3D11ShaderResourceView* srv;
 
 	static Result<DepthTexture, RenderCreateError> create(ID3D11Device* device, Vec2<u16> size);
 
 	void resize(ID3D11Device* device, Vec2<u16> size);
 
 	void clean_up();
+
+	void clear(ID3D11DeviceContext* ctx);
 };
 
 struct DepthTextures {
 	ID3D11DepthStencilView* view;
 	ID3D11Texture2D* texture;
-	ID3D11ShaderResourceView* rsv;
+	ID3D11ShaderResourceView* srv;
 
 	Vec3<u16> size;
 
@@ -117,6 +119,8 @@ struct DepthTextures {
 
 	void resize(ID3D11Device* device, Vec3<u16> size);
 	void clean_up();
+
+	void clear(ID3D11DeviceContext* ctx);
 };
 
 struct RenderTexture {

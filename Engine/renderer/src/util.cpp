@@ -4,7 +4,15 @@
 void DepthTexture::clean_up() {
 	if (view) view->Release();
 	if (texture) texture->Release();
-	if (rsv) rsv->Release();
+	if (srv) srv->Release();
+}
+
+void DepthTexture::clear(ID3D11DeviceContext* ctx) {
+	ctx->ClearDepthStencilView(view, D3D11_CLEAR_DEPTH, 1.0f, 0);
+}
+
+void DepthTextures::clear(ID3D11DeviceContext* ctx) {
+	ctx->ClearDepthStencilView(view, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
 void DepthTexture::resize(ID3D11Device* device, Vec2<u16> size) {
@@ -64,7 +72,7 @@ Result<DepthTexture, RenderCreateError> DepthTexture::create(ID3D11Device* devic
 void DepthTextures::clean_up() {
 	if (view) view->Release();
 	if (texture) texture->Release();
-	if (rsv) rsv->Release();
+	if (srv) srv->Release();
 }
 
 void DepthTextures::resize(ID3D11Device* device, Vec3<u16> size) {

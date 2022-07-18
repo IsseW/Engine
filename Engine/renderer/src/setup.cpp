@@ -14,38 +14,42 @@ struct DeviceCreationRes {
 Result<DeviceCreationRes, RenderCreateError>
 create_interfaces(const Window& window)
 {
-	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
+	DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
 
-	swapChainDesc.BufferCount = 2;
-	swapChainDesc.BufferDesc.Width = 0;
-	swapChainDesc.BufferDesc.Height = 0;
-	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
-	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_UNORDERED_ACCESS;
-	swapChainDesc.OutputWindow = window.window();
-	swapChainDesc.SampleDesc.Count = 1;
-	swapChainDesc.SampleDesc.Quality = 0;
-	swapChainDesc.Windowed = TRUE;
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	swap_chain_desc.BufferCount = 2;
+	swap_chain_desc.BufferDesc.Width = 0;
+	swap_chain_desc.BufferDesc.Height = 0;
+	swap_chain_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swap_chain_desc.BufferDesc.RefreshRate.Numerator = 60;
+	swap_chain_desc.BufferDesc.RefreshRate.Denominator = 1;
+	swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_UNORDERED_ACCESS;
+	swap_chain_desc.OutputWindow = window.window();
+	swap_chain_desc.SampleDesc.Count = 1;
+	swap_chain_desc.SampleDesc.Quality = 0;
+	swap_chain_desc.Windowed = TRUE;
+	swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	
 	ID3D11Device* device;
 	ID3D11DeviceContext* context;
 	IDXGISwapChain* swap_chain;
 
-	UINT createDeviceFlags = 0;
+	UINT creation_flags = 0;
+#if defined(_DEBUG)
+	// If the project is in a debug build, enable the debug layer.
+	creation_flags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
 	D3D_FEATURE_LEVEL feature_level;
 	const D3D_FEATURE_LEVEL feature_level_array[2] = {D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0};
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(
 		NULL, 
 		D3D_DRIVER_TYPE_HARDWARE, 
 		NULL, 
-		createDeviceFlags, 
+		creation_flags, 
 		feature_level_array, 
 		2, 
 		D3D11_SDK_VERSION, 
-		&swapChainDesc,
+		&swap_chain_desc,
 		&swap_chain,
 		&device,
 		&feature_level,

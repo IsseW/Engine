@@ -17,9 +17,28 @@ struct SecondPass {
 		Vec3<f32> padding;
 	};
 
+	struct Directional {
+		Vec3<f32> direction;
+		Vec3<f32> color;
+		f32 strength;
+		
+		static Directional from_light(const DirLight& light);
+	};
+
+	struct Spot {
+		Vec3<f32> direction;
+		Vec3<f32> color;
+		f32 strength;
+
+		static Spot from_light(const SpotLight& light);
+	};
+
 	ID3D11ComputeShader* deferred;
 
 	Uniform<Locals> locals;
+
+	SBuffer<Directional> dir_lights;
+	SBuffer<Spot> spot_lights;
 
 	RenderMode mode = RenderMode::Deferred;
 

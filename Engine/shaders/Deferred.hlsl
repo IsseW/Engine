@@ -3,10 +3,24 @@ Texture2D normal : register(t1);
 Texture2D position : register(t2);
 Texture2D depth : register(t3);
 
-#define ALBEDO 1
-#define DEPTH 2
-#define NORMAL 3
-#define POSITION 4
+Texture2D dir_shadows : register(t4);
+Texture2D spot_shadows : register(t5);
+
+struct DirLight {
+	float3 dir;
+	float3 color;
+	float strength;
+};
+
+StructuredBuffer<DirLight> dir_lights : register(t6);
+
+struct SpotLight {
+	float3 dir;
+	float3 color;
+	float strength;
+};
+
+StructuredBuffer<SpotLight> spot_lights : register(t7);
 
 cbuffer locals : register(b0) {
 	uint render_mode;
@@ -22,6 +36,12 @@ void deferred(uint2 pos) {
 		output[pos] = albedo[pos];
 	}
 }
+
+// Redner modes
+#define ALBEDO 1
+#define DEPTH 2
+#define NORMAL 3
+#define POSITION 4
 
 [numthreads(8, 8, 1)]
 void main(uint3 dispatch_id : SV_DispatchThreadID) {

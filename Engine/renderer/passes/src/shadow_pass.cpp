@@ -37,12 +37,12 @@ void ShadowPass::draw(const RendererCtx& ctx, const World& world, const AssetHan
 	if (vs == nullptr) {
 		std::cout << "Bruh" << std::endl;
 	}
-
 	ctx.context->VSSetShader(vs, nullptr, 0);
 	ctx.context->IASetInputLayout(il);
-	
-	ctx.context->ClearDepthStencilView(directional_shadows.view, D3D11_CLEAR_DEPTH, 1.0f, 0);
-	ctx.context->OMSetRenderTargets(0, nullptr, directional_shadows.view);
+
+	ID3D11RenderTargetView* rtv[1] = { 0 };
+	ctx.context->OMSetRenderTargets(0, rtv, directional_shadows.view);
+	directional_shadows.clear(ctx.context);
 
 	ID3D11Buffer* uniforms[2] = { globals.buffer, locals.buffer };
 	ctx.context->VSSetConstantBuffers(0, 2, uniforms);
