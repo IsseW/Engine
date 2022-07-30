@@ -24,6 +24,7 @@ struct GBuffer {
 	RenderTexture albedo;
 	RenderTexture normal;
 	RenderTexture position;
+	RenderTexture light_info;
 
 	static Result<GBuffer, RenderCreateError> create(ID3D11Device* device, Vec2<u16> size);
 
@@ -33,7 +34,7 @@ struct GBuffer {
 
 	void clear(ID3D11DeviceContext* ctx);
 
-	std::array<ID3D11RenderTargetView*, 3> targets() const;
+	std::array<ID3D11RenderTargetView*, 4> targets() const;
 };
 
 struct FirstPass {

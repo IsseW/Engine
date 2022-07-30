@@ -210,6 +210,27 @@ namespace math {
 				return some(adjugate() / det);
 			}
 		}
+
+		template<const i32 NW, const i32 NH>
+		constexpr Mat<T, NW, NH> resize_into(Mat<T, NW, NH> res) {
+			for (usize y = 0; y < NH && y < H; ++y) {
+				for (usize x = 0; x < NW && x < W; ++x) {
+					res[y][x] = _rows[y][x];
+				}
+			}
+			return res;
+		}
+
+		template<const i32 NW, const i32 NH>
+		constexpr Mat<T, NW, NH> resize_zero() {
+			return resize_into(Mat<T, NW, NH>());
+		}
+
+		template<const i32 NW, const i32 NH>
+		constexpr Mat<T, NW, NH> resize_id() {
+			return resize_into(Mat<T, NW, NH>::identity());
+		}
+
 	private:
 		constexpr void set_all(T t) {
 			_rows[H - 1][W - 1] = t;

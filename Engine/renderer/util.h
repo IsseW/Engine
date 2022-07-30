@@ -22,7 +22,7 @@ enum RenderCreateError {
 	FailedBufferCreation,
 };
 
-template<typename T> requires (sizeof(T) % 4 == 0)
+template<typename T> requires (sizeof(T) % 16 == 0)
 struct Uniform {
 	ID3D11Buffer* buffer;
 
@@ -58,7 +58,7 @@ struct Uniform {
 	}
 };
 
-template<typename T> requires (sizeof(T) % 4 == 0)
+template<typename T>
 struct SBuffer {
 	ID3D11Buffer* buffer;
 	ID3D11ShaderResourceView* srv;

@@ -36,9 +36,10 @@ float4 transform(float4 vec) {
 
 VertexShaderOutput main(VertexShaderInput input)
 {
+    float4 pos = mul(world_matrix, float4(input.position, 1.0));
     VertexShaderOutput output;
-    output.wpos = mul(world_matrix, float4(input.position, 1.0)).xyz;
-    output.position = transform_to_camera(float4(output.wpos, 1.0));
+    output.wpos = pos.xyz;
+    output.position = transform_to_camera(pos);
     output.normal = normalize(mul(world_matrix, float4(input.normal, 0.0)).xyz);
     output.uv = input.uv;
     return output;

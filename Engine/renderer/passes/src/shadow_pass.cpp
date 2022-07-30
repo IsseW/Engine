@@ -47,7 +47,7 @@ void ShadowPass::draw(const RendererCtx& ctx, const World& world, const AssetHan
 		usize i = 0;
 		lights.values([&](const auto& light) {
 			ctx.context->OMSetRenderTargets(0, rtv, target.dsvs[i++]);
-			Globals g = Globals::from_light(light);
+			Globals g = Globals::from_light(light, world.camera);
 			globals.update(ctx.context, &g);
 			draw_objects(ctx, world, assets, [&](const Object& obj) {
 				Locals l = Locals::from_object(obj);
@@ -91,18 +91,18 @@ Result<ShadowPass, RenderCreateError> ShadowPass::create(ID3D11Device* device, V
 		});
 }
 
-ShadowPass::Globals ShadowPass::Globals::from_light(const DirLight& light)
+ShadowPass::Globals ShadowPass::Globals::from_light(const DirLight& light, const Camera& camera)
 {
-	auto mat = light.get_texture_mat();
+	auto mat = light.get_texture_mat(camera);
 
 	return Globals{
 		mat.transposed(),
 	};
 }
 
-ShadowPass::Globals ShadowPass::Globals::from_light(const SpotLight& light)
+ShadowPass::Globals ShadowPass::Globals::from_light(const SpotLight& light, const Camera& camera)
 {
-	auto mat = light.get_texture_mat();
+	auto mat = light.get_texture_mat(camera);
 
 	return Globals{
 		mat.transposed(),

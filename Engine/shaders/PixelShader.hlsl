@@ -12,6 +12,7 @@ struct PixelShaderOutput {
     float4 albedo;
     float4 normal;
     float4 position;
+    float4 light_info;
 };
 
 cbuffer GLOBALS : register(b0) {
@@ -26,11 +27,19 @@ cbuffer LOCALS : register(b1) {
 
 PixelShaderOutput main(PixelShaderInput input) : SV_TARGET
 {
-
     PixelShaderOutput output;
     output.albedo = object_color * tex.Sample(tex_sampler, input.uv);
     output.normal = float4(input.normal, 1.0);
     output.position = float4(input.wpos, 1.0);
+
+    // Ambient
+    output.light_info.x = 0.1;
+    // Diffuse
+    output.light_info.y = 1.0;
+    // Specular
+    output.light_info.z = 1.0;
+    // Shinyness
+    output.light_info.w = 1.0;
 
     return output;
 }

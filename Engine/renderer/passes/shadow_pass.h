@@ -4,8 +4,8 @@
 
 struct ShadowPass {
 	struct Globals {
-		static Globals from_light(const DirLight& light);
-		static Globals from_light(const SpotLight& light);
+		static Globals from_light(const DirLight& light, const Camera& camera);
+		static Globals from_light(const SpotLight& light, const Camera& camera);
 
 		Mat4<f32> texture_matrix;
 	};

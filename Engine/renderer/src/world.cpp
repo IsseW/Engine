@@ -94,10 +94,29 @@ void World::update(f32 dt, const Window& window) {
 	update_camera(camera, dt, window);
 }
 
-Mat4<f32> SpotLight::get_texture_mat() const {
+Mat4<f32> SpotLight::get_texture_mat(const Camera& viewpoint) const {
 	return transform.get_mat().invert() * math::create_persp_proj(-5.0f, 5.0f, -5.0f, 5.0f, 0.01f, 100.0f);
 }
 
-Mat4<f32> DirLight::get_texture_mat() const {
-	return transform.get_mat().invert();// *math::create_orth_proj(-5.0f, 5.0f, -5.0f, 5.0f, -100.0f, 100.0f);
+Mat4<f32> DirLight::get_texture_mat(const Camera& viewpoint) const {
+	
+	float radius = 10.0f;
+	Vec3<f32> dir = transform.forward();
+	Vec3<f32> target_pos = viewpoint.transform.translation;
+	Vec3<f32> light_pos = target_pos + dir * radius;
+
+	Mat4<f32> view = Transform::from_translation(light_pos).with_rotation(Quat<f32>::looking_dir(dir, Vec3<f32>::unit_z(), Vec3<f32>::unit_y())).get_mat().invert();
+	
+	Vec4<f32> target = view * target_pos.with_w(1.0);
+
+	auto proj = math::create_orth_proj(
+		target.x - radius,
+		target.x + radius,
+		target.y - radius,
+		target.y + radius,
+		target.z - 100.0f,
+		target.z + 100.0f
+	);
+
+	return view;
 }

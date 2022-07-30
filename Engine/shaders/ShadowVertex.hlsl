@@ -21,8 +21,8 @@ cbuffer LOCALS : register(b1) {
 
 VertexShaderOutput main(VertexShaderInput input)
 {
-    float3 wpos = mul(world_matrix, float4(input.position, 1.0)).xyz;
+    float4 wpos = mul(world_matrix, float4(input.position, 1.0));
     VertexShaderOutput output;
-    output.position = mul(texture_matrix, float4(wpos, 1.0));
+    output.position = mul(texture_matrix, wpos);
     return output;
 }

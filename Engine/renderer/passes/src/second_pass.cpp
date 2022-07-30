@@ -55,17 +55,18 @@ void SecondPass::draw(Renderer& rend, const World& world) {
 	// Bind lights.
 	Vec<Directional> directional {};
 	world.dir_lights.values([&](const DirLight& light) {
-		directional.push(Directional::from_light(light));
+		directional.push(Directional::from_light(light, world.camera));
 	});
 	dir_lights.update(rend.ctx.context, directional.raw(), directional.len());
 
 	Vec<Spot> spot{};
 	world.spot_lights.values([&](const SpotLight& light) {
-		spot.push(Spot::from_light(light));
-		});
+		spot.push(Spot::from_light(light, world.camera));
+	});
 	spot_lights.update(rend.ctx.context, spot.raw(), spot.len());
 
-	Locals locals = { 
+	Locals locals = {
+		world.camera.transform.translation,
 		mode,
 		directional.len(),
 		spot.len(),
@@ -74,17 +75,17 @@ void SecondPass::draw(Renderer& rend, const World& world) {
 	rend.ctx.context->CSSetConstantBuffers(0, 1, &this->locals.buffer);
 
 
-	const usize SRV_COUNT = 8;
+	const usize SRV_COUNT = 9;
 	ID3D11ShaderResourceView* srv[SRV_COUNT] = {
 		rend.first_pass.gbuffer.albedo.srv,
 		rend.first_pass.gbuffer.normal.srv,
 		rend.first_pass.gbuffer.position.srv,
+		rend.first_pass.gbuffer.light_info.srv,
 		rend.first_pass.depth.srv,
 		rend.shadow_pass.directional_shadows.srv,
 		rend.shadow_pass.spot_shadows.srv,
 		dir_lights.srv,
 		spot_lights.srv,
-
 	};
 	rend.ctx.context->CSSetShaderResources(0, SRV_COUNT, srv);
 	rend.ctx.context->CSSetUnorderedAccessViews(0, 1, &rend.ctx.screen.uav, nullptr);
@@ -101,22 +102,24 @@ void SecondPass::draw(Renderer& rend, const World& world) {
 	rend.ctx.context->CSSetUnorderedAccessViews(0, 1, &empty_uav, nullptr);
 }
 
-SecondPass::Directional SecondPass::Directional::from_light(const DirLight& light)
+SecondPass::Directional SecondPass::Directional::from_light(const DirLight& light, const Camera& camera)
 {
-	auto mat = light.get_texture_mat();
+	auto mat = light.get_texture_mat(camera);
 	return Directional{
 		mat.transposed(),
+		light.transform.translation,
 		light.transform.forward(),
 		light.light.color,
 		light.light.strength,
 	};
 }
 
-SecondPass::Spot SecondPass::Spot::from_light(const SpotLight& light)
+SecondPass::Spot SecondPass::Spot::from_light(const SpotLight& light, const Camera& camera)
 {
-	auto mat = light.get_texture_mat();
+	auto mat = light.get_texture_mat(camera);
 	return Spot{
 		mat.transposed(),
+		light.transform.translation,
 		light.transform.forward(),
 		light.light.color,
 		light.light.strength,

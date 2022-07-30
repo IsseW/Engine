@@ -13,28 +13,31 @@ constexpr const char* MODES[5] = { "Deferred", "Albedo", "Depth", "Normal", "Pos
 
 struct SecondPass {
 	struct Locals {
+		Vec3<f32> cam_pos;
 		RenderMode mode;
 		u32 num_dir;
 		u32 num_spot;
-		f32 dummy;
+		Vec2<f32> dummy;
 	};
 
 	struct Directional {
 		Mat4<f32> texture_mat;
+		Vec3<f32> pos;
 		Vec3<f32> direction;
 		Vec3<f32> color;
 		f32 strength;
 		
-		static Directional from_light(const DirLight& light);
+		static Directional from_light(const DirLight& light, const Camera& camera);
 	};
 
 	struct Spot {
 		Mat4<f32> texture_mat;
+		Vec3<f32> pos;
 		Vec3<f32> direction;
 		Vec3<f32> color;
 		f32 strength;
 
-		static Spot from_light(const SpotLight& light);
+		static Spot from_light(const SpotLight& light, const Camera& camera);
 	};
 
 	ID3D11ComputeShader* deferred;

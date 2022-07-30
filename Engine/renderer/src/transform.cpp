@@ -119,7 +119,6 @@ Mat4<f32> Camera::get_proj(f32 ratio) const {
 		f32 bottom = -top;
 		f32 right = top * ratio;
 		f32 left = -right;
-
 		return math::create_persp_proj(left, right, bottom, top, cam_near, cam_far);
 	}
 	else {
@@ -127,7 +126,6 @@ Mat4<f32> Camera::get_proj(f32 ratio) const {
 		f32 bottom = -top;
 		f32 right = top * ratio;
 		f32 left = -right;
-
 		return math::create_orth_proj(left, right, bottom, top, cam_near, cam_far);
 	}
 }

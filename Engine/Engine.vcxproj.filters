@@ -217,8 +217,8 @@
     <FxCompile Include="shaders\PixelShader.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
-    <FxCompile Include="shaders\Deferred.hlsl" />
     <FxCompile Include="shaders\ShadowVertex.hlsl" />
+    <FxCompile Include="shaders\Deferred.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

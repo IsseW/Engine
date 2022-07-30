@@ -35,11 +35,14 @@ Result<GBuffer, RenderCreateError> GBuffer::create(ID3D11Device* device, Vec2<u1
 	TRY(normal, RenderTexture::create(device, size, DXGI_FORMAT_R32G32B32A32_FLOAT));
 	RenderTexture position;
 	TRY(position, RenderTexture::create(device, size, DXGI_FORMAT_R32G32B32A32_FLOAT));
+	RenderTexture light_info;
+	TRY(light_info, RenderTexture::create(device, size, DXGI_FORMAT_R32G32B32A32_FLOAT));
 
 	return ok<GBuffer, RenderCreateError>(GBuffer{
 			albedo,
 			normal,
 			position,
+			light_info,
 		});
 }
 
@@ -47,12 +50,14 @@ void GBuffer::resize(ID3D11Device* device, Vec2<u16> size) {
 	albedo.resize(device, size);
 	normal.resize(device, size);
 	position.resize(device, size);
+	light_info.resize(device, size);
 }
 
 void GBuffer::clean_up() {
 	albedo.clean_up();
 	normal.clean_up();
 	position.clean_up();
+	light_info.clean_up();
 }
 
 void GBuffer::clear(ID3D11DeviceContext* ctx) {
@@ -61,10 +66,11 @@ void GBuffer::clear(ID3D11DeviceContext* ctx) {
 	const float clear_empty[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	ctx->ClearRenderTargetView(normal.rtv, clear_empty);
 	ctx->ClearRenderTargetView(position.rtv, clear_empty);
+	ctx->ClearRenderTargetView(light_info.rtv, clear_empty);
 }
 
-std::array<ID3D11RenderTargetView*, 3> GBuffer::targets() const {
-	return { albedo.rtv, normal.rtv, position.rtv };
+std::array<ID3D11RenderTargetView*, 4> GBuffer::targets() const {
+	return { albedo.rtv, normal.rtv, position.rtv, light_info.rtv };
 }
 
 

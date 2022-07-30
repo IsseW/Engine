@@ -49,13 +49,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	auto cube_mesh = assets.insert(unit_cube());
 	assets.load<Mesh>("resources/u.wavefront");
 	assets.load<Mesh>("resources/test.wavefront");
+	assets.load<Mesh>("resources/sphere.wavefront");
 
 	auto test_texture = assets.load<Image>("resources/test_texture.png");
 
 	auto cam = Camera::perspective(Transform::from_translation(Vec3<f32>(0.0, 0.0, -10.0)), 60.0f * F32::TO_RAD);
 	World world(cam);
 	world.add(Object(Transform(), Vec3<f32>(0.5f, 0.5f, 0.0f)).with_mesh(cube_mesh).with_image(test_texture));
-	world.add(DirLight(Transform::from_translation(Vec3<f32>(1.0f, 1.0f, 5.0f)).looking_at(Vec3<f32>::zero()), Light { Vec3<f32>::one(), 1.0 }));
+	world.add(DirLight(Transform::from_translation(Vec3<f32>(-2.0f, 5.0f, -2.0f)).looking_at(Vec3<f32>::zero()), Light { Vec3<f32>::one(), 1.0 }));
 
 	Window* window = create_window(hInstance, 1000, 1000, nCmdShow).unwrap();
 
