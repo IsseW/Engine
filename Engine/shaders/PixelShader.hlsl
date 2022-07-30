@@ -1,5 +1,5 @@
-Texture2D simpleTexture : register(t0);
-SamplerState simpleSampler : register(s0);
+Texture2D tex : register(t0);
+SamplerState tex_sampler : register(s0);
 
 struct PixelShaderInput {
     float4 position : SV_POSITION;
@@ -28,8 +28,8 @@ PixelShaderOutput main(PixelShaderInput input) : SV_TARGET
 {
 
     PixelShaderOutput output;
-    output.albedo = object_color * simpleTexture.Sample(simpleSampler, input.uv);
-    output.normal = float4(input.normal, 0.0);
+    output.albedo = object_color * tex.Sample(tex_sampler, input.uv);
+    output.normal = float4(input.normal, 1.0);
     output.position = float4(input.wpos, 1.0);
 
     return output;

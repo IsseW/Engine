@@ -3,6 +3,7 @@
 #include<d3d11.h>
 #include<rstd/result.h>
 #include<math/vec.h>
+#include<rstd/vector.h>
 #include<vector>
 
 enum RenderCreateError {
@@ -60,8 +61,16 @@ struct Uniform {
 template<typename T> requires (sizeof(T) % 4 == 0)
 struct SBuffer {
 	ID3D11Buffer* buffer;
+	ID3D11ShaderResourceView* srv;
+	usize capacity;
 
 	void update(ID3D11DeviceContext* ctx, const T* data, usize count) {
+		if (count >= capacity) {
+			clean_up();
+			ID3D11Device* device;
+			ctx->GetDevice(&device);
+			*this = create(device, capacity * 2).unwrap();
+		}
 		D3D11_MAPPED_SUBRESOURCE resource;
 
 		if (FAILED(ctx->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource))) {
@@ -73,15 +82,16 @@ struct SBuffer {
 	}
 	void clean_up() {
 		if (buffer) buffer->Release();
+		if (srv) srv->Release();
 	}
 
-	static Result<SBuffer, RenderCreateError> create(ID3D11Device* device, usize count) {
+	static Result<SBuffer, RenderCreateError> create(ID3D11Device* device, usize capacity) {
 		D3D11_BUFFER_DESC desc;
-		desc.ByteWidth = sizeof(T) * count;
+		desc.ByteWidth = sizeof(T) * capacity;
 		desc.Usage = D3D11_USAGE_DYNAMIC;
 		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		desc.MiscFlags = 0;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 		desc.StructureByteStride = sizeof(T);
 
 		ID3D11Buffer* buffer;
@@ -89,13 +99,24 @@ struct SBuffer {
 			return FailedBufferCreation;
 		}
 
-		return ok<SBuffer, RenderCreateError>(SBuffer{ buffer });
+		D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc;
+		resource_desc.Format = DXGI_FORMAT_UNKNOWN;
+		resource_desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+		resource_desc.Buffer.FirstElement = 0;
+		resource_desc.Buffer.NumElements = capacity;
+
+		ID3D11ShaderResourceView* srv;
+		if (FAILED(device->CreateShaderResourceView(buffer, &resource_desc, &srv))) {
+			buffer->Release();
+			return FailedSRVCreation;
+		}
+
+		return ok<SBuffer, RenderCreateError>(SBuffer{ buffer, srv, capacity });
 	}
 };
 
-
 struct DepthTexture {
-	ID3D11DepthStencilView* view;
+	ID3D11DepthStencilView* dsv;
 	ID3D11Texture2D* texture;
 	ID3D11ShaderResourceView* srv;
 
@@ -109,7 +130,8 @@ struct DepthTexture {
 };
 
 struct DepthTextures {
-	ID3D11DepthStencilView* view;
+	ID3D11DepthStencilView** dsvs;
+	ID3D11ShaderResourceView** srvs;
 	ID3D11Texture2D* texture;
 	ID3D11ShaderResourceView* srv;
 
@@ -121,6 +143,11 @@ struct DepthTextures {
 	void clean_up();
 
 	void clear(ID3D11DeviceContext* ctx);
+
+	ID3D11DepthStencilView** begin();
+	ID3D11DepthStencilView** end();
+	ID3D11DepthStencilView** begin() const;
+	ID3D11DepthStencilView** end() const;
 };
 
 struct RenderTexture {

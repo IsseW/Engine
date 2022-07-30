@@ -10,11 +10,15 @@ struct Light {
 struct DirLight {
 	Transform transform;
 	Light light;
+
+	Mat4<f32> get_texture_mat() const;
 };
 
 struct SpotLight {
 	Transform transform;
 	Light light;
+
+	Mat4<f32> get_texture_mat() const;
 };
 
 struct Object {

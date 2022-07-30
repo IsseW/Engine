@@ -27,28 +27,26 @@ ShadowPass::Locals ShadowPass::Locals::from_object(const Object& obj) {
 
 void ShadowPass::draw(const RendererCtx& ctx, const World& world, const AssetHandler& assets) {
 	if (world.dir_lights.len() > directional_shadows.size.z) {
-		std::cout << "truthers " << directional_shadows.size << std::endl;
 		directional_shadows.resize(ctx.device, directional_shadows.size.with_z((u16)world.dir_lights.len() + 5));
 	}
 	if (world.spot_lights.len() > spot_shadows.size.z) {
 		spot_shadows.resize(ctx.device, spot_shadows.size.with_z((u16)world.spot_lights.len() + 5));
 	}
 
-	if (vs == nullptr) {
-		std::cout << "Bruh" << std::endl;
-	}
 	ctx.context->VSSetShader(vs, nullptr, 0);
+	ctx.context->PSSetShader(nullptr, nullptr, 0);
 	ctx.context->IASetInputLayout(il);
 
 	ID3D11RenderTargetView* rtv[1] = { 0 };
-	ctx.context->OMSetRenderTargets(0, rtv, directional_shadows.view);
-	directional_shadows.clear(ctx.context);
 
 	ID3D11Buffer* uniforms[2] = { globals.buffer, locals.buffer };
 	ctx.context->VSSetConstantBuffers(0, 2, uniforms);
 
-	auto draw = [&](const auto& lights) {
+	// TODO: Do occlusion for lights.
+	auto draw = [&](const auto& lights, DepthTextures& target) {
+		usize i = 0;
 		lights.values([&](const auto& light) {
+			ctx.context->OMSetRenderTargets(0, rtv, target.dsvs[i++]);
 			Globals g = Globals::from_light(light);
 			globals.update(ctx.context, &g);
 			draw_objects(ctx, world, assets, [&](const Object& obj) {
@@ -58,12 +56,12 @@ void ShadowPass::draw(const RendererCtx& ctx, const World& world, const AssetHan
 			});
 		});
 	};
-	draw(world.dir_lights);
 
-	ctx.context->ClearDepthStencilView(spot_shadows.view, D3D11_CLEAR_DEPTH, 1.0f, 0);
-	ctx.context->OMSetRenderTargets(0, nullptr, spot_shadows.view);
+	directional_shadows.clear(ctx.context);
+	draw(world.dir_lights, directional_shadows);
 
-	draw(world.spot_lights);
+	spot_shadows.clear(ctx.context);
+	draw(world.spot_lights, spot_shadows);
 }
 
 Result<ShadowPass, RenderCreateError> ShadowPass::create(ID3D11Device* device, Vec2<u16> size) {
@@ -95,7 +93,7 @@ Result<ShadowPass, RenderCreateError> ShadowPass::create(ID3D11Device* device, V
 
 ShadowPass::Globals ShadowPass::Globals::from_light(const DirLight& light)
 {
-	auto mat = light.transform.get_mat().invert() * math::create_orth_proj(-100.0f, 100.0f, -100.0f, 100.0f, 0.0f, 100.0f);
+	auto mat = light.get_texture_mat();
 
 	return Globals{
 		mat.transposed(),
@@ -104,7 +102,7 @@ ShadowPass::Globals ShadowPass::Globals::from_light(const DirLight& light)
 
 ShadowPass::Globals ShadowPass::Globals::from_light(const SpotLight& light)
 {
-	auto mat = light.transform.get_mat().invert() * math::create_persp_proj(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 100.0f);
+	auto mat = light.get_texture_mat();
 
 	return Globals{
 		mat.transposed(),

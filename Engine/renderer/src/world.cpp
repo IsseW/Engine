@@ -93,3 +93,11 @@ void update_camera(Camera& cam, f32 dt, const Window& window) {
 void World::update(f32 dt, const Window& window) {
 	update_camera(camera, dt, window);
 }
+
+Mat4<f32> SpotLight::get_texture_mat() const {
+	return transform.get_mat().invert() * math::create_persp_proj(-5.0f, 5.0f, -5.0f, 5.0f, 0.01f, 100.0f);
+}
+
+Mat4<f32> DirLight::get_texture_mat() const {
+	return transform.get_mat().invert();// *math::create_orth_proj(-5.0f, 5.0f, -5.0f, 5.0f, -100.0f, 100.0f);
+}

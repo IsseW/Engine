@@ -5,8 +5,7 @@ struct VertexShaderInput
     float3 normal : NORMAL0;
 };
 
-struct VertexShaderOutput
-{
+struct VertexShaderOutput {
     float4 position : SV_POSITION;
 };
 

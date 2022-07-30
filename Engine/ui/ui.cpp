@@ -184,7 +184,7 @@ void spot_light_ui(SpotLight& light) {
 	edit(light.light);
 }
 
-void editor_ui(const Window& window, World& world, AssetHandler& assets) {
+void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHandler& assets) {
 	static bool active = true;
 	ImGui::Begin("Editor", &active);
 
@@ -192,6 +192,8 @@ void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 	auto view_mat_inv = view_mat.invert();
 	auto proj_mat = world.camera.get_proj(window.ratio());
 	auto proj_mat_inv = proj_mat.invert();
+
+	
 
 	if (ImGui::CollapsingHeader("Camera")) {
 		ImGui::PushID(0);
@@ -288,6 +290,7 @@ void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 	if (ImGui::CollapsingHeader("Dir Lights")) {
 		ImGui::PushID(2);
 		ImGui::Indent();
+		usize index = 0;
 		world.dir_lights.iter([&](Id<DirLight> id, DirLight& light) {
 			std::string s("Light.");
 			s += id.to_string();
@@ -297,6 +300,15 @@ void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 
 				dir_light_ui(light);
 
+				if (ImGui::CollapsingHeader("Shadow")) {
+					ImGui::Indent();
+					auto size = renderer.shadow_pass.directional_shadows.size.as<f32>().xy().normalized();
+					ImGui::Image(renderer.shadow_pass.directional_shadows.srvs[index], ImVec2(300.0f * size.x / size.y, 300.0f));
+
+					ImGui::Unindent();
+				}
+
+
 				if (ImGui::Button("Remove")) {
 					world.remove(id);
 				}
@@ -304,6 +316,7 @@ void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 				ImGui::Unindent();
 				ImGui::PopID();
 			}
+			++index;
 		});
 		if (ImGui::CollapsingHeader("New Light")) {
 			static DirLight light = DirLight{};
@@ -325,6 +338,7 @@ void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 	if (ImGui::CollapsingHeader("Spot Lights")) {
 		ImGui::PushID(3);
 		ImGui::Indent();
+		usize index = 0;
 		world.spot_lights.iter([&](Id<SpotLight> id, SpotLight& light) {
 			std::string s("Light.");
 			s += id.to_string();
@@ -334,6 +348,15 @@ void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 
 				spot_light_ui(light);
 
+				if (ImGui::CollapsingHeader("Shadow")) {
+					ImGui::Indent();
+					auto size = renderer.shadow_pass.spot_shadows.size.as<f32>().xy().normalized();
+					ImGui::Image(renderer.shadow_pass.spot_shadows.srvs[index], ImVec2(300.0 * size.x / size.y, 300.0));
+
+					ImGui::Unindent();
+				}
+
+
 				if (ImGui::Button("Remove")) {
 					world.remove(id);
 				}
@@ -341,6 +364,7 @@ void editor_ui(const Window& window, World& world, AssetHandler& assets) {
 				ImGui::Unindent();
 				ImGui::PopID();
 			}
+			++index;
 		});
 		if (ImGui::CollapsingHeader("New Light")) {
 			static SpotLight light = SpotLight{};
@@ -385,7 +409,7 @@ void update_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 	}
 	ImGui::End();
 
-	editor_ui(window, world, assets);
+	editor_ui(window, renderer, world, assets);
 
 	end();
 }

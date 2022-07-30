@@ -23,7 +23,6 @@ cbuffer LOCALS : register(b1) {
     float4 object_color;
 };
 
-
 float4 transform_to_camera(float4 vec) {
     float4 view = mul(view_matrix, vec);
     float4 projected = mul(proj_matrix, view);

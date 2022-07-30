@@ -55,6 +55,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	auto cam = Camera::perspective(Transform::from_translation(Vec3<f32>(0.0, 0.0, -10.0)), 60.0f * F32::TO_RAD);
 	World world(cam);
 	world.add(Object(Transform(), Vec3<f32>(0.5f, 0.5f, 0.0f)).with_mesh(cube_mesh).with_image(test_texture));
+	world.add(DirLight(Transform::from_translation(Vec3<f32>(1.0f, 1.0f, 5.0f)).looking_at(Vec3<f32>::zero()), Light { Vec3<f32>::one(), 1.0 }));
 
 	Window* window = create_window(hInstance, 1000, 1000, nCmdShow).unwrap();
 

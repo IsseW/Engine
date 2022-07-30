@@ -18,7 +18,7 @@ struct Vec {
 		_internal = other._internal;
 		return *this;
 	}
-	Vec& operator=(Vec&& other) {
+	Vec& operator=(Vec&& other) noexcept {
 		_internal = std::move(other._internal);
 		return *this;
 	}

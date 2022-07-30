@@ -284,28 +284,35 @@ namespace math {
 	}
 
 	template<typename T>
-	constexpr Mat4<T> create_orth_proj(T left, T right, T bottom, T top, T cam_near, T cam_far) {
+	constexpr Mat4<T> create_orth_proj(T l, T r, T b, T t, T n, T f) {
 		constexpr T ZERO = (T)0;
 		constexpr T ONE = (T)1;
 		constexpr T TWO = (T)2;
 		return Mat4<f32> {
-			TWO / (right - left), ZERO, ZERO, ZERO,
-			ZERO, TWO / (top - bottom), ZERO, ZERO,
-			ZERO, ZERO, ONE / (cam_far - cam_near), ZERO,
-			(right + left) / (left - right), (top + bottom) / (bottom - top), (ONE + (cam_far + cam_near) / (cam_near - cam_far)) / TWO, ONE
+			TWO / (r - l), ZERO, ZERO, (r + l) / (r - l),
+			ZERO, TWO / (t - b), ZERO, (t + b) / (t - b),
+			ZERO, ZERO, ONE / (f - n), (ONE + (f + n) / (n - f)) / TWO,
+			ZERO, ZERO, ZERO, ONE
 		};
 	}
 
 	template<typename T>
-	constexpr Mat4<T> create_persp_proj(T left, T right, T bottom, T top, T cam_near, T cam_far) {
+	constexpr Mat4<T> create_persp_proj(T l, T r, T b, T t, T n, T f) {
 		constexpr T ZERO = (T)0;
 		constexpr T ONE = (T)1;
-		constexpr T TWO = (T)2;
+		constexpr T TWO = ONE + ONE;
+		constexpr T EPS = ONE / (TWO * TWO * TWO * TWO * TWO * TWO * TWO * TWO * TWO);
+		if (n == ZERO) {
+			n = EPS;
+		}
+		if (f == ZERO) {
+			f = EPS;
+		}
 		return Mat4<f32> {
-			TWO * cam_near / (right - left), ZERO, ZERO, ZERO,
-			ZERO, TWO * cam_near / (top - bottom), ZERO, ZERO,
-			(right + left) / (right - left), (top + bottom) / (top - bottom), (cam_far + cam_near) / (cam_far - cam_near), -ONE,
-			ZERO, ZERO, cam_far* cam_near / (cam_far - cam_near), ZERO,
+			TWO* n / (r - l), ZERO, (r + l) / (r - l), ZERO,
+			ZERO, TWO* n / (t - b), (t + b) / (t - b), ZERO,
+			ZERO, ZERO, ((f + n) / (f - n) - ONE) / TWO + ONE, f * n / (n - f),
+			ZERO, ZERO, ONE, ZERO,
 		};
 	}
 }

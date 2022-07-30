@@ -6,6 +6,7 @@
 #include<iostream>
 #include<concepts>
 
+
 template<typename T, typename E>
 struct Result {
 	Result(E&& e) {
@@ -24,6 +25,7 @@ struct Result {
 	}
 	~Result() {
 		if (is_ok()) {
+			// std::cout << "Bye bye " << typeid(T).name() << std::endl;
 			_ok.~T();
 		}
 		else {
@@ -55,50 +57,50 @@ struct Result {
 		return res;
 	}
 
-	T&& unwrap() {
+	T unwrap() {
 		if (is_ok()) {
-			return std::move(this->_ok);
+			return this->_ok;
 		} else {
 			PANIC("Trying to unwrap err.");
 		}
 	}
 
-	E&& unwrap_err() {
+	E unwrap_err() {
 		if (is_err()) {
-			return std::move(this->_err);
+			return this->_err;
 		}
 		else {
 			PANIC("Trying to unwrap err from ok.");
 		}
 	}
-	E&& unwrap_err_unchecked() {
-		return std::move(this->_err);
+	E unwrap_err_unchecked() {
+		return this->_err;
 	}
 
-	Option<T>&& ok() const {
+	Option<T> ok() const {
 		if (this->is_ok()) {
-			Option<T>::some(std::move(this->_ok));
+			Option<T>::some(this->_ok);
 		}
 		else {
 			Option<T>::none();
 		}
 	}
 
-	Result<T&, E&> as_ref() {
+	Result<T*, E*> as_ptr() {
 		if (this->is_ok()) {
-			return Result<T&, E&>::ok(this->_ok);
+			return Result<T*, E*>::ok(&this->_ok);
 		}
 		else {
-			return Result<T&, E&>::err(this->_err);
+			return Result<T*, E*>::err(&this->_err);
 		}
 	}
 
-	Result<const T&, const E&> as_ref() const {
+	Result<const T*, const E*> as_ptr() const {
 		if (this->is_ok()) {
-			return Result<const T&, const E&>::ok(this->_ok);
+			return Result<const T*, const E*>::ok(&this->_ok);
 		}
 		else {
-			return Result<const T&, const E&>::err(this->_err);
+			return Result<const T*, const E*>::err(&this->_err);
 		}
 	}
 

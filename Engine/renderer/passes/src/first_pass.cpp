@@ -117,11 +117,11 @@ ObjectRenderer::Locals ObjectRenderer::Locals::from_object(const Object& obj) {
 }
 
 void FirstPass::draw(const RendererCtx& ctx, const World& world, const AssetHandler& assets) {
-	ctx.context->ClearDepthStencilView(depth.view, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	ctx.context->ClearDepthStencilView(depth.dsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
 	gbuffer.clear(ctx.context);
 
 	auto targets = gbuffer.targets();
-	ctx.context->OMSetRenderTargets(targets.size(), targets.data(), depth.view);
+	ctx.context->OMSetRenderTargets(targets.size(), targets.data(), depth.dsv);
 
 	// First update the globals buffer
 	auto g = FirstPass::Globals::from_world(world, ctx.ratio());

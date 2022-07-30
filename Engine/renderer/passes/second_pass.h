@@ -14,10 +14,13 @@ constexpr const char* MODES[5] = { "Deferred", "Albedo", "Depth", "Normal", "Pos
 struct SecondPass {
 	struct Locals {
 		RenderMode mode;
-		Vec3<f32> padding;
+		u32 num_dir;
+		u32 num_spot;
+		f32 dummy;
 	};
 
 	struct Directional {
+		Mat4<f32> texture_mat;
 		Vec3<f32> direction;
 		Vec3<f32> color;
 		f32 strength;
@@ -26,6 +29,7 @@ struct SecondPass {
 	};
 
 	struct Spot {
+		Mat4<f32> texture_mat;
 		Vec3<f32> direction;
 		Vec3<f32> color;
 		f32 strength;
@@ -39,6 +43,7 @@ struct SecondPass {
 
 	SBuffer<Directional> dir_lights;
 	SBuffer<Spot> spot_lights;
+	ID3D11SamplerState* shadow_sampler;
 
 	RenderMode mode = RenderMode::Deferred;
 
