@@ -18,3 +18,5 @@ template<typename ...T>
 Tuple<T...> new_tuple(T... t) {
 	return Tuple<T...>{t...};
 }
+
+using EmptyTuple = Tuple<>;

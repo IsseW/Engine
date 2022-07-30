@@ -178,7 +178,7 @@ Option<T> none() {
 	return Option<T>::none();
 }
 template<typename T>
-Option<T> some(const T& v) requires std::copyable<T> {
+Option<T> some(T v) requires std::copyable<T> {
 	return Option<T>::some(v);
 }
 template<typename T>

@@ -204,6 +204,7 @@
     <ClInclude Include="renderer\util.h" />
     <ClInclude Include="renderer\window.h" />
     <ClInclude Include="renderer\world.h" />
+    <ClInclude Include="rstd\box.h" />
     <ClInclude Include="rstd\depot.h" />
     <ClInclude Include="ui\ui.h" />
     <ClInclude Include="ui\imgui\imconfig.h" />

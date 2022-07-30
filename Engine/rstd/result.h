@@ -115,6 +115,12 @@ struct Result {
 
 	}
 
+	Result<const T, E> as_const() const {
+		this->map<const T>([](const auto ok) {
+			return ok;
+		});
+	}
+
 	bool is_ok() const {
 		return this->_is_ok;
 	}
@@ -136,7 +142,7 @@ private:
 };
 
 template<typename T, typename E>
-Result<T, E> ok(const T& v) requires std::copyable<T> {
+Result<T, E> ok(T v) requires std::copyable<T> {
 	return Result<T, E>::ok(v);
 }
 template<typename T, typename E>
@@ -145,7 +151,7 @@ Result<T, E> ok(T&& v) requires std::movable<T> {
 }
 
 template<typename T, typename E>
-Result<T, E> err(const E& e) requires std::copyable<T> {
+Result<T, E> err(E e) requires std::copyable<T> {
 	return Result<T, E>::err(e);
 }
 

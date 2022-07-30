@@ -2,63 +2,96 @@
 #include <rstd/primitives.h>
 #include <math/aab.h>
 #include <rstd/panic.h>
+#include <rstd/box.h>
+#include <rstd/result.h>
+#include <rstd/tuple.h>
 
-template<usize DEPTH>
+enum class OctreeError {
+	OutOfBounds,
+	EmptyNode,
+};
+
+struct OctreeNode {
+	OctreeNode() = default;
+
+	virtual ~OctreeNode() = 0;
+};
+
+struct OctreeBranch: OctreeNode {
+	std::array<Option<Box<OctreeNode>>, 8> nodes;
+	
+	~OctreeBranch() final;
+};
+
+template<typename T>
+struct OctreeLeaf: OctreeNode {
+	std::array<T, 8> data;
+
+	~OctreeLeaf() final;
+};
+
+template<typename T, usize DEPTH>
 struct SparseOctree {
 	static_assert(DEPTH != 0, "Octree can't have a depth of 0");
-	SparseOctree(Aabb<f32> dimension) : __inner_dimension{ dimension }, __len{ 0 }, __flat_array{0} {}
 	
-	bool insert_absolute(Aabb<f32> abs, u32 index) {
-		insert(this->__inner_dimension, abs, DEPTH, index);
-		bool contained = this->__inner_dimension.intersects(abs);
-		if (contained){
-			auto aabbs = SparseOctree<DEPTH>::split_aabb(this->__inner_dimension);
-			for (auto& aabb : aabbs) {
-				insert(aabb, abs, DEPTH - 1, index);
-			}
+	Result<EmptyTuple, OctreeError> insert(Vec3<i32> pos, T&& val) {
+		ensure_space(pos);
+		auto index = index_of(pos);
+		insert(index, std::move(val));
+	}
+
+	Tuple<Vec3<i32>, Vec3<i32>> min_bounds() const {
+		TODO;
+	}
+
+	Tuple<Vec3<i32>, Vec3<i32>> max_bounds() const {
+		TODO;
+	}
+
+	Result<T*, OctreeError> at(Vec3<i32> pos) {
+		u32 lim = bounds_test(pos);
+		if (lim == 0) {
+			return err<T*, OctreeError>(OctreeError::OutOfBounds);
 		}
-		return contained;
+		auto node_index = index_of(pos);
+		auto elem = find(node_index);
+		if (elem.is_none()) {
+			return OctreeError::EmptyNode;
+		}
+		auto result = ok<T*, OctreeError>(elem.unwrap());
+		return result;
 	}
 
-	bool insert_relative(Aabb<f32> rel, u32 index) {
-		return false;
-	}
-
-	bool remove_by_index(u32 index) {
-		return false;
+	Result<const T*, OctreeError> at(Vec3<i32> pos) const {
+		u32 lim = bounds_test(pos);
+		if(lim == 0){
+			return err<const T*, OctreeError>(OctreeError::OutOfBounds);
+		}
+		auto node_index = index_of(pos);
+		auto elem = find(node_index);
+		if(elem.is_none()) {
+			return OctreeError::EmptyNode;
+		}
+		const auto val = elem.unwrap();
+		auto result = ok<const T*, OctreeError>(val);
+		return result;
 	}
 private:
-	void insert(Aabb<f32>& dimensions, Aabb<f32>& collision, usize depth, u32 index) {
-		if (dimensions.intersects(collision)) {
-			if (depth == 0) {
-				int x = 0;
-			}
-			else {
-				auto aabbs = SparseOctree<DEPTH>::split_aabb(dimensions);
-				for (auto& aabb : aabbs) {
-					insert(aabb, collision, depth - 1, index);
-				}
-			}
-		}
-	}
+	T* find_or_create(u64 node_index) {}
 
-	static std::array<Aabb<f32>, 8> split_aabb(const Aabb<f32>& aabb) {	
-		auto offset = (aabb.max - aabb.min) / 2;
-		auto aabb_b_d_l = Aabb<f32>{ aabb.min, aabb.min + offset };
-		auto offset_x = Vec3<f32>{ offset.x, 0, 0 };
-		auto aabb_b_d_r = Aabb<f32>{ aabb_b_d_l.min + offset_x, aabb_b_d_l.max + offset_x };
-		auto offset_y = Vec3<f32>{ 0, offset.y, 0 };
-		auto aabb_b_u_l = Aabb<f32>{ aabb_b_d_l.min + offset_y, aabb_b_d_l.max + offset_y };
-		auto aabb_b_u_r = Aabb<f32>{ aabb_b_d_r.min + offset_y, aabb_b_d_r.max + offset_y };
-		auto offset_z = Vec3<f32>{ 0, 0, offset.z };
-		auto aabb_a_d_l = Aabb<f32>{ aabb_b_d_l.min + offset_z, aabb_b_d_l.max + offset_z };
-		auto aabb_a_d_r = Aabb<f32>{ aabb_b_d_r.min + offset_z, aabb_b_d_r.max + offset_z };
-		auto aabb_a_u_l = Aabb<f32>{ aabb_b_u_l.min + offset_z, aabb_b_u_l.max + offset_z };
-		auto aabb_a_u_r = Aabb<f32>{ aabb_b_u_r.min + offset_z, aabb_b_u_r.max + offset_z };
-		return { aabb_b_d_l, aabb_b_d_r, aabb_b_u_l, aabb_b_u_r, aabb_a_d_l, aabb_a_d_r, aabb_a_u_l, aabb_a_u_r };
-	}
+	Option<T*> find(u64 node_index) const {}
 
-	Aabb<f32> __inner_dimension;
-	usize __len;
-	std::array<u32, DEPTH> __flat_array;
+	u64 index_of(Vec3<i32> pos) const {}
+
+	void ensure_space(Vec3<i32> pos) {}
+
+	void insert(u64 node_index, T&& val) {}
+
+	void grow(u32 lim) {}
+
+	void grow_once() {}
+
+	u32 bounds_test(Vec3<i32> v) const{}
+
+	//Box<OctreeBranch> _root = Box<OctreeBranch>{};
 };
