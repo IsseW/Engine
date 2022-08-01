@@ -21,16 +21,18 @@ struct SpotLight {
 	Mat4<f32> get_texture_mat(const Camera& viewpoint) const;
 };
 
+struct ObjectData {
+	Mat4<f32> world;
+};
+
 struct Object {
-	Object(Transform transform, Vec3<f32> color);
+	Object(Transform transform);
 
 	Object&& with_mesh(AId<Mesh> mesh);
-	Object&& with_image(AId<Image> image);
+	ObjectData get_data() const;
 
 	Transform transform;
 	Option<AId<Mesh>> mesh;
-	Vec3<f32> color;
-	Option<AId<Image>> image;
 };
 
 struct Window;

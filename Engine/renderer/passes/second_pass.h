@@ -3,16 +3,18 @@
 
 enum class RenderMode {
 	Deferred,
-	Albedo,
+	Ambient,
+	Diffuse,
+	Specular,
 	Depth,
 	Normal,
 	Position,
 };
 
-constexpr const char* MODES[5] = { "Deferred", "Albedo", "Depth", "Normal", "Position"};
+constexpr const char* MODES[7] = { "Deferred", "Ambient", "Diffuse", "Specular", "Depth", "Normal", "Position"};
 
 struct SecondPass {
-	struct Locals {
+	struct ObjectData {
 		Vec3<f32> cam_pos;
 		RenderMode mode;
 		u32 num_dir;
@@ -42,7 +44,7 @@ struct SecondPass {
 
 	ID3D11ComputeShader* deferred;
 
-	Uniform<Locals> locals;
+	Uniform<ObjectData> object;
 
 	SBuffer<Directional> dir_lights;
 	SBuffer<Spot> spot_lights;

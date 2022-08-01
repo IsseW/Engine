@@ -9,17 +9,17 @@ struct ShadowPass {
 
 		Mat4<f32> texture_matrix;
 	};
-	struct Locals {
+	struct ObjectData {
 		Mat4<f32> world_matrix;
 
-		static Locals from_object(const Object& obj);
+		static ObjectData from_object(const Object& obj);
 	};
 
 	ID3D11VertexShader* vs;
 	ID3D11InputLayout* il;
 
 	Uniform<Globals> globals;
-	Uniform<Locals> locals;
+	Uniform<ObjectData> object;
 
 	DepthTextures directional_shadows;
 
@@ -29,7 +29,7 @@ struct ShadowPass {
 
 	void resize(ID3D11Device* device, Vec2<u16> size);
 
-	void draw(const RendererCtx& ctx, const World& world, const AssetHandler& assets);
+	void draw(Renderer& rend, const World& world, const AssetHandler& assets);
 	 
 	void clean_up();
 };

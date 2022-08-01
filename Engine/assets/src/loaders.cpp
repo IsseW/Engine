@@ -7,11 +7,12 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include<assets/stb_image.h>
 
-Image Image::load(const std::filesystem::path& path, AssetHandler& asset_handler) {
+Image Image::load(const fs::path& path, AssetHandler& asset_handler) {
 	int width, height;
 	u8* data = stbi_load(path.string().data(), &width, &height, nullptr, 4);
 
 	if (data == nullptr) {
+		std::cerr << "Failed loading: " << path << std::endl;
 		PANIC("Failed to load image file");
 	}
 	Image image;
@@ -70,8 +71,8 @@ void Image::bind(ID3D11Device* device) {
 	resource_desc.Texture2D = { 0, 1 };
 	resource_desc.Format = desc.Format;
 	resource_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	ID3D11ShaderResourceView* rsv;
-	res = device->CreateShaderResourceView(texture, &resource_desc, &rsv);
+	ID3D11ShaderResourceView* srv;
+	res = device->CreateShaderResourceView(texture, &resource_desc, &srv);
 	if (FAILED(res)) {
 		PANIC("Failed to create shader resource view for texture.");
 	}
@@ -94,7 +95,7 @@ void Image::bind(ID3D11Device* device) {
 
 	binded.insert(Binded{
 			texture,
-			rsv,
+			srv,
 			sampler_state
 		});
 }
@@ -102,7 +103,7 @@ void Image::bind(ID3D11Device* device) {
 
 Image Image::default_asset() {
 	Image image;
-	image.data = new u8[4] { 1, 1, 1, 1 };
+	image.data = new u8[4] { 255, 255, 255, 255 };
 	image.width = 1;
 	image.height = 1;
 	image.channels = 4;
@@ -112,7 +113,7 @@ Image Image::default_asset() {
 void Image::clean_up() {
 	if (binded.is_some()) {
 		Binded b = binded.take().unwrap_unchecked();
-		b.rsv->Release();
+		b.srv->Release();
 		b.texture->Release();
 		b.sampler_state->Release();
 	}
@@ -127,6 +128,7 @@ void Image::clean_up() {
 Vec<std::string> split_string(std::string str, char delim) {
 	Vec<std::string> ret;
 	std::string tmp;
+	
 	for (char c: str) {
 		if (c != delim) {
 			tmp += c;
@@ -135,6 +137,30 @@ Vec<std::string> split_string(std::string str, char delim) {
 			ret.push(std::move(tmp));
 			tmp = std::string{};
 		}
+	}
+	if (tmp.size() != 0) {
+		ret.push(std::move(tmp));
+	}
+	return ret;
+}
+
+Vec<std::string> split_whitespace(std::string str) {
+	Vec<std::string> ret;
+	std::string tmp;
+
+	usize i = 0;
+	for (; i < str.size() && std::isspace(str[i]); ++i);
+
+	for (; i < str.size(); ++i) {
+		// Skip multiple spaces
+		bool space = false;
+		for (; i < str.size() && std::isspace(str[i]); ++i) space = true;
+		char c = str[i];
+		if (space) {
+			ret.push(std::move(tmp));
+			tmp = std::string{};
+		}
+		tmp += c;
 	}
 	if (tmp.size() != 0) {
 		ret.push(std::move(tmp));
@@ -157,7 +183,7 @@ struct std::hash<Vertex> {
 	}
 };
 
-Mesh Mesh::load(const std::filesystem::path& path, AssetHandler& asset_handler) {
+Mesh Mesh::load(const fs::path& path, AssetHandler& asset_handler) {
 	auto file = std::ifstream{path};
 	if (!file.is_open()) {
 		PANIC("Unable to load mesh!");
@@ -181,8 +207,17 @@ Mesh Mesh::load(const std::filesystem::path& path, AssetHandler& asset_handler) 
 	Option<AId<MaterialGroup>> materials;
 	Index starts_at = 0;
 
+	auto use_mtl = [&](std::string mat) {
+		materials.as_ptr().then_do([&](const AId<MaterialGroup>* mat_group) {
+			auto mats = asset_handler.get(*mat_group).unwrap();
+			mats->get(mat).then_do([&](AId<Material> mat) {
+				material.insert(mat);
+			});
+		});
+	};
+
 	while (std::getline(file, line)) {
-		auto split = split_string(line, ' ');
+		auto split = split_whitespace(line);
 		if (split.len() < 1) {
 			continue;
 		}
@@ -272,26 +307,26 @@ Mesh Mesh::load(const std::filesystem::path& path, AssetHandler& asset_handler) 
 			indices.push(triangle.z);
 		}
 		else if (first == "o" || first == "g") {
-			if (indices.len() > 0) {
-				Index end = (Index)indices.len() - 1;
+			Index ends_at = (Index)indices.len();
+			if (starts_at < ends_at) {
 				submeshes.push(SubMesh{
-					starts_at, end, material.take(),
+					starts_at, ends_at, material.take(),
 				});
-				starts_at = end + 1;
+				starts_at = ends_at;
+			}
+			if (split.len() >= 2) {
+				use_mtl(split[1]);
 			}
 		}
 		else if (first == "mtllib") {
-			materials.insert(asset_handler.load<MaterialGroup>(parent_dir.append(split[1])));
+			materials.insert(asset_handler.load<MaterialGroup>(fs::path(parent_dir).append(split[1])));
 		}
 		else if (first == "usemtl") {
-			materials.as_ptr().then_do([&](const AId<MaterialGroup>* mat_group) {
-				auto mats = asset_handler.get(*mat_group).unwrap();
-				material.insert(mats->get(split[1]));
-			});
+			use_mtl(split[1]);
 		}
 	}
 	if (indices.len() > 0) {
-		Index end = (Index)indices.len() - 1;
+		Index end = (Index)indices.len();
 		submeshes.push(SubMesh{
 			starts_at, end, material.take(),
 		});
@@ -305,14 +340,17 @@ Mesh Mesh::load(const std::filesystem::path& path, AssetHandler& asset_handler) 
 }
 
 void SubMesh::bind(ID3D11Device* device, AssetHandler& asset_handler) {
-	material.and_then<Material*>([&](AId<Material> mat) {
-		return asset_handler.get(mat);
+	material.as_ptr().and_then<Material*>([&](const AId<Material>* mat) {
+		return asset_handler.get(*mat);
 	}).then_do([&](Material* mat) {
 		mat->bind(device, asset_handler);
 	});
 }
 
 void Mesh::bind(ID3D11Device* device, AssetHandler& asset_handler) {
+	for (SubMesh& s : submeshes) {
+		s.bind(device, asset_handler);
+	}
 	if (binded.is_some()) {
 		return;
 	}
@@ -354,10 +392,6 @@ void Mesh::bind(ID3D11Device* device, AssetHandler& asset_handler) {
 		vertex_buffer,
 		index_buffer
 	});
-
-	for (SubMesh& s : submeshes) {
-		s.bind(device, asset_handler);
-	}
 }
 
 Mesh Mesh::default_asset() {
@@ -394,9 +428,9 @@ Material Material::default_asset() {
 }
 
 void Material::bind(ID3D11Device* device, AssetHandler& asset_handler) {
-	auto bind_tex = [&](auto& tex) {
-		tex.tex.then_do([&](AId<Image> image) {
-			asset_handler.get(image).then_do([&](Image* image) {
+	auto bind_tex = [&](const auto& tex) {
+		tex.tex.as_ptr().then_do([&](const AId<Image>* image) {
+			asset_handler.get(*image).then_do([&](Image* image) {
 				image->bind(device);
 			});
 		});
@@ -413,31 +447,37 @@ void Material::clean_up() {}
 MaterialGroup MaterialGroup::default_asset() {
 	return MaterialGroup{};
 }
-AId<Material> MaterialGroup::get(const std::string& mat) const {
-	return mats.at(mat);
+Option<AId<Material>> MaterialGroup::get(const std::string& mat) const {
+	auto f = mats.find(mat);
+	if (f == mats.end()) {
+		return none<AId<Material>>();
+	}
+	return some(f->second);
 }
-MaterialGroup MaterialGroup::load(const std::filesystem::path& path, AssetHandler& asset_handler) {
+MaterialGroup MaterialGroup::load(const fs::path& path, AssetHandler& asset_handler) {
 	auto file = std::ifstream{ path };
 	if (!file.is_open()) {
 		PANIC("Unable to load material!");
 	}
-	std::string line;
+	auto parent_dir = path.parent_path();
+	std::string line {};
 
-	std::unordered_map<std::string, AId<Material>> materials;
+	std::unordered_map<std::string, AId<Material>> materials {};
 
-	std::string name;
-	Material material;
+	std::string name {};
+	Material material {};
 
 	auto insert = [&]() {
 		if (name.size() > 0) {
 			auto mat = asset_handler.insert(std::move(material), name);
 			materials.insert({ name, mat });
-			name = "";
+			name.clear();
+			material = Material{};
 		}
 	};
 
 	while (std::getline(file, line)) {
-		auto split = split_string(std::move(line), ' ');
+		auto split = split_whitespace(line);
 		line = std::string{};
 		if (split.len() < 1) {
 			continue;
@@ -453,6 +493,7 @@ MaterialGroup MaterialGroup::load(const std::filesystem::path& path, AssetHandle
 		if (first == "newmtl") {
 			insert();
 			name = split[1];
+			material.name = split[1];
 		}
 		else if (first == "Ns") {
 			material.shinyness.value = std::stof(split[1]);
@@ -467,16 +508,16 @@ MaterialGroup MaterialGroup::load(const std::filesystem::path& path, AssetHandle
 			material.specular.color = parse_color();
 		}
 		else if (first == "map_Ns") {
-			material.shinyness.tex.insert(asset_handler.load<Image>(split[1]));
+			material.shinyness.tex.insert(asset_handler.load<Image>(fs::path(parent_dir).append(split[1])));
 		}
 		else if (first == "map_Ka") {
-			material.ambient.tex.insert(asset_handler.load<Image>(split[1]));
+			material.ambient.tex.insert(asset_handler.load<Image>(fs::path(parent_dir).append(split[1])));
 		}
 		else if (first == "map_Kd") {
-			material.diffuse.tex.insert(asset_handler.load<Image>(split[1]));
+			material.diffuse.tex.insert(asset_handler.load<Image>(fs::path(parent_dir).append(split[1])));
 		}
 		else if (first == "map_Ks") {
-			material.specular.tex.insert(asset_handler.load<Image>(split[1]));
+			material.specular.tex.insert(asset_handler.load<Image>(fs::path(parent_dir).append(split[1])));
 		}
 	}
 	insert();
@@ -487,3 +528,12 @@ MaterialGroup MaterialGroup::load(const std::filesystem::path& path, AssetHandle
 	};
 }
 void MaterialGroup::clean_up() {}
+
+MaterialData Material::get_data() const {
+	return MaterialData {
+		ambient.get_color(),
+		diffuse.get_color(),
+		specular.get_color(),
+		shinyness.get_value(),
+	};
+}

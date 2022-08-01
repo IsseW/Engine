@@ -3,17 +3,12 @@
 #include<renderer/world.h>
 
 struct ObjectRenderer {
-	struct Locals {
-		Mat4<f32> world_matrix;
-		Vec4<f32> color;
-
-		static Locals from_object(const Object& obj);
-	};
 	ID3D11VertexShader* vs;
 	ID3D11PixelShader* ps;
 	ID3D11InputLayout* layout;
 
-	Uniform<Locals> locals;
+	Uniform<ObjectData> object;
+	Uniform<MaterialData> material;
 
 	static Result<ObjectRenderer, RenderCreateError> create(ID3D11Device* device);
 
@@ -21,10 +16,11 @@ struct ObjectRenderer {
 };
 
 struct GBuffer {
-	RenderTexture albedo;
+	RenderTexture ambient;
+	RenderTexture diffuse;
+	RenderTexture specular;
 	RenderTexture normal;
 	RenderTexture position;
-	RenderTexture light_info;
 
 	static Result<GBuffer, RenderCreateError> create(ID3D11Device* device, Vec2<u16> size);
 
@@ -34,7 +30,7 @@ struct GBuffer {
 
 	void clear(ID3D11DeviceContext* ctx);
 
-	std::array<ID3D11RenderTargetView*, 4> targets() const;
+	std::array<ID3D11RenderTargetView*, 5> targets() const;
 };
 
 struct FirstPass {
@@ -50,7 +46,7 @@ struct FirstPass {
 	DepthTexture depth;
 	GBuffer gbuffer;
 
-	void draw(const RendererCtx& ctx, const World& world, const AssetHandler& assets);
+	void draw(Renderer& rend, const World& world, const AssetHandler& assets);
 
 	static Result<FirstPass, RenderCreateError> create(ID3D11Device* device, Vec2<u16> size);
 

@@ -96,6 +96,9 @@
     <ClCompile Include="renderer\src\shader_loading.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\passes\src\draw_objects.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer\renderer.h">
@@ -222,9 +225,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+    <None Include="resources\croc.mtl" />
+    <None Include="resources\croc.wavefront" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\test_texture.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\croc.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

@@ -1,14 +1,3 @@
-Texture2D albedo : register(t0);
-Texture2D normal : register(t1);
-Texture2D position : register(t2);
-Texture2D light_info : register(t3);
-
-Texture2D depth : register(t4);
-
-Texture2DArray dir_shadows : register(t5);
-Texture2DArray spot_shadows : register(t6);
-
-SamplerState shadow_sampler : register(s0);
 
 struct DirLight {
 	float4x4 texture_mat;
@@ -18,7 +7,6 @@ struct DirLight {
 	float strength;
 };
 
-StructuredBuffer<DirLight> dir_lights : register(t7);
 
 struct SpotLight {
 	float4x4 texture_mat;
@@ -28,9 +16,19 @@ struct SpotLight {
 	float strength;
 };
 
-StructuredBuffer<SpotLight> spot_lights : register(t8);
+Texture2D ambient_map : register(t0);
+Texture2D diffuse_map : register(t1);
+Texture2D specular_map : register(t2);
+Texture2D normal : register(t3);
+Texture2D position : register(t4);
+Texture2D depth : register(t5);
+Texture2DArray dir_shadows : register(t6);
+Texture2DArray spot_shadows : register(t7);
+SamplerState shadow_sampler : register(s0);
+StructuredBuffer<DirLight> dir_lights : register(t8);
+StructuredBuffer<SpotLight> spot_lights : register(t9);
 
-cbuffer Locals : register(b0) {
+cbuffer ObjectData : register(b0) {
 	float3 cam_pos;
 	uint render_mode;
 	uint num_dir;
@@ -41,7 +39,7 @@ RWTexture2D<float4> output : register(u0);
 
 void deferred(uint2 pos) {
 	if (position[pos].w == 0.0) {
-		output[pos] = albedo[pos];
+		output[pos] = float4(0.2, 0.2, 0.2, 1.0);
 	}
 	else {
 		int dir_light_count = 0;
@@ -51,10 +49,10 @@ void deferred(uint2 pos) {
 
 		float3 view_dir = normalize(cam_pos - p);
 
-		float ambient = light_info[pos].x;
-		float diffuse_c = light_info[pos].y;
-		float specular_c = light_info[pos].z;
-		float shinyness = light_info[pos].w;
+		float3 ambient_c = ambient_map[pos].xyz;
+		float3 diffuse_c = diffuse_map[pos].xyz;
+		float3 specular_c = specular_map[pos].xyz;
+		float shinyness = specular_map[pos].w;
 
 		float3 diffuse;
 		float3 specular;
@@ -77,25 +75,33 @@ void deferred(uint2 pos) {
 			specular += pow(saturate(dot(h, n)), 4.0) * light.color;
 		}
 
-		float3 lighting = ambient + diffuse * diffuse_c + specular * specular_c;
-		float4 color = albedo[pos];
-		output[pos] =  float4(color.xyz * lighting, color.w);
+		output[pos] =  float4(ambient_c + diffuse * diffuse_c + specular * specular_c, 1.0);
 	}
 }
 
 // Redner modes
-#define ALBEDO 1
-#define DEPTH 2
-#define NORMAL 3
-#define POSITION 4
+#define AMBIENT 1
+#define DIFFUSE 2
+#define SPECULAR 3
+#define DEPTH 4
+#define NORMAL 5
+#define POSITION 6
 
 [numthreads(8, 8, 1)]
 void main(uint3 dispatch_id : SV_DispatchThreadID) {
 	uint2 pos = dispatch_id.xy;
 
 	switch (render_mode) {
-	case ALBEDO: {
-		output[pos] = albedo[pos];
+	case AMBIENT: {
+		output[pos] = ambient_map[pos];
+		break;
+	}
+	case DIFFUSE: {
+		output[pos] = diffuse_map[pos];
+		break;
+	}
+	case SPECULAR: {
+		output[pos] = specular_map[pos];
 		break;
 	}
 	case DEPTH: {

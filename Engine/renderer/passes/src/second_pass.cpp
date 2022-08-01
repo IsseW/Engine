@@ -7,8 +7,8 @@ Result<SecondPass, RenderCreateError> SecondPass::create(ID3D11Device* device) {
 	ID3D11ComputeShader* deferred;
 	TRY(deferred, load_compute(device, COMPUTE_FILE));
 
-	Uniform<Locals> locals;
-	TRY(locals, Uniform<Locals>::create(device));
+	Uniform<ObjectData> object;
+	TRY(object, Uniform<ObjectData>::create(device));
 
 	SBuffer<Directional> dir_lights;
 	TRY(dir_lights, SBuffer<Directional>::create(device, 10));
@@ -35,7 +35,7 @@ Result<SecondPass, RenderCreateError> SecondPass::create(ID3D11Device* device) {
 
 	return ok<SecondPass, RenderCreateError>(SecondPass{
 			deferred,
-			locals,
+			object,
 			dir_lights,
 			spot_lights,
 			shadow_sampler_state,
@@ -65,22 +65,23 @@ void SecondPass::draw(Renderer& rend, const World& world) {
 	});
 	spot_lights.update(rend.ctx.context, spot.raw(), spot.len());
 
-	Locals locals = {
+	ObjectData object = {
 		world.camera.transform.translation,
 		mode,
 		directional.len(),
 		spot.len(),
 	};
-	this->locals.update(rend.ctx.context, &locals);
-	rend.ctx.context->CSSetConstantBuffers(0, 1, &this->locals.buffer);
+	this->object.update(rend.ctx.context, &object);
+	rend.ctx.context->CSSetConstantBuffers(0, 1, &this->object.buffer);
 
 
-	const usize SRV_COUNT = 9;
+	const usize SRV_COUNT = 10;
 	ID3D11ShaderResourceView* srv[SRV_COUNT] = {
-		rend.first_pass.gbuffer.albedo.srv,
+		rend.first_pass.gbuffer.ambient.srv,
+		rend.first_pass.gbuffer.diffuse.srv,
+		rend.first_pass.gbuffer.specular.srv,
 		rend.first_pass.gbuffer.normal.srv,
 		rend.first_pass.gbuffer.position.srv,
-		rend.first_pass.gbuffer.light_info.srv,
 		rend.first_pass.depth.srv,
 		rend.shadow_pass.directional_shadows.srv,
 		rend.shadow_pass.spot_shadows.srv,

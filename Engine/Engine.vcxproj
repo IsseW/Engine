@@ -101,7 +101,7 @@
     </Link>
     <PostBuildEvent>
       <Message>Copy resources</Message>
-      <Command>robocopy "$(ProjectDir)resources" "$(OutDir)resources" /s /e /mir</Command>
+      <Command>Xcopy /Y /E /I "$(ProjectDir)resources" "$(OutDir)resources"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -121,7 +121,7 @@
     </Link>
     <PostBuildEvent>
       <Message>Copy resources</Message>
-      <Command>robocopy "$(ProjectDir)resources" "$(OutDir)resources" /s /e /mir</Command>
+      <Command>Xcopy /Y /E /I "$(ProjectDir)resources" "$(OutDir)resources"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -138,7 +138,7 @@
     </Link>
     <PostBuildEvent>
       <Message>Copy resources</Message>
-      <Command>robocopy "$(ProjectDir)resources" "$(OutDir)resources" /s /e /mir</Command>
+      <Command>Xcopy /Y /E /I "$(ProjectDir)resources" "$(OutDir)resources"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -158,13 +158,14 @@
     </Link>
     <PostBuildEvent>
       <Message>Copy resources</Message>
-      <Command>robocopy "$(ProjectDir)resources" "$(OutDir)resources" /s /e /mir</Command>
+      <Command>Xcopy /Y /E /I "$(ProjectDir)resources" "$(OutDir)resources"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="assets\src\loaders.cpp" />
     <ClCompile Include="assets\src\shape.cpp" />
     <ClCompile Include="input\src\input.cpp" />
+    <ClCompile Include="renderer\passes\src\draw_objects.cpp" />
     <ClCompile Include="renderer\passes\src\first_pass.cpp" />
     <ClCompile Include="renderer\passes\src\second_pass.cpp" />
     <ClCompile Include="renderer\passes\src\shadow_pass.cpp" />
@@ -273,8 +274,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+    <None Include="resources\croc.mtl" />
+    <None Include="resources\croc.wavefront" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="resources\croc.png" />
     <Image Include="resources\test_texture.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -8,6 +8,7 @@
 #include<d3d11.h>
 #include<array>
 #include <filesystem>
+namespace fs = std::filesystem;
 
 struct AssetHandler;
 template<typename T>
@@ -22,7 +23,7 @@ using AId = Id<Asset<T>>;
 struct Image {
 	struct Binded {
 		ID3D11Texture2D* texture;
-		ID3D11ShaderResourceView* rsv;
+		ID3D11ShaderResourceView* srv;
 		ID3D11SamplerState* sampler_state;
 	};
 
@@ -34,7 +35,7 @@ struct Image {
 	Option<Binded> binded;
 
 	static Image default_asset();
-	static Image load(const std::filesystem::path& path, AssetHandler& asset_handler);
+	static Image load(const fs::path& path, AssetHandler& asset_handler);
 	void bind(ID3D11Device* device);
 	void clean_up();
 };
@@ -42,10 +43,30 @@ struct Image {
 struct MatTex {
 	Option<AId<Image>> tex;
 	Vec3<f32> color;
+
+	Vec3<f32> get_color() const {
+		return tex.as_ptr().map<Vec3<f32>>([&](auto t) {
+			return Vec3<f32>::one();
+		}).unwrap_or(this->color);
+	}
 };
 struct MatMap {
 	Option<AId<Image>> tex;
 	f32 value;
+
+	f32 get_value() const {
+		return tex.as_ptr().map<f32>([&](auto t) {
+				return 1.0f;
+			}).unwrap_or(this->value);
+	}
+};
+
+struct MaterialData {
+	Vec3<f32> ambient;
+	Vec3<f32> diffuse;
+	Vec3<f32> specular;
+	f32 shinyness;
+	Vec2<f32> dummy;
 };
 
 struct Material {
@@ -54,17 +75,22 @@ struct Material {
 	MatTex specular;
 	MatMap shinyness;
 
+	std::string name;
+
 	static Material default_asset();
 	void bind(ID3D11Device* device, AssetHandler& asset_handler);
 	void clean_up();
+
+	MaterialData get_data() const;
 };
+
 
 struct MaterialGroup {
 	std::unordered_map<std::string, AId<Material>> mats;
 
 	static MaterialGroup default_asset();
-	AId<Material> get(const std::string& mat) const;
-	static MaterialGroup load(const std::filesystem::path& path, AssetHandler& asset_handler);
+	Option<AId<Material>> get(const std::string& mat) const;
+	static MaterialGroup load(const fs::path& path, AssetHandler& asset_handler);
 	void clean_up();
 };
 
@@ -106,7 +132,7 @@ struct Mesh {
 	Aabb<f32> bounds{};
 
 	static Mesh default_asset();
-	static Mesh load(const std::filesystem::path& path, AssetHandler& asset_handler);
+	static Mesh load(const fs::path& path, AssetHandler& asset_handler);
 	void bind(ID3D11Device* device, AssetHandler& asset_handler);
 	void clean_up();
 	void calculate_bounds();
@@ -117,7 +143,7 @@ template<typename T>
 struct Assets {
 	Assets() : _items(), _default_asset(T::default_asset()) { }
 
-	AId<T> load(const std::filesystem::path& path, AssetHandler& asset_handler) {
+	AId<T> load(const fs::path& path, AssetHandler& asset_handler) {
 		auto asset = path.string();
 		auto got = loaded_paths.find(asset);
 		if (got == loaded_paths.end()) {
@@ -158,6 +184,11 @@ struct Assets {
 		_items.iter(f);
 	}
 
+	template<typename F>
+	void iter(F f) {
+		_items.iter(f);
+	}
+
 	void clean_up() {
 		_default_asset.clean_up();
 		_items.values([](Asset<T>& item) {
@@ -174,13 +205,13 @@ private:
 // Could implement hot reloading
 struct AssetHandler {
 	template<typename T>
-	AId<T> load(const std::filesystem::path& path) {
+	AId<T> load(const fs::path& path) {
 		return assets<T>().load(path, *this);
 	}
 
 	template<typename T>
 	AId<T> load(const std::string& asset) {
-		return load<T>(std::filesystem::path(asset));
+		return load<T>(fs::path(asset));
 	}
 
 	template<typename T>

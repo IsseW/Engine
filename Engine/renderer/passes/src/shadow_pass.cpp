@@ -5,7 +5,7 @@ void ShadowPass::clean_up() {
 	il->Release();
 
 	globals.clean_up();
-	locals.clean_up();
+	object.clean_up();
 	directional_shadows.clean_up();
 	spot_shadows.clean_up();
 }
@@ -19,48 +19,44 @@ void ShadowPass::resize(ID3D11Device* device, Vec2<u16> size) {
 	// directional_shadows.resize(device, get_size(size));
 }
 
-ShadowPass::Locals ShadowPass::Locals::from_object(const Object& obj) {
-	return Locals{
+ShadowPass::ObjectData ShadowPass::ObjectData::from_object(const Object& obj) {
+	return ObjectData{
 		obj.transform.get_mat().transposed()
 	};
 }
 
-void ShadowPass::draw(const RendererCtx& ctx, const World& world, const AssetHandler& assets) {
+void ShadowPass::draw(Renderer& rend, const World& world, const AssetHandler& assets) {
 	if (world.dir_lights.len() > directional_shadows.size.z) {
-		directional_shadows.resize(ctx.device, directional_shadows.size.with_z((u16)world.dir_lights.len() + 5));
+		directional_shadows.resize(rend.ctx.device, directional_shadows.size.with_z((u16)world.dir_lights.len() + 5));
 	}
 	if (world.spot_lights.len() > spot_shadows.size.z) {
-		spot_shadows.resize(ctx.device, spot_shadows.size.with_z((u16)world.spot_lights.len() + 5));
+		spot_shadows.resize(rend.ctx.device, spot_shadows.size.with_z((u16)world.spot_lights.len() + 5));
 	}
 
-	ctx.context->VSSetShader(vs, nullptr, 0);
-	ctx.context->PSSetShader(nullptr, nullptr, 0);
-	ctx.context->IASetInputLayout(il);
+	rend.ctx.context->VSSetShader(vs, nullptr, 0);
+	rend.ctx.context->PSSetShader(nullptr, nullptr, 0);
+	rend.ctx.context->IASetInputLayout(il);
 
 	ID3D11RenderTargetView* rtv[1] = { 0 };
 
-	ID3D11Buffer* uniforms[2] = { globals.buffer, locals.buffer };
-	ctx.context->VSSetConstantBuffers(0, 2, uniforms);
+	ID3D11Buffer* uniforms[2] = { globals.buffer, object.buffer };
+	rend.ctx.context->VSSetConstantBuffers(0, 2, uniforms);
 
 	// TODO: Do occlusion for lights.
 	auto draw = [&](const auto& lights, DepthTextures& target) {
 		usize i = 0;
 		lights.values([&](const auto& light) {
-			ctx.context->OMSetRenderTargets(0, rtv, target.dsvs[i++]);
+			rend.ctx.context->OMSetRenderTargets(0, rtv, target.dsvs[i++]);
 			Globals g = Globals::from_light(light, world.camera);
-			globals.update(ctx.context, &g);
-			draw_objects(ctx, world, assets, [&](const Object& obj) {
-				Locals l = Locals::from_object(obj);
-				locals.update(ctx.context, &l);
-				return false;
-			});
+			globals.update(rend.ctx.context, &g);
+			draw_objects(rend, world, assets, false);
 		});
 	};
 
-	directional_shadows.clear(ctx.context);
+	directional_shadows.clear(rend.ctx.context);
 	draw(world.dir_lights, directional_shadows);
 
-	spot_shadows.clear(ctx.context);
+	spot_shadows.clear(rend.ctx.context);
 	draw(world.spot_lights, spot_shadows);
 }
 
@@ -72,8 +68,8 @@ Result<ShadowPass, RenderCreateError> ShadowPass::create(ID3D11Device* device, V
 	Uniform<Globals> globals;
 	TRY(globals, Uniform<Globals>::create(device));
 
-	Uniform<Locals> locals;
-	TRY(locals, Uniform<Locals>::create(device));
+	Uniform<ObjectData> object;
+	TRY(object, Uniform<ObjectData>::create(device));
 
 	DepthTextures directional_shadows;
 	TRY(directional_shadows, DepthTextures::create(device, get_size(size).with_z(5)));
@@ -85,7 +81,7 @@ Result<ShadowPass, RenderCreateError> ShadowPass::create(ID3D11Device* device, V
 			vsil.vs,
 			vsil.il,
 			globals,
-			locals,
+			object,
 			directional_shadows,
 			spot_shadows,
 		});

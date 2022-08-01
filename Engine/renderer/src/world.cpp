@@ -3,7 +3,7 @@
 #include<math/consts.h>
 #include<algorithm>
 
-Object::Object(Transform transform, Vec3<f32> color) : transform(transform), color(color) {}
+Object::Object(Transform transform) : transform(transform) {}
 
 Object&& Object::with_mesh(AId<Mesh> mesh) {
 	this->mesh = some(mesh);
@@ -11,10 +11,10 @@ Object&& Object::with_mesh(AId<Mesh> mesh) {
 	return std::move(*this);
 }
 
-Object&& Object::with_image(AId<Image> image) {
-	this->image = some(image);
-
-	return std::move(*this);
+ObjectData Object::get_data() const {
+	return ObjectData{
+		transform.get_mat().transposed(),
+	};
 }
 
 World::World(Camera camera) : camera(camera) { }

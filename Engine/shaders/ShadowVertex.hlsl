@@ -15,7 +15,6 @@ cbuffer Globals : register(b0) {
 
 cbuffer LOCALS : register(b1) {
     float4x4 world_matrix;
-    float4 object_color;
 };
 
 

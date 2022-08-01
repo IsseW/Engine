@@ -47,18 +47,18 @@ DrawingContext DrawingContext::create(const World& world, const AssetHandler& as
 }
 
 void Renderer::draw(const World& world, AssetHandler& assets) {
+	assets.default_asset<Image>()->bind(ctx.device);
 	world.objects.values([&](const Object& obj) {
 		assets.get_or_default(obj.mesh)->bind(ctx.device, assets);
-		assets.get_or_default(obj.image)->bind(ctx.device);
 	});
 
 	// DrawingContext context = DrawingContext::create(world, assets);
 
 	ctx.context->RSSetViewports(1, &ctx.viewport);
 
-	shadow_pass.draw(ctx, world, assets);
+	shadow_pass.draw(*this, world, assets);
 
-	first_pass.draw(ctx, world, assets);
+	first_pass.draw(*this, world, assets);
 
 	second_pass.draw(*this, world);
 }

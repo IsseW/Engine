@@ -135,6 +135,16 @@ struct Option {
 			func(take().unwrap_unchecked());
 		}
 	}
+
+	template<typename F, typename FE>
+	void then_do_else(F func, FE else_func) {
+		if (_is_some) {
+			func(take().unwrap_unchecked());
+		}
+		else {
+			else_func();
+		}
+	}
 	
 	template<typename U, typename F>
 	Option<U> map(F map) {

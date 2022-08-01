@@ -9,14 +9,18 @@ Result<ObjectRenderer, RenderCreateError> ObjectRenderer::create(ID3D11Device* d
 	ID3D11PixelShader* ps;
 	TRY(ps, load_pixel(device, "PixelShader.cso"));
 
-	Uniform<ObjectRenderer::Locals> locals;
-	TRY(locals, Uniform<Locals>::create(device));
+	Uniform<ObjectData> object;
+	TRY(object, Uniform<ObjectData>::create(device));
+
+	Uniform<MaterialData> material;
+	TRY(material, Uniform<MaterialData>::create(device));
 
 	return ok<ObjectRenderer, RenderCreateError>(ObjectRenderer{
 			vsil.vs,
 			ps,
 			vsil.il,
-			locals
+			object,
+			material,
 		});
 }
 
@@ -25,52 +29,57 @@ void ObjectRenderer::clean_up() {
 	ps->Release();
 	layout->Release();
 
-	locals.clean_up();
+	object.clean_up();
 }
 
 Result<GBuffer, RenderCreateError> GBuffer::create(ID3D11Device* device, Vec2<u16> size) {
-	RenderTexture albedo;
-	TRY(albedo, RenderTexture::create(device, size, DXGI_FORMAT_R8G8B8A8_UNORM));
+	RenderTexture ambient;
+	TRY(ambient, RenderTexture::create(device, size, DXGI_FORMAT_R8G8B8A8_UNORM));
+	RenderTexture diffuse;
+	TRY(diffuse, RenderTexture::create(device, size, DXGI_FORMAT_R8G8B8A8_UNORM));
+	RenderTexture specular;
+	TRY(specular, RenderTexture::create(device, size, DXGI_FORMAT_R8G8B8A8_UNORM));
 	RenderTexture normal;
 	TRY(normal, RenderTexture::create(device, size, DXGI_FORMAT_R32G32B32A32_FLOAT));
 	RenderTexture position;
 	TRY(position, RenderTexture::create(device, size, DXGI_FORMAT_R32G32B32A32_FLOAT));
-	RenderTexture light_info;
-	TRY(light_info, RenderTexture::create(device, size, DXGI_FORMAT_R32G32B32A32_FLOAT));
 
 	return ok<GBuffer, RenderCreateError>(GBuffer{
-			albedo,
+			ambient,
+			diffuse,
+			specular,
 			normal,
 			position,
-			light_info,
 		});
 }
 
 void GBuffer::resize(ID3D11Device* device, Vec2<u16> size) {
-	albedo.resize(device, size);
+	ambient.resize(device, size);
+	diffuse.resize(device, size);
+	specular.resize(device, size);
 	normal.resize(device, size);
 	position.resize(device, size);
-	light_info.resize(device, size);
 }
 
 void GBuffer::clean_up() {
-	albedo.clean_up();
+	ambient.clean_up();
+	diffuse.clean_up();
+	specular.clean_up();
 	normal.clean_up();
 	position.clean_up();
-	light_info.clean_up();
 }
 
 void GBuffer::clear(ID3D11DeviceContext* ctx) {
-	const float clear_color[4] = { 0.2f, 0.2f, 0.2f, 0.0f };
-	ctx->ClearRenderTargetView(albedo.rtv, clear_color);
 	const float clear_empty[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	ctx->ClearRenderTargetView(ambient.rtv, clear_empty);
+	ctx->ClearRenderTargetView(diffuse.rtv, clear_empty);
+	ctx->ClearRenderTargetView(specular.rtv, clear_empty);
 	ctx->ClearRenderTargetView(normal.rtv, clear_empty);
 	ctx->ClearRenderTargetView(position.rtv, clear_empty);
-	ctx->ClearRenderTargetView(light_info.rtv, clear_empty);
 }
 
-std::array<ID3D11RenderTargetView*, 4> GBuffer::targets() const {
-	return { albedo.rtv, normal.rtv, position.rtv, light_info.rtv };
+std::array<ID3D11RenderTargetView*, 5> GBuffer::targets() const {
+	return { ambient.rtv, diffuse.rtv, specular.rtv, normal.rtv, position.rtv, };
 }
 
 
@@ -115,45 +124,25 @@ FirstPass::Globals FirstPass::Globals::from_world(const World& world, f32 ratio)
 	};
 }
 
-ObjectRenderer::Locals ObjectRenderer::Locals::from_object(const Object& obj) {
-	return Locals{
-		obj.transform.get_mat().transposed(),
-		obj.color.with_w(1.0)
-	};
-}
-
-void FirstPass::draw(const RendererCtx& ctx, const World& world, const AssetHandler& assets) {
-	ctx.context->ClearDepthStencilView(depth.dsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
-	gbuffer.clear(ctx.context);
+void FirstPass::draw(Renderer& rend, const World& world, const AssetHandler& assets) {
+	rend.ctx.context->ClearDepthStencilView(depth.dsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	gbuffer.clear(rend.ctx.context);
 
 	auto targets = gbuffer.targets();
-	ctx.context->OMSetRenderTargets(targets.size(), targets.data(), depth.dsv);
+	rend.ctx.context->OMSetRenderTargets(targets.size(), targets.data(), depth.dsv);
 
 	// First update the globals buffer
-	auto g = FirstPass::Globals::from_world(world, ctx.ratio());
-	globals.update(ctx.context, &g);
+	auto g = FirstPass::Globals::from_world(world, rend.ctx.ratio());
+	globals.update(rend.ctx.context, &g);
 
-	ctx.context->VSSetShader(object_renderer.vs, nullptr, 0);
-	ctx.context->PSSetShader(object_renderer.ps, nullptr, 0);
+	rend.ctx.context->VSSetShader(object_renderer.vs, nullptr, 0);
+	rend.ctx.context->PSSetShader(object_renderer.ps, nullptr, 0);
 
-	ID3D11Buffer* uniforms[2] = { globals.buffer, object_renderer.locals.buffer };
-	ctx.context->VSSetConstantBuffers(0, 2, uniforms);
-	ctx.context->PSSetConstantBuffers(0, 2, uniforms);
-	ctx.context->IASetInputLayout(object_renderer.layout);
+	const usize UNIFORM_COUNT = 3;
+	ID3D11Buffer* uniforms[UNIFORM_COUNT] = { globals.buffer, object_renderer.object.buffer, object_renderer.material.buffer };
+	rend.ctx.context->VSSetConstantBuffers(0, UNIFORM_COUNT, uniforms);
+	rend.ctx.context->PSSetConstantBuffers(0, UNIFORM_COUNT, uniforms);
+	rend.ctx.context->IASetInputLayout(object_renderer.layout);
 
-	draw_objects(ctx, world, assets, [&](const Object& obj) {
-		auto locals = ObjectRenderer::Locals::from_object(obj);
-		object_renderer.locals.update(ctx.context, &locals);
-
-		const Image* image = assets.get_or_default(obj.image);
-
-		if (image->binded.is_none()) {
-			return true;
-		}
-		auto binded = image->binded.as_ptr().unwrap_unchecked();
-
-		ctx.context->PSSetShaderResources(0, 1, &binded->rsv);
-		ctx.context->PSSetSamplers(0, 1, &binded->sampler_state);
-		return false;
-	});
+	draw_objects(rend, world, assets, true);
 }

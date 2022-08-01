@@ -70,7 +70,7 @@ Mesh unit_cube() {
 			Vec3<f32>( 1.0f, -1.0f, -1.0f),
 			Vec3<f32>( 1.0f, -1.0f,  1.0f),
 		});
-	Index end = (Index)mesh.indices.len() - 1;
+	Index end = (Index)mesh.indices.len();
 	mesh.submeshes.push(SubMesh{
 		0,
 		end,

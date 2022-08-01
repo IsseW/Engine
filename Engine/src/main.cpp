@@ -46,17 +46,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 	AssetHandler assets {};
 
-	auto cube_mesh = assets.insert(unit_cube());
 	assets.load<Mesh>(std::filesystem::path { "resources/u.wavefront" });
 	assets.load<Mesh>(std::filesystem::path{ "resources/test.wavefront" });
 	assets.load<Mesh>(std::filesystem::path{ "resources/sphere.wavefront" });
-	assets.load<Mesh>(std::filesystem::path{ "resources/croc.wavefront" });
-
-	auto test_texture = assets.load<Image>(std::filesystem::path{ "resources/test_texture.png" });
+	auto croc = assets.load<Mesh>(std::filesystem::path{ "resources/croc.wavefront" });
 
 	auto cam = Camera::perspective(Transform::from_translation(Vec3<f32>(0.0, 0.0, -10.0)), 60.0f * F32::TO_RAD);
 	World world(cam);
-	world.add(Object(Transform(), Vec3<f32>(0.5f, 0.5f, 0.0f)).with_mesh(cube_mesh).with_image(test_texture));
+	world.add(Object(Transform()).with_mesh(croc));
 	world.add(DirLight(Transform::from_translation(Vec3<f32>(-2.0f, 5.0f, -2.0f)).looking_at(Vec3<f32>::zero()), Light { Vec3<f32>::one(), 1.0 }));
 
 	Window* window = create_window(hInstance, 1000, 1000, nCmdShow).unwrap();

@@ -71,8 +71,8 @@ Result<DepthTexture, RenderCreateError> DepthTexture::create(ID3D11Device* devic
 	resource_desc.Texture2D = { 0, 1 };
 	resource_desc.Format = DXGI_FORMAT_R32_FLOAT;
 	resource_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	ID3D11ShaderResourceView* rsv;
-	if (FAILED(device->CreateShaderResourceView(texture, &resource_desc, &rsv))) {
+	ID3D11ShaderResourceView* srv;
+	if (FAILED(device->CreateShaderResourceView(texture, &resource_desc, &srv))) {
 		texture->Release();
 		view->Release();
 		return FailedSRVCreation;
@@ -81,7 +81,7 @@ Result<DepthTexture, RenderCreateError> DepthTexture::create(ID3D11Device* devic
 	return ok<DepthTexture, RenderCreateError>(DepthTexture{
 			view,
 			texture,
-			rsv,
+			srv,
 		});
 }
 
@@ -238,8 +238,8 @@ Result<RenderTexture, RenderCreateError> RenderTexture::create(ID3D11Device* dev
 	resource_desc.Texture2D = { 0, 1 };
 	resource_desc.Format = textureDesc.Format;
 	resource_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	ID3D11ShaderResourceView* rsv;
-	if (FAILED(device->CreateShaderResourceView(texture, &resource_desc, &rsv))) {
+	ID3D11ShaderResourceView* srv;
+	if (FAILED(device->CreateShaderResourceView(texture, &resource_desc, &srv))) {
 		texture->Release();
 		rtv->Release();
 		uav->Release();
@@ -249,7 +249,7 @@ Result<RenderTexture, RenderCreateError> RenderTexture::create(ID3D11Device* dev
 	return ok<RenderTexture, RenderCreateError>(RenderTexture{
 			rtv,
 			texture,
-			rsv,
+			srv,
 			uav,
 			format,
 		});
