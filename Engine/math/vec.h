@@ -64,7 +64,7 @@ Vec operator op() const {			\
 		constexpr Vec(const Vec& other) : _elems(other._elems) {}
 
 		template<typename... Args>
-		constexpr Vec(Args... args) : _elems({T(args)...}) { }
+		constexpr Vec(Args... args) requires (sizeof...(Args) == L)  : _elems({T(args)...}) { }
 
 		template<const usize OL>
 		static constexpr Vec from_higher(Vec<T, OL> higher) requires (OL > L) {

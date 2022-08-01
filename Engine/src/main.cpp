@@ -48,13 +48,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 	assets.load<Mesh>(std::filesystem::path { "resources/u.wavefront" });
 	assets.load<Mesh>(std::filesystem::path{ "resources/test.wavefront" });
-	assets.load<Mesh>(std::filesystem::path{ "resources/sphere.wavefront" });
+	auto sphere = assets.load<Mesh>(std::filesystem::path{ "resources/sphere.wavefront" });
 	auto croc = assets.load<Mesh>(std::filesystem::path{ "resources/croc.wavefront" });
 
-	auto cam = Camera::perspective(Transform::from_translation(Vec3<f32>(0.0, 0.0, -10.0)), 60.0f * F32::TO_RAD);
+	auto cam = Camera::perspective(Transform::from_translation({ 0.0, 5.0, -10.0 }).looking_at({0.0}), 60.0f * F32::TO_RAD);
 	World world(cam);
-	world.add(Object(Transform()).with_mesh(croc));
-	world.add(DirLight(Transform::from_translation(Vec3<f32>(-2.0f, 5.0f, -2.0f)).looking_at(Vec3<f32>::zero()), Light { Vec3<f32>::one(), 1.0 }));
+
+	for (f32 z = -15.0f; z < 15.0f; z += 5.0f) {
+		for (f32 x = -15.0f; x < 15.0f; x += 2.5f) {
+			world.add(Object(Transform::from_translation({x, 0.0f, z})).with_mesh(croc));
+		}
+	}
+
+	world.add(Object(Transform::from_translation({ 0.0f, -5.0f, 0.0 }).with_scale(4.0)).with_mesh(sphere));
+	world.add(DirLight(Transform::from_translation({ -2.0f, 5.0f, -2.0f }).looking_at({ 0.0 }), Light{ {1.0}, 1.0}));
 
 	Window* window = create_window(hInstance, 1000, 1000, nCmdShow).unwrap();
 
