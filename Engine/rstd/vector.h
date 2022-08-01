@@ -35,6 +35,10 @@ struct Vec {
 		_internal.push_back(std::move(t));
 	}
 
+	void push(const T& t) {
+		_internal.push_back(std::move(t));
+	}
+
 	void insert(T elem, usize index) {
 		_internal.insert(elem, index);
 	}

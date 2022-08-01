@@ -134,7 +134,7 @@ Vec operator op() const {			\
 		constexpr Vec<U, L> map(F map, Vec<Args, L>... args) const {
 			Vec<U, L> c;
 			for (usize i = 0; i < L; ++i) {
-				c[i] = map(_elems[i], args._elems[i]...);
+				c[i] = map(_elems[i], args[i]...);
 			}
 			return std::move(c);
 		}

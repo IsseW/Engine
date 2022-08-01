@@ -7,6 +7,17 @@
 #include<math/aab.h>
 #include<d3d11.h>
 #include<array>
+#include <filesystem>
+
+struct AssetHandler;
+template<typename T>
+struct Asset {
+	Option<std::string> path;
+	T asset;
+};
+
+template<typename T>
+using AId = Id<Asset<T>>;
 
 struct Image {
 	struct Binded {
@@ -23,8 +34,37 @@ struct Image {
 	Option<Binded> binded;
 
 	static Image default_asset();
-	static Image load(const std::string& path);
+	static Image load(const std::filesystem::path& path, AssetHandler& asset_handler);
 	void bind(ID3D11Device* device);
+	void clean_up();
+};
+
+struct MatTex {
+	Option<AId<Image>> tex;
+	Vec3<f32> color;
+};
+struct MatMap {
+	Option<AId<Image>> tex;
+	f32 value;
+};
+
+struct Material {
+	MatTex ambient;
+	MatTex diffuse;
+	MatTex specular;
+	MatMap shinyness;
+
+	static Material default_asset();
+	void bind(ID3D11Device* device, AssetHandler& asset_handler);
+	void clean_up();
+};
+
+struct MaterialGroup {
+	std::unordered_map<std::string, AId<Material>> mats;
+
+	static MaterialGroup default_asset();
+	AId<Material> get(const std::string& mat) const;
+	static MaterialGroup load(const std::filesystem::path& path, AssetHandler& asset_handler);
 	void clean_up();
 };
 
@@ -32,23 +72,20 @@ struct Vertex{
 	Vec3<f32> v;
 	Vec3<f32> vn;
 	Vec2<f32> uv;
+
+	bool operator ==(const Vertex& other) const {
+		return memcmp(this, &other, sizeof(Vertex)) == 0;
+	}
 };
 
 using Index = u16;
 
 struct SubMesh {
-	struct Binded {
-		ID3D11Buffer* vertex_buffer;
-		ID3D11Buffer* index_buffer;
-	};
-	Vec<Vertex> vertices;
-	Vec<Index> indices;
-	Option<Binded> binded;
+	Index start_index;
+	Index end_index;
+	Option<AId<Material>> material;
 
-	void bind(ID3D11Device* device);
-	void clean_up();
-
-	void push_quad(std::array<Vec3<f32>, 4>);
+	void bind(ID3D11Device* device, AssetHandler& asset_handler);
 };
 
 static std::vector<D3D11_INPUT_ELEMENT_DESC> VERTEX_LAYOUT = {
@@ -58,39 +95,44 @@ static std::vector<D3D11_INPUT_ELEMENT_DESC> VERTEX_LAYOUT = {
 };
 
 struct Mesh {
+	struct Binded {
+		ID3D11Buffer* vertex_buffer;
+		ID3D11Buffer* index_buffer;
+	};
+	Vec<Vertex> vertices;
+	Vec<Index> indices;
 	Vec<SubMesh> submeshes;
-	Aabb<f32> bounds {};
+	Option<Binded> binded;
+	Aabb<f32> bounds{};
 
 	static Mesh default_asset();
-	static Mesh load(const std::string& path);
-	void bind(ID3D11Device* device);
+	static Mesh load(const std::filesystem::path& path, AssetHandler& asset_handler);
+	void bind(ID3D11Device* device, AssetHandler& asset_handler);
 	void clean_up();
 	void calculate_bounds();
+	void push_quad(std::array<Vec3<f32>, 4>);
 };
-
-template<typename T>
-struct Asset {
-	Option<std::string> path;
-	T asset;
-};
-
-template<typename T>
-using AId = Id<Asset<T>>;
 
 template<typename T>
 struct Assets {
 	Assets() : _items(), _default_asset(T::default_asset()) { }
 
-	AId<T> load(const std::string& asset) {
+	AId<T> load(const std::filesystem::path& path, AssetHandler& asset_handler) {
+		auto asset = path.string();
 		auto got = loaded_paths.find(asset);
 		if (got == loaded_paths.end()) {
-			auto id = _items.insert(std::move(Asset<T> { some(asset), T::load(asset) }));
+			T a = T::load(path, asset_handler);
+			auto id = _items.insert(Asset<T> { some(asset), a });
 			loaded_paths.insert({ asset, id });
 			return id;
 		}
 		else {
 			return got->second;
 		}
+	}
+
+	AId<T> insert(T&& asset, std::string name) {
+		return _items.insert(std::move(Asset<T> { some(name), asset }));
 	}
 	AId<T> insert(T&& asset) {
 		return _items.insert(std::move(Asset<T> { none<std::string>(), asset }));
@@ -132,8 +174,13 @@ private:
 // Could implement hot reloading
 struct AssetHandler {
 	template<typename T>
+	AId<T> load(const std::filesystem::path& path) {
+		return assets<T>().load(path, *this);
+	}
+
+	template<typename T>
 	AId<T> load(const std::string& asset) {
-		return assets<T>().load(asset);
+		return load<T>(std::filesystem::path(asset));
 	}
 
 	template<typename T>
@@ -177,6 +224,11 @@ struct AssetHandler {
 	}
 
 	template<typename T>
+	AId<T> insert(T&& asset, std::string name) {
+		return assets<T>().insert(std::move(asset), name);
+	}
+
+	template<typename T>
 	AId<T> insert(T&& asset) {
 		return assets<T>().insert(std::move(asset));
 	}
@@ -197,6 +249,6 @@ struct AssetHandler {
 	}
 
 private:
-	std::tuple<Assets<Image>, Assets<Mesh>> asset_handlers;
+	std::tuple<Assets<Image>, Assets<Mesh>, Assets<MaterialGroup>, Assets<Material>> asset_handlers;
 	std::string asset_folder;
 };

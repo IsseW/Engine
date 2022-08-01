@@ -26,15 +26,15 @@ struct Option {
 
 	Option(Option&& other) noexcept {
 		if (other.is_some()) {
+			memcpy(&_v, &other._v, sizeof(T));
 			_is_some = true;
-			zero();
-			_v = other._v;
 		}
 		else {
 			_is_some = false;
 			zero();
 		}
 		other._is_some = false;
+		other.zero();
 	}
 
 	Option(const Option& other) {
@@ -153,6 +153,10 @@ struct Option {
 
 	Option<T> insert(T item) {
 		Option res(*this);
+		if (_is_some) {
+			_v.~T();
+			zero();
+		}
 		_is_some = true;
 		_v = item;
 		return res;

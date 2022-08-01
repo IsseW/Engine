@@ -1,6 +1,6 @@
 #include<assets/shape.h>
 
-void SubMesh::push_quad(std::array<Vec3<f32>, 4> points) {
+void Mesh::push_quad(std::array<Vec3<f32>, 4> points) {
 	Vec3<f32> normal = (points[2] - points[0]).cross(points[1] - points[0]);
 	Index i = (Index)vertices.len();
 	vertices.push(Vertex{
@@ -33,7 +33,7 @@ void SubMesh::push_quad(std::array<Vec3<f32>, 4> points) {
 }
 
 Mesh unit_cube() {
-	SubMesh mesh;
+	Mesh mesh;
 	mesh.push_quad({
 			Vec3<f32>( 1.0f, -1.0f, -1.0f),
 			Vec3<f32>( 1.0f, -1.0f,  1.0f),
@@ -70,7 +70,11 @@ Mesh unit_cube() {
 			Vec3<f32>( 1.0f, -1.0f, -1.0f),
 			Vec3<f32>( 1.0f, -1.0f,  1.0f),
 		});
-	Mesh m;
-	m.submeshes.push(std::move(mesh));
-	return m;
+	Index end = (Index)mesh.indices.len() - 1;
+	mesh.submeshes.push(SubMesh{
+		0,
+		end,
+		none<AId<Material>>(),
+	});
+	return mesh;
 }

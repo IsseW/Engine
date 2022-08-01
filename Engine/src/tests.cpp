@@ -139,7 +139,9 @@ namespace data_structures {
 
 namespace files {
 	void test_obj_load() {
-		auto mesh = Mesh::load("resources/test.wavefront");
+		AssetHandler handler{};
+		auto mesh = handler.load<Mesh>(std::filesystem::path{ "resources/test.wavefront" });
+		handler.clean_up();
 	}
 
 	void test() {

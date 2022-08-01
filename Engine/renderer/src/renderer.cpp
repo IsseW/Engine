@@ -48,7 +48,7 @@ DrawingContext DrawingContext::create(const World& world, const AssetHandler& as
 
 void Renderer::draw(const World& world, AssetHandler& assets) {
 	world.objects.values([&](const Object& obj) {
-		assets.get_or_default(obj.mesh)->bind(ctx.device);
+		assets.get_or_default(obj.mesh)->bind(ctx.device, assets);
 		assets.get_or_default(obj.image)->bind(ctx.device);
 	});
 

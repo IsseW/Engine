@@ -126,14 +126,12 @@ bool edit_vertices(Option<Mesh*> mesh, Mat4<f32> mat) {
 	bool edited = false;
 	ImGui::Indent();
 	mesh.then_do([&](Mesh* mesh) {
-		for (usize i = 0; i < mesh->submeshes.len(); ++i) {
-			auto& vertices = mesh->submeshes[i].vertices;
-			for (usize j = 0; j < vertices.len(); ++j) {
-				ImGui::PushID(i + j * mesh->submeshes.len());
-				auto t = mat.transform_point(vertices[j].v);
-				edited |= edit("vertex", t);
-				ImGui::PopID();
-			}
+		auto& vertices = mesh->vertices;
+		for (usize j = 0; j < vertices.len(); ++j) {
+			ImGui::PushID(j * mesh->submeshes.len());
+			auto t = mat.transform_point(vertices[j].v);
+			edited |= edit("vertex", t);
+			ImGui::PopID();
 		}
 	});
 	ImGui::Unindent();
@@ -351,7 +349,7 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 				if (ImGui::CollapsingHeader("Shadow")) {
 					ImGui::Indent();
 					auto size = renderer.shadow_pass.spot_shadows.size.as<f32>().xy().normalized();
-					ImGui::Image(renderer.shadow_pass.spot_shadows.srvs[index], ImVec2(300.0 * size.x / size.y, 300.0));
+					ImGui::Image(renderer.shadow_pass.spot_shadows.srvs[index], ImVec2(300.0f * size.x / size.y, 300.0f));
 
 					ImGui::Unindent();
 				}

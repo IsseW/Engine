@@ -47,11 +47,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	AssetHandler assets {};
 
 	auto cube_mesh = assets.insert(unit_cube());
-	assets.load<Mesh>("resources/u.wavefront");
-	assets.load<Mesh>("resources/test.wavefront");
-	assets.load<Mesh>("resources/sphere.wavefront");
+	assets.load<Mesh>(std::filesystem::path { "resources/u.wavefront" });
+	assets.load<Mesh>(std::filesystem::path{ "resources/test.wavefront" });
+	assets.load<Mesh>(std::filesystem::path{ "resources/sphere.wavefront" });
+	assets.load<Mesh>(std::filesystem::path{ "resources/croc.wavefront" });
 
-	auto test_texture = assets.load<Image>("resources/test_texture.png");
+	auto test_texture = assets.load<Image>(std::filesystem::path{ "resources/test_texture.png" });
 
 	auto cam = Camera::perspective(Transform::from_translation(Vec3<f32>(0.0, 0.0, -10.0)), 60.0f * F32::TO_RAD);
 	World world(cam);
