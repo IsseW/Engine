@@ -128,8 +128,8 @@ namespace math {
 namespace data_structures {
 	void test_sparse_octree() {
 		SparseOctree<u32, 4> octree{ };
-		//auto val = octree.insert(Vec3<f32>::one() / 2, 1);
-		//ASSERT(val.is_ok());
+		auto val = octree.insert(Vec3<f32>::one() / 2, 1);
+		ASSERT(val.is_ok());
 	}
 
 	void test() {
