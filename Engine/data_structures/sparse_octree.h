@@ -35,12 +35,24 @@ struct SparseOctree {
 	static_assert(DEPTH != 0, "Octree can't have a depth of 0");
 	
 	Result<EmptyTuple, OctreeError> insert(Vec3<f32> pos, T&& val) {
-		auto index = index_of(pos.map<i32>([&](auto val) {
-			return (i32)val;
-		}));
+		auto index = index_of(pos);
 		if (index.is_some()) {
 			auto idx = index.unwrap_unchecked();
 			insert(idx, std::move(val));
+			return ok<EmptyTuple, OctreeError>(EmptyTuple{});
+		}
+		else {
+			return err<EmptyTuple, OctreeError>(OctreeError::OutOfBounds);
+		}
+	}
+
+	Result<EmptyTuple, OctreeError> insert(Aabb<f32> bb, T&& val) {
+		auto index = index_of_multiple(bb);
+		if (index.is_some()) {
+			auto idx = index.unwrap_unchecked();
+			for (auto cur : idx) {
+				insert(cur, std::move(val));
+			}
 			return ok<EmptyTuple, OctreeError>(EmptyTuple{});
 		}
 		else {
@@ -111,21 +123,20 @@ private:
 		return some<T*>(&leaf->data[bits]);
 	}
 
-	Option<u64> index_of(Vec3<i32> pos) const {
+	Option<u64> index_of(Vec3<f32> pos) const {
 		auto offset = pos - this->origin;
-		f32 len = (f32)this->len;
+		auto len = this->len;
 		auto absolute = offset.map<f32>([&](auto elem) {
-			return (f32)elem / len;
+			return elem / len;
 		});
 		return some<u64>(index_of_recurse(DEPTH, absolute, 0));
 	}
 
 	u64 index_of_recurse(usize depth, Vec3<f32> pos, u64 result) const {
-		u64 val = 0;
-		auto x = pos.x >= 0;
-		auto y = pos.y >= 0;
-		auto z = pos.z >= 0;
-		auto index= (u32)x | ((u32)y << 1) | ((u32)z << 2);
+		auto x = (u64)(pos.x >= 0);
+		auto y = (u64)(pos.y >= 0);
+		auto z = (u64)(pos.z >= 0);
+		u64 val = x | (y << 1) | (z << 2);
 		auto offset = pos.map<f32>([](auto elem){
 			return elem >= 0 ? 1.0f : -1.0f;
 		});
@@ -137,12 +148,52 @@ private:
 		}
 	}
 
+	Option<Vec<u64>> index_of_multiple(Aabb<f32> bb) const {
+		auto len = this->len;
+		auto ratio = [&](auto elem) {
+			return elem / len;
+		};
+		auto absolute = Aabb<f32>{ bb.min.map<f32>(ratio), bb.max.map<f32>(ratio) };
+		auto vec = Vec<u64>{};
+		index_of_multiple_recurse(DEPTH, absolute, 0, vec);
+		return some<Vec<u64>>(vec);
+	}
+
+	void index_of_multiple_recurse(usize depth, Aabb<f32> bb, u64 result, Vec<u64>& results) const {
+		u64 val = 0;
+		if (bb.min == Vec3<f32>{0, 0, 0} || bb.max == Vec3<f32>{1.0f,1.0f,1.0f}) {
+			u64 upper = result << (depth + 1);
+			for (u64 index = 0; index < upper; ++index) {
+				results.push(upper | index);
+			}
+			return;
+		}
+		for (usize oct = 0; oct < 8; ++oct) {
+			auto offset_max = bb.max.map<f32>([](auto elem) {
+				return elem >= 0 ? 1.0f : -1.0f;
+			});
+			auto offset_min = bb.min.map<f32>([](auto elem) {
+				return elem >= 0 ? 1.0f : -1.0f;
+			});
+			if(depth > 0){
+				auto new_bb = Aabb<f32>{
+					bb.max * 2 - offset_max,
+					bb.min * 2 - offset_min
+				};
+				index_of_multiple_recurse(depth - 1, new_bb, (result << 3) | val, results);
+			}
+			else {
+
+			}
+		}
+	}
+
 	void insert(u64 node_index, T&& val) {
 		auto elem = find_or_create(node_index).unwrap();
 		*elem = std::move(val);
 	}
 
 	std::unique_ptr<OctreeBranch> _root = std::unique_ptr<OctreeBranch>{ new OctreeBranch{} };
-	Vec3<i32> origin{0,0,0};
-	u32 len;
+	Vec3<f32> origin{0,0,0};
+	f32 len;
 };
