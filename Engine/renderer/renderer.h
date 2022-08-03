@@ -37,7 +37,7 @@ struct Renderer {
 	SecondPass second_pass;
 
 	void clean_up();
-	void draw(const World& world, AssetHandler& assets);
+	void draw(const World& world, AssetHandler& assets, f32 delta);
 	void resize(const Window& window, Vec2<u16>);
 	void present();
 

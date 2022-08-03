@@ -71,3 +71,18 @@ Result<ID3D11ComputeShader*, RenderCreateError> load_compute(ID3D11Device* devic
 	}
 	return ok<ID3D11ComputeShader*, RenderCreateError>(shader);
 }
+
+Result<ID3D11GeometryShader*, RenderCreateError> load_geometry(ID3D11Device* device, const char* file) {
+	auto maybe_data = load_file_text(file);
+	if (maybe_data.is_none()) {
+		return MissingShaderFile;
+	}
+
+	std::string data = maybe_data.unwrap_unchecked();
+	ID3D11GeometryShader* shader;
+
+	if (FAILED(device->CreateGeometryShader(data.c_str(), data.length(), nullptr, &shader))) {
+		return FailedShaderCreation;
+	}
+	return ok<ID3D11GeometryShader*, RenderCreateError>(shader);
+}

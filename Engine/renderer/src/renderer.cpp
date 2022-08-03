@@ -46,7 +46,9 @@ DrawingContext DrawingContext::create(const World& world, const AssetHandler& as
 	TODO;
 }
 
-void Renderer::draw(const World& world, AssetHandler& assets) {
+void Renderer::draw(const World& world, AssetHandler& assets, f32 delta) {
+	first_pass.particle_renderer.run(*this, world, delta);
+
 	assets.default_asset<Image>()->bind(ctx.device);
 	world.objects.values([&](const Object& obj) {
 		assets.get_or_default(obj.mesh)->bind(ctx.device, assets);

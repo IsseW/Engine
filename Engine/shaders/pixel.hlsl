@@ -25,6 +25,7 @@ struct PixelShaderOutput {
 cbuffer GLOBALS : register(b0) {
     float4x4 view_matrix;
     float4x4 proj_matrix;
+    float3 cam_pos;
 };
 
 cbuffer OBJECT : register(b1) {

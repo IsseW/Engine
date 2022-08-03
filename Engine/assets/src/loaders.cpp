@@ -359,7 +359,7 @@ void Mesh::bind(ID3D11Device* device, AssetHandler& asset_handler) {
 	bufferDesc.ByteWidth = sizeof(Vertex) * vertices.len();
 	bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bufferDesc.CPUAccessFlags = NULL;
+	bufferDesc.CPUAccessFlags = 0;
 	bufferDesc.MiscFlags = 0;
 	bufferDesc.StructureByteStride = 0;
 

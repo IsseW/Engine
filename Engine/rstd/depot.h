@@ -75,16 +75,16 @@ struct Depot {
 		if (free.is_some()) {
 			u32 idx = free.unwrap_unchecked();
 			ASSERT(++_entries[idx].gen < UINT32_MAX);
-			_entries[idx].item.insert(std::move(item));
+			_entries[idx].item.insert(item);
 			return Id<T>(idx, _entries[idx].gen);
 		}
 		else {
 			ASSERT(_entries.len() < UINT32_MAX - 1);
 			auto id = Id<T>(_entries.len(), 0);
-			_entries.push(std::move(Entry{
+			_entries.push(Entry{
 					0,
-					some(std::move(item))
-				}));
+					some(item)
+			});
 			return id;
 		}
 		PANIC("This shouldn't happen");

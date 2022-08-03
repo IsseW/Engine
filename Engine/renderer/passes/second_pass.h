@@ -23,7 +23,8 @@ struct SecondPass {
 	};
 
 	struct Directional {
-		Mat4<f32> texture_mat;
+		Mat4<f32> view_mat;
+		Mat4<f32> proj_mat;
 		Vec3<f32> pos;
 		Vec3<f32> direction;
 		Vec3<f32> color;
@@ -33,7 +34,8 @@ struct SecondPass {
 	};
 
 	struct Spot {
-		Mat4<f32> texture_mat;
+		Mat4<f32> view_mat;
+		Mat4<f32> proj_mat;
 		Vec3<f32> pos;
 		Vec3<f32> direction;
 		Vec3<f32> color;

@@ -1,6 +1,7 @@
 #pragma once
 #include<renderer/util.h>
 #include<renderer/world.h>
+#include"particle_system.h"
 
 struct ObjectRenderer {
 	ID3D11VertexShader* vs;
@@ -36,15 +37,25 @@ struct GBuffer {
 struct FirstPass {
 	struct Globals {
 		static Globals from_world(const World& world, f32 ratio);
+		static Globals from_light(const DirLight& light, const Camera& camera);
+		static Globals from_light(const SpotLight& light, const Camera& camera);
 
 		Mat4<f32> view_matrix;
 		Mat4<f32> proj_matrix;
+		Vec3<f32> cam_wpos;
+
+		f32 dummy;
 	};
 	ObjectRenderer object_renderer;
+	ParticleRenderer particle_renderer;
 	Uniform<Globals> globals;
 
 	DepthTexture depth;
 	GBuffer gbuffer;
+
+	ID3D11RasterizerState* rs_default;
+	ID3D11RasterizerState* rs_wireframe;
+	ID3D11RasterizerState* rs_cull_none;
 
 	void draw(Renderer& rend, const World& world, const AssetHandler& assets);
 

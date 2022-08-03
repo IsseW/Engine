@@ -4,10 +4,10 @@
 Result<ObjectRenderer, RenderCreateError> ObjectRenderer::create(ID3D11Device* device)
 {
 	VSIL vsil;
-	TRY(vsil, load_vertex(device, "VertexShader.cso", VERTEX_LAYOUT));
+	TRY(vsil, load_vertex(device, "vertex.cso", VERTEX_LAYOUT));
 
 	ID3D11PixelShader* ps;
-	TRY(ps, load_pixel(device, "PixelShader.cso"));
+	TRY(ps, load_pixel(device, "pixel.cso"));
 
 	Uniform<ObjectData> object;
 	TRY(object, Uniform<ObjectData>::create(device));
@@ -87,6 +87,9 @@ Result<FirstPass, RenderCreateError> FirstPass::create(ID3D11Device* device, Vec
 	ObjectRenderer object_renderer;
 	TRY(object_renderer, ObjectRenderer::create(device));
 
+	ParticleRenderer particle_renderer;
+	TRY(particle_renderer, ParticleRenderer::create(device));
+
 	Uniform<Globals> globals;
 	TRY(globals, Uniform<Globals>::create(device));
 
@@ -96,12 +99,38 @@ Result<FirstPass, RenderCreateError> FirstPass::create(ID3D11Device* device, Vec
 	GBuffer gbuffer;
 	TRY(gbuffer, GBuffer::create(device, size));
 
+	D3D11_RASTERIZER_DESC rs_desc;
+	ZeroMemory(&rs_desc, sizeof(D3D11_RASTERIZER_DESC));
+	rs_desc.FillMode = D3D11_FILL_SOLID;
+	rs_desc.CullMode = D3D11_CULL_BACK;
+	ID3D11RasterizerState* rs_default;
+	if (FAILED(device->CreateRasterizerState(&rs_desc, &rs_default))) {
+		return FailedRSCreation;
+	}
+
+	rs_desc.FillMode = D3D11_FILL_WIREFRAME;
+	ID3D11RasterizerState* rs_wireframe;
+	if (FAILED(device->CreateRasterizerState(&rs_desc, &rs_wireframe))) {
+		return FailedRSCreation;
+	}
+
+	rs_desc.FillMode = D3D11_FILL_SOLID;
+	rs_desc.CullMode = D3D11_CULL_NONE;
+	ID3D11RasterizerState* rs_cull_none;
+	if (FAILED(device->CreateRasterizerState(&rs_desc, &rs_cull_none))) {
+		return FailedRSCreation;
+	}
+
 	return ok<FirstPass, RenderCreateError>(FirstPass{
-			object_renderer,
-			globals,
-			depth,
-			gbuffer,
-		});
+		object_renderer,
+		particle_renderer,
+		globals,
+		depth,
+		gbuffer,
+		rs_default,
+		rs_wireframe,
+		rs_cull_none,
+	});
 }
 
 void FirstPass::resize(ID3D11Device* device, Vec2<u16> size) {
@@ -111,18 +140,17 @@ void FirstPass::resize(ID3D11Device* device, Vec2<u16> size) {
 
 void FirstPass::clean_up() {
 	object_renderer.clean_up();
+	particle_renderer.clean_up();
 	globals.clean_up();
 
 	depth.clean_up();
 	gbuffer.clean_up();
+
+	rs_default->Release();
+	rs_wireframe->Release();
+	rs_cull_none->Release();
 }
 
-FirstPass::Globals FirstPass::Globals::from_world(const World& world, f32 ratio) {
-	return Globals{
-		world.camera.get_view().transposed(),
-		world.camera.get_proj(ratio).transposed(),
-	};
-}
 
 void FirstPass::draw(Renderer& rend, const World& world, const AssetHandler& assets) {
 	rend.ctx.context->ClearDepthStencilView(depth.dsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -133,16 +161,31 @@ void FirstPass::draw(Renderer& rend, const World& world, const AssetHandler& ass
 
 	// First update the globals buffer
 	auto g = FirstPass::Globals::from_world(world, rend.ctx.ratio());
-	globals.update(rend.ctx.context, &g);
 
-	rend.ctx.context->VSSetShader(object_renderer.vs, nullptr, 0);
-	rend.ctx.context->PSSetShader(object_renderer.ps, nullptr, 0);
+	draw_objects(rend, world, assets, g, true);
+}
 
-	const usize UNIFORM_COUNT = 3;
-	ID3D11Buffer* uniforms[UNIFORM_COUNT] = { globals.buffer, object_renderer.object.buffer, object_renderer.material.buffer };
-	rend.ctx.context->VSSetConstantBuffers(0, UNIFORM_COUNT, uniforms);
-	rend.ctx.context->PSSetConstantBuffers(0, UNIFORM_COUNT, uniforms);
-	rend.ctx.context->IASetInputLayout(object_renderer.layout);
 
-	draw_objects(rend, world, assets, true);
+FirstPass::Globals FirstPass::Globals::from_world(const World& world, f32 ratio) {
+	return Globals{
+		world.camera.get_view().transposed(),
+		world.camera.get_proj(ratio).transposed(),
+		world.camera.transform.translation,
+	};
+}
+
+FirstPass::Globals FirstPass::Globals::from_light(const DirLight& light, const Camera& camera) {
+	return Globals{
+		light.get_view_mat(camera).transposed(),
+		light.get_proj_mat(camera).transposed(),
+		camera.transform.translation,
+	};
+}
+
+FirstPass::Globals FirstPass::Globals::from_light(const SpotLight& light, const Camera& camera) {
+	return Globals{
+		light.get_view_mat(camera).transposed(),
+		light.get_proj_mat(camera).transposed(),
+		camera.transform.translation,
+	};
 }

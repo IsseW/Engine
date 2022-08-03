@@ -294,3 +294,64 @@ Result<RenderTarget, RenderCreateError> RenderTarget::create(ID3D11Device* devic
 			rtv,
 		});
 }
+
+
+Result<ID3D11ShaderResourceView*, RenderCreateError> create_buffer_srv(ID3D11Device* device, ID3D11Buffer* buffer, usize len) {
+	D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc;
+	resource_desc.Format = DXGI_FORMAT_UNKNOWN;
+	resource_desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+	resource_desc.Buffer.FirstElement = 0;
+	resource_desc.Buffer.NumElements = len;
+
+	ID3D11ShaderResourceView* srv;
+	if (FAILED(device->CreateShaderResourceView(buffer, &resource_desc, &srv))) {
+		return FailedSRVCreation;
+	}
+	return ok<ID3D11ShaderResourceView*, RenderCreateError>(srv);
+}
+
+Result<Buffer, RenderCreateError> Buffer::create(ID3D11Device* device, const Vec4<f32>* data, usize len) {
+	D3D11_BUFFER_DESC desc;
+	desc.ByteWidth = sizeof(Vec4<f32>) * len * 2;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_VERTEX_BUFFER;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA res_data;
+	res_data.pSysMem = data;
+	res_data.SysMemPitch = 0;
+	res_data.SysMemSlicePitch = 0;
+
+	ID3D11Buffer* buffer;
+	if (FAILED(device->CreateBuffer(&desc, &res_data, &buffer))) {
+		return FailedBufferCreation;
+	}
+
+	D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc;
+	uav_desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+	uav_desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	uav_desc.Buffer = {
+		0,
+		len,
+		0,
+	};
+
+	ID3D11UnorderedAccessView* uav;
+	if (FAILED(device->CreateUnorderedAccessView(buffer, &uav_desc, &uav))) {
+		return FailedUAVCreation;
+	}
+
+
+	return ok<Buffer, RenderCreateError>(Buffer{
+		buffer,
+		uav,
+		len,
+	});
+}
+
+void Buffer::clean_up(){
+	uav->Release();
+	buffer->Release();
+}

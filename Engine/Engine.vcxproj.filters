@@ -99,6 +99,12 @@
     <ClCompile Include="renderer\passes\src\draw_objects.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\passes\src\particle_system.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\src\particle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer\renderer.h">
@@ -212,16 +218,25 @@
     <ClInclude Include="rstd\box.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="renderer\passes\particle_system.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\particle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="shaders\VertexShader.hlsl">
+    <FxCompile Include="shaders\vertex.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
-    <FxCompile Include="shaders\PixelShader.hlsl">
+    <FxCompile Include="shaders\pixel.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
-    <FxCompile Include="shaders\ShadowVertex.hlsl" />
-    <FxCompile Include="shaders\Deferred.hlsl" />
+    <FxCompile Include="shaders\shadow_vertex.hlsl" />
+    <FxCompile Include="shaders\deferred.hlsl" />
+    <FxCompile Include="shaders\particle_compute.hlsl" />
+    <FxCompile Include="shaders\particle_geometry.hlsl" />
+    <FxCompile Include="shaders\particle_vertex.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

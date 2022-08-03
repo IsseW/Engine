@@ -139,22 +139,30 @@ bool edit_vertices(Option<Mesh*> mesh, Mat4<f32> mat) {
 }
 
 
-
-void object_ui(Object& obj, AssetHandler& assets) {
-	edit(obj.transform);
-
-	if (ImGui::BeginListBox("Mesh")) {
-		assets.assets<Mesh>().iter([&](AId<Mesh> id, const Asset<Mesh>& asset) {
+template<typename T>
+void select_asset(const char* name, Option<AId<T>>& asset_id, AssetHandler& assets) {
+	if (ImGui::BeginListBox(name)) {
+		if (ImGui::Selectable("None", asset_id.is_none())) {
+			asset_id = none<AId<T>>();
+		}
+		assets.assets<T>().iter([&](AId<T> id, const Asset<T>& asset) {
 			std::string s = id.to_string();
 			s += " ";
-			s += asset.path.as_ptr().map<const char*>([](const std::string* s) { return s->data(); }).unwrap_or("unnamed");
+			s += asset.path.as_ptr().map<const char*>([](const std::string* s) { return s->data(); }).unwrap_or("Unnamed");
 
-			if (ImGui::Selectable(s.data(), obj.mesh.is_some() && *obj.mesh.as_ptr().unwrap_unchecked() == id)) {
-				obj.mesh = some(id);
+			if (ImGui::Selectable(s.data(), asset_id.is_some() && *asset_id.as_ptr().unwrap_unchecked() == id)) {
+				asset_id = some(id);
 			}
 		});
 		ImGui::EndListBox();
 	}
+}
+
+
+void object_ui(Object& obj, AssetHandler& assets) {
+	edit(obj.transform);
+
+	select_asset("Mesh", obj.mesh, assets);
 }
 
 void dir_light_ui(DirLight& light) {
@@ -175,24 +183,31 @@ void material_ui(Material& mat, Renderer& renderer, AssetHandler& assets) {
 	auto col = mat.ambient.get_color();
 	auto image = assets.get_or_default(mat.ambient.tex)->binded.as_ptr().unwrap_unchecked()->srv;
 	ImGui::Text("Ambient: ");
+	select_asset("Ambient", mat.ambient.tex, assets);
+	ImGui::SameLine();
 	ImGui::Image(image, size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), ImVec4(col.x, col.y, col.z, 1.0f));
 
 	col = mat.diffuse.get_color();
 	image = assets.get_or_default(mat.diffuse.tex)->binded.as_ptr().unwrap_unchecked()->srv;
 	ImGui::Text("Diffuse: ");
+	select_asset("Diffuse", mat.diffuse.tex, assets);
+	ImGui::SameLine();
 	ImGui::Image(image, size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), ImVec4(col.x, col.y, col.z, 1.0f));
 
 	col = mat.specular.get_color();
 	image = assets.get_or_default(mat.specular.tex)->binded.as_ptr().unwrap_unchecked()->srv;
 	ImGui::Text("Specular: ");
+	select_asset("Specular", mat.specular.tex, assets);
+	ImGui::SameLine();
 	ImGui::Image(image, size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), ImVec4(col.x, col.y, col.z, 1.0f));
 
 	auto val = mat.shinyness.get_value();
-	image = assets.get_or_default(mat.specular.tex)->binded.as_ptr().unwrap_unchecked()->srv;
+	image = assets.get_or_default(mat.shinyness.tex)->binded.as_ptr().unwrap_unchecked()->srv;
 	ImGui::Text("Shinyness: ");
+	select_asset("Shinyness", mat.shinyness.tex, assets);
+	ImGui::SameLine();
 	ImGui::Image(image, size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), ImVec4(val, val, val, 1.0f));
 }
-
 
 void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHandler& assets) {
 	static bool world_active = true;
@@ -388,6 +403,26 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 			ImGui::Unindent();
 			ImGui::PopID();
 		}
+	
+		if (ImGui::CollapsingHeader("Particle Systems")) {
+			ImGui::PushID(3);
+			ImGui::Indent();
+			world.particle_systems.iter([&](Id<ParticleSystem> id, ParticleSystem& system) {
+				ImGui::PushID(id.idx());
+				if (ImGui::CollapsingHeader(id.to_string().data())) {
+					edit(system.transform);
+
+					select_asset("Material", system.material, assets);
+
+					if (ImGui::Button(system.paused ? "Play" : "Pause")) {
+						system.paused = !system.paused;
+					}
+				}
+				ImGui::PopID();
+			});
+			ImGui::Unindent();
+			ImGui::PopID();
+		}
 	}
 	ImGui::End();
 
@@ -396,7 +431,7 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 		if (ImGui::CollapsingHeader("Meshes")) {
 			ImGui::Indent();
 
-			assets.assets<Mesh>().iter([&](AId<Mesh> id, const Asset<Mesh>& asset) {
+			assets.assets<Mesh>().iter([&](AId<Mesh> id, Asset<Mesh>& asset) {
 				ImGui::PushID(id.idx());
 
 				std::string s = id.to_string();
@@ -416,16 +451,10 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 								ImGui::Indent();
 								if (ImGui::CollapsingHeader("Material")) {
 									ImGui::Indent();
-									const char* s = asset.asset.submeshes[i].material.as_ptr().map<const char*>([&](const AId<Material>* mat_handle) {
-										const Material* mat = assets.get(*mat_handle).unwrap();
-										return mat->name.data();
-										}).unwrap_or("No Material");
-										ImGui::Text("Material: %s", s);
-										Material* mat = assets.get_or_default(asset.asset.submeshes[i].material);
 
-										material_ui(*mat, renderer, assets);
+									select_asset("Material", asset.asset.submeshes[i].material, assets);
 
-										ImGui::Unindent();
+									ImGui::Unindent();
 								}
 								ImGui::Unindent();
 							}
@@ -479,7 +508,8 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 
 					asset.asset.bind(renderer.ctx.device);
 					auto image = asset.asset.binded.as_ptr().unwrap_unchecked()->srv;
-					ImGui::Image(image, ImVec2(100, 100));
+					float ratio = (f32)asset.asset.width / (f32)asset.asset.height;
+					ImGui::Image(image, ImVec2(300.0f * ratio, 300.0f));
 
 					ImGui::Unindent();
 				}
@@ -499,25 +529,55 @@ void update_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 
 	ImGui_ImplWin32_GetDpiScaleForHwnd(window.window());
 
+	static bool display_info = false;
+	static bool display_renderer = true;
+	static bool display_editor = true;
+
 	ImGui::BeginMainMenuBar();
-	ImGui::Button("hello!");
-	ImGui::EndMainMenuBar();
-	static bool renderer_open = false;
-	if (ImGui::Begin("Renderer", &renderer_open)) {
-		if (ImGui::BeginListBox("Render Mode")) {
-
-			for (usize i = 0; i < 7; ++i) {
-				if (ImGui::Selectable(MODES[i], (usize)renderer.second_pass.mode == i)) {
-					renderer.second_pass.mode = (RenderMode)i;
-				}
-			}
-
-			ImGui::EndListBox();
-		}
+	if (ImGui::Button("Toggle Info")) {
+		display_info = !display_info;
 	}
-	ImGui::End();
+	if (ImGui::Button("Toggle Editor")) {
+		display_editor = !display_editor;
+	}
+	if (ImGui::Button("Toggle Renderer")) {
+		display_renderer = !display_renderer;
+	}
+	ImGui::EndMainMenuBar();
 
-	editor_ui(window, renderer, world, assets);
+	if (display_info) {
+		if (ImGui::Begin("Info")) {
+			ImGui::Text("Move with w, a, s, d, space and left shift");
+			ImGui::Text("Speed boost with left control");
+			ImGui::Text("Rotate camera with mouse");
+		}
+		ImGui::End();
+	}
+
+	static bool renderer_open = false;
+	if (display_renderer) {
+		if (ImGui::Begin("Renderer", &renderer_open)) {
+			if (ImGui::BeginListBox("Render Mode")) {
+
+				for (usize i = 0; i < 7; ++i) {
+					if (ImGui::Selectable(MODES[i], (usize)renderer.second_pass.mode == i)) {
+						renderer.second_pass.mode = (RenderMode)i;
+					}
+				}
+
+				ImGui::EndListBox();
+			}
+			if (ImGui::Button("Toggle Wireframe")) {
+				auto temp = renderer.first_pass.rs_default;
+				renderer.first_pass.rs_default = renderer.first_pass.rs_wireframe;
+				renderer.first_pass.rs_wireframe = temp;
+			}
+		}
+		ImGui::End();
+	}
+	if (display_editor) {
+		editor_ui(window, renderer, world, assets);
+	}
 
 	end();
 }

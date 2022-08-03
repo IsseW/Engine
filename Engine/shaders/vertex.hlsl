@@ -16,11 +16,11 @@ struct VertexShaderOutput
 cbuffer GLOBALS : register(b0) {
     float4x4 view_matrix;
     float4x4 proj_matrix;
+    float3 cam_pos;
 };
 
 cbuffer LOCALS : register(b1) {
     float4x4 world_matrix;
-    float4 object_color;
 };
 
 float4 transform_to_camera(float4 vec) {

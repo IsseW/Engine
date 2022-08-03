@@ -1,6 +1,5 @@
 #pragma once
-#include"transform.h"
-#include<assets/assets.h>
+#include"particle.h"
 
 struct Light {
 	Vec3<f32> color;
@@ -11,14 +10,16 @@ struct DirLight {
 	Transform transform;
 	Light light;
 
-	Mat4<f32> get_texture_mat(const Camera& viewpoint) const;
+	Mat4<f32> get_view_mat(const Camera& viewpoint) const;
+	Mat4<f32> get_proj_mat(const Camera& viewpoint) const;
 };
 
 struct SpotLight {
 	Transform transform;
 	Light light;
 
-	Mat4<f32> get_texture_mat(const Camera& viewpoint) const;
+	Mat4<f32> get_view_mat(const Camera& viewpoint) const;
+	Mat4<f32> get_proj_mat(const Camera& viewpoint) const;
 };
 
 struct ObjectData {
@@ -44,15 +45,21 @@ struct World {
 	Id<Object> add(Object&& object);
 	Id<SpotLight> add(SpotLight&& object);
 	Id<DirLight> add(DirLight&& object);
+	Id<ParticleSystem> add(ParticleSystem&& object);
 
 	void remove(Id<Object> id);
 	void remove(Id<SpotLight> id);
 	void remove(Id<DirLight> id);
+	void remove(Id<ParticleSystem> id);
 
 	void update(f32 dt, const Window& window);
 
+	void clean_up();
+
+	f32 time{0.0f};
 	Camera camera;
 	Depot<SpotLight> spot_lights;
 	Depot<DirLight> dir_lights;
 	Depot<Object> objects;
+	Depot<ParticleSystem> particle_systems;
 };

@@ -20,6 +20,7 @@ enum RenderCreateError {
 	FailedShaderCreation,
 	FailedLayoutCreation,
 	FailedBufferCreation,
+	FailedRSCreation,
 };
 
 template<typename T> requires (sizeof(T) % 16 == 0)
@@ -56,6 +57,18 @@ struct Uniform {
 
 		return ok<Uniform<T>, RenderCreateError>(Uniform<T> { buffer });
 	}
+};
+
+/// <summary>
+/// Will always contain float4 for now.
+/// </summary>
+struct Buffer {
+	ID3D11Buffer* buffer;
+	ID3D11UnorderedAccessView* uav;
+	usize len;
+
+	static Result<Buffer, RenderCreateError> create(ID3D11Device* device, const Vec4<f32>* data, usize len);
+	void clean_up();
 };
 
 template<typename T>
@@ -112,6 +125,57 @@ struct SBuffer {
 		}
 
 		return ok<SBuffer, RenderCreateError>(SBuffer{ buffer, srv, capacity });
+	}
+};
+
+template<typename T>
+struct UAVSBuffer {
+	ID3D11Buffer* buffer;
+	ID3D11UnorderedAccessView* uav;
+
+	void clean_up() {
+		if (buffer) buffer->Release();
+		if (uav) uav->Release();
+	}
+
+	static Result<UAVSBuffer, RenderCreateError> create(ID3D11Device* device, const T* data, usize len) {
+		D3D11_BUFFER_DESC desc;
+		desc.ByteWidth = sizeof(T) * len;
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+		desc.CPUAccessFlags = 0;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+		desc.StructureByteStride = sizeof(T);
+
+		D3D11_SUBRESOURCE_DATA res_data;
+		D3D11_SUBRESOURCE_DATA* res_data_ptr = nullptr;
+		if (data != nullptr) {
+			res_data.pSysMem = data;
+			res_data.SysMemPitch = 0;
+			res_data.SysMemSlicePitch = 0;
+			res_data_ptr = &res_data;
+		}
+
+		ID3D11Buffer* buffer;
+		if (FAILED(device->CreateBuffer(&desc, res_data_ptr, &buffer))) {
+			return FailedBufferCreation;
+		}
+
+		D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc;
+		uav_desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+		uav_desc.Format = DXGI_FORMAT_UNKNOWN;
+		uav_desc.Buffer = {
+			0,
+			len,
+			0,
+		};
+
+		ID3D11UnorderedAccessView* uav;
+		if (FAILED(device->CreateUnorderedAccessView(buffer, &uav_desc, &uav))) {
+			return FailedUAVCreation;
+		}
+
+		return ok<UAVSBuffer, RenderCreateError>(UAVSBuffer{ buffer, uav });
 	}
 };
 
@@ -186,6 +250,8 @@ struct VSIL {
 Result<VSIL, RenderCreateError> load_vertex(ID3D11Device* device, const char* file, const std::vector<D3D11_INPUT_ELEMENT_DESC>& input);
 
 Result<ID3D11ComputeShader*, RenderCreateError> load_compute(ID3D11Device* device, const char* file);
+
+Result<ID3D11GeometryShader*, RenderCreateError> load_geometry(ID3D11Device* device, const char* file);
 
 struct Renderer;
 struct RendererCtx;

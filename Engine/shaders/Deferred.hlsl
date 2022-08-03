@@ -1,6 +1,7 @@
 
 struct DirLight {
-	float4x4 texture_mat;
+	float4x4 view_mat;
+	float4x4 proj_mat;
 	float3 pos;
 	float3 dir;
 	float3 color;
@@ -9,7 +10,8 @@ struct DirLight {
 
 
 struct SpotLight {
-	float4x4 texture_mat;
+	float4x4 view_mat;
+	float4x4 proj_mat;
 	float3 pos;
 	float3 dir;
 	float3 color;
@@ -58,21 +60,29 @@ void deferred(uint2 pos) {
 		float3 specular;
 
 		for (uint i = 0; i < num_dir; i++) {
+
+			float bias = 0.001f;
+
 			DirLight light = dir_lights[i];
 
-			float4 shadow_uv = mul(light.texture_mat, float4(p, 1.0));
+			float4 shadow_uv = mul(light.proj_mat, mul(light.view_mat, float4(p, 1.0)));
 			shadow_uv /= shadow_uv.w;
-			float shadow = dir_shadows.SampleLevel(shadow_sampler, float3(shadow_uv.xy, (float)i), 0, 0).x;
+			float shadow = dir_shadows.SampleLevel(
+				shadow_sampler,
+				float3(1.0 + shadow_uv.xy * float2(1.0, -1.0), (float)i),
+				0, 0
+			).x + bias;
 
-			float d = pow(1.0 - shadow, 0.5) * 2.0;
+			float d = shadow_uv.z;
 			output[pos] = float4(d, d, d, 1.0);
 
-			diffuse += saturate(dot(n, -light.dir)) * light.color;
-
-			// Using Blinn half angle modification for performance over correctness
-			// TODO: Fix
-			float3 h = normalize(view_dir - light.dir);
-			specular += pow(saturate(dot(h, n)), 4.0) * light.color;
+			if (shadow_uv.z < shadow) {
+				diffuse += saturate(dot(n, -light.dir)) * light.color;
+				// Using Blinn half angle modification for performance over correctness
+				// TODO: Fix maybe
+				float3 h = normalize(view_dir - light.dir);
+				specular += pow(saturate(dot(h, n)), 4.0) * light.color;
+			}
 		}
 
 		output[pos] =  float4(ambient_c + diffuse * diffuse_c + specular * specular_c, 1.0);

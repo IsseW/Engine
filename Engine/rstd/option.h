@@ -40,8 +40,9 @@ struct Option {
 	Option(const Option& other) {
 		if (other.is_some()) {
 			_is_some = true;
-			zero();
-			_v = other._v;
+			T t = other._v;
+			memcpy(&_v, &t, sizeof(T));
+			memset(&t, 0, sizeof(T));
 		}
 		else {
 			_is_some = false;
@@ -181,6 +182,10 @@ private:
 
 	bool _is_some;
 	union {
+		T _v;
+		char __t[sizeof(T)];
+	};
+	union VV {
 		T _v;
 		char __t[sizeof(T)];
 	};

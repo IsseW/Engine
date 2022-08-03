@@ -44,6 +44,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	run_tests();
 #endif
 
+
+	Window* window = create_window(hInstance, 1000, 1000, nCmdShow).unwrap();
+	auto maybe_renderer = Renderer::create(*window);
+
+	if (maybe_renderer.is_err()) {
+		delete window;
+		std::cout << "Err: " << maybe_renderer.unwrap_err() << std::endl;
+		return 1;
+	}
+	Renderer renderer = maybe_renderer.unwrap();
+	window->set_renderer(&renderer);
+
 	AssetHandler assets {};
 
 	assets.load<Mesh>(std::filesystem::path { "resources/u.wavefront" });
@@ -54,25 +66,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	auto cam = Camera::perspective(Transform::from_translation({ 0.0, 5.0, -10.0 }).looking_at({0.0}), 60.0f * F32::TO_RAD);
 	World world(cam);
 
-	for (f32 z = -15.0f; z < 15.0f; z += 5.0f) {
-		for (f32 x = -15.0f; x < 15.0f; x += 2.5f) {
-			world.add(Object(Transform::from_translation({x, 0.0f, z})).with_mesh(croc));
+	for (usize z = 0; z <= 6; ++z) {
+		for (usize x = 0; x <= 12; ++x) {
+			world.add(Object(Transform::from_translation({(f32)x * 2.5f - 15.0f, 0.0f, (f32)z * 5.0f - 15.0f})).with_mesh(croc));
 		}
 	}
 
 	world.add(Object(Transform::from_translation({ 0.0f, -5.0f, 0.0 }).with_scale(4.0)).with_mesh(sphere));
 	world.add(DirLight(Transform::from_translation({ -2.0f, 5.0f, -2.0f }).looking_at({ 0.0 }), Light{ {1.0}, 1.0}));
 
-	Window* window = create_window(hInstance, 1000, 1000, nCmdShow).unwrap();
+	world.add(ParticleSystem::create(renderer.ctx.device, Transform::from_translation({ 0.0f, 4.0f, 0.0f }), 1000));
+	
 
-	auto maybe_renderer = Renderer::create(*window);
-
-	if (maybe_renderer.is_err()) {
-		std::cout << "Err: " << maybe_renderer.unwrap_err() << std::endl;
-	}
-
-	Renderer renderer = maybe_renderer.unwrap();
-	window->set_renderer(&renderer);
 
 	auto cleanup = [&]() {
 		clean_up_ui();
@@ -103,12 +108,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			}
 		}
 		auto now = std::chrono::high_resolution_clock::now();
-		float dt = std::chrono::duration_cast<std::chrono::duration<float, std::ratio<1, 1>>>(now - last_frame).count();
+		f32 dt = std::chrono::duration_cast<std::chrono::duration<f32, std::ratio<1, 1>>>(now - last_frame).count();
 		last_frame = now;
 
 		world.update(dt, *window);
 
-		renderer.draw(world, assets);
+		renderer.draw(world, assets, dt);
 
 		renderer.ctx.context->OMSetRenderTargets(1, &renderer.ctx.screen.rtv, nullptr);
 

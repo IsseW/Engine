@@ -1,11 +1,9 @@
 #include<renderer/renderer.h>
 #include<windows.h>
 
-const char* COMPUTE_FILE = "Deferred.cso";
-
 Result<SecondPass, RenderCreateError> SecondPass::create(ID3D11Device* device) {
 	ID3D11ComputeShader* deferred;
-	TRY(deferred, load_compute(device, COMPUTE_FILE));
+	TRY(deferred, load_compute(device, "deferred.cso"));
 
 	Uniform<ObjectData> object;
 	TRY(object, Uniform<ObjectData>::create(device));
@@ -39,7 +37,7 @@ Result<SecondPass, RenderCreateError> SecondPass::create(ID3D11Device* device) {
 			dir_lights,
 			spot_lights,
 			shadow_sampler_state,
-		});
+	});
 }
 
 void SecondPass::clean_up() {
@@ -105,9 +103,9 @@ void SecondPass::draw(Renderer& rend, const World& world) {
 
 SecondPass::Directional SecondPass::Directional::from_light(const DirLight& light, const Camera& camera)
 {
-	auto mat = light.get_texture_mat(camera);
 	return Directional{
-		mat.transposed(),
+		light.get_view_mat(camera).transposed(),
+		light.get_proj_mat(camera).transposed(),
 		light.transform.translation,
 		light.transform.forward(),
 		light.light.color,
@@ -117,9 +115,9 @@ SecondPass::Directional SecondPass::Directional::from_light(const DirLight& ligh
 
 SecondPass::Spot SecondPass::Spot::from_light(const SpotLight& light, const Camera& camera)
 {
-	auto mat = light.get_texture_mat(camera);
 	return Spot{
-		mat.transposed(),
+		light.get_view_mat(camera).transposed(),
+		light.get_proj_mat(camera).transposed(),
 		light.transform.translation,
 		light.transform.forward(),
 		light.light.color,
