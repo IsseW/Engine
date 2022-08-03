@@ -16,7 +16,7 @@ struct Option {
 		return Option(v);
 	}
 
-	~Option() {
+	~Option() noexcept {
 		if (_is_some) {
 			_v.~T();
 		}
@@ -24,7 +24,7 @@ struct Option {
 
 	Option() : _is_some(false) { zero(); }
 
-	Option(Option&& other) noexcept {
+	Option(Option&& other) noexcept requires std::movable<T> {
 		if (other.is_some()) {
 			memcpy(&_v, &other._v, sizeof(T));
 			_is_some = true;
@@ -37,7 +37,7 @@ struct Option {
 		other.zero();
 	}
 
-	Option(const Option& other) {
+	Option(const Option& other) noexcept requires std::copyable<T> {
 		if (other.is_some()) {
 			_is_some = true;
 			T t = other._v;
@@ -50,10 +50,22 @@ struct Option {
 		}
 	}
 
-	Option& operator=(const Option& other) {
+	Option& operator=(const Option& other) requires std::copyable<T> {
 		if (other.is_some()) {
 			_is_some = true;
 			_v = other._v;
+		}
+		else {
+			_is_some = false;
+			zero();
+		}
+		return *this;
+	}
+
+	Option& operator=(Option&& other) requires std::movable<T> {
+		if (other.is_some()) {
+			_is_some = true;
+			_v = std::move(other._v);
 		}
 		else {
 			_is_some = false;
@@ -197,7 +209,7 @@ Option<T> none() {
 	return Option<T>::none();
 }
 template<typename T>
-Option<T> some(T v) requires std::copyable<T> {
+Option<T> some(const T& v) requires std::copyable<T> {
 	return Option<T>::some(v);
 }
 template<typename T>

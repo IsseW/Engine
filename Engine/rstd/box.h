@@ -4,13 +4,12 @@
 
 template<typename T>
 struct Box {
-	Box() requires std::is_default_constructible<T>::value : _inner{} {}
-	Box(T&& val) : _inner{ std::make_unique(val) } {}
-	Box(Box&& other) : _inner{ other._inner } {}
+	Box(T&& val) : _inner{ std::make_unique<T>(val) } {}
+	Box(Box&& other) : _inner{ std::move(other._inner) } {}
 
 	static Box from_ptr(T* ptr) {
-		auto box = Box{};
-		box._inner = std::unique_ptr{ ptr };
+		Box box = Box{};
+		box._inner = std::unique_ptr<T>{ ptr };
 		return box;
 	}
 
@@ -31,9 +30,10 @@ struct Box {
 	}
 
 	Box& operator=(Box&& other) {
-		this->_inner = other._inner;
+		this->_inner = std::move(other._inner);
 		return *this;
 	}
 private:
+	Box(): _inner{}{}
 	std::unique_ptr<T> _inner;
 };
