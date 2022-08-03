@@ -39,14 +39,14 @@ void main(point VertexOut input[1], inout TriangleStream<PixelIn> out_stream)
     float3 normal = normalize(cam_pos - pos);
     float3 axis1;
     float3 axis2;
-    float3 right = float3(1.0, 0.0, 0.0);
+    float3 up = float3(0.0, 1.0, 0.0);
 
-    if (dot(right, normal) == 0.0) {
-        axis1 = float3(0.0, 1.0, 0.0);
+    if (dot(up, normal) == 0.0) {
+        axis1 = float3(1.0, 0.0, 0.0);
         axis2 = float3(0.0, 0.0, 1.0);
     }
     else {
-        axis1 = normalize(cross(normal, right));
+        axis1 = normalize(cross(normal, up));
         axis2 = normalize(cross(normal, axis1));
     }
     axis1 *= size.x;

@@ -37,15 +37,15 @@ struct ParticleSystem {
 	Vec3<f32> min_spawn_point {-1.0f};
 	Vec3<f32> max_spawn_point {1.0f};
 
-	Vec3<f32> start_dir {0.0f, 1.0f, 0.0f};
-	f32 start_angle_random { 0.2f };
+	Vec3<f32> start_dir {4.0f, 1.0f, 0.0f};
+	f32 start_angle_random { 0.05f };
 
 	f32 vel_magnitude_min {1.0f};
 	f32 vel_magnitude_max {5.0f};
 	f32 min_life_time {4.0f};
 	f32 max_life_time {8.0f};
 
-	Vec3<f32> acceleration {0.0f, -0.4f, 0.0f};
+	Vec3<f32> acceleration {0.0f, -9.81f, 0.0f};
 
 	f32 start_size {0.1f};
 
