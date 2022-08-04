@@ -6,12 +6,14 @@ enum class RenderMode {
 	Ambient,
 	Diffuse,
 	Specular,
+	Shininess,
 	Depth,
 	Normal,
 	Position,
 };
 
-constexpr const char* MODES[7] = { "Deferred", "Ambient", "Diffuse", "Specular", "Depth", "Normal", "Position"};
+constexpr usize NUM_MODES = 8;
+constexpr const char* MODES[NUM_MODES] = { "Deferred", "Ambient", "Diffuse", "Specular", "Shininess", "Depth", "Normal", "Position"};
 
 struct SecondPass {
 	struct ObjectData {

@@ -232,13 +232,13 @@
     <FxCompile Include="shaders\pixel.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
-    <FxCompile Include="shaders\shadow_vertex.hlsl" />
     <FxCompile Include="shaders\deferred.hlsl" />
     <FxCompile Include="shaders\particle_compute.hlsl" />
     <FxCompile Include="shaders\particle_geometry.hlsl" />
     <FxCompile Include="shaders\particle_vertex.hlsl" />
     <FxCompile Include="shaders\hull.hlsl" />
     <FxCompile Include="shaders\domain.hlsl" />
+    <FxCompile Include="shaders\tesselation_vertex.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

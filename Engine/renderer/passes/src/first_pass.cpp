@@ -9,6 +9,9 @@ Result<ObjectRenderer, RenderCreateError> ObjectRenderer::create(ID3D11Device* d
 	ID3D11PixelShader* ps;
 	TRY(ps, load_pixel(device, "pixel.cso"));
 
+	ID3D11VertexShader* tess_vs;
+	TRY(tess_vs, load_vertex_without_layout(device, "tesselation_vertex.cso"));
+
 	ID3D11HullShader* hs;
 	TRY(hs, load_hull(device, "hull.cso"));
 
@@ -24,6 +27,7 @@ Result<ObjectRenderer, RenderCreateError> ObjectRenderer::create(ID3D11Device* d
 	return ok<ObjectRenderer, RenderCreateError>(ObjectRenderer{
 			vsil.vs,
 			ps,
+			tess_vs,
 			hs,
 			ds,
 			vsil.il,
@@ -35,6 +39,7 @@ Result<ObjectRenderer, RenderCreateError> ObjectRenderer::create(ID3D11Device* d
 void ObjectRenderer::clean_up() {
 	vs->Release();
 	ps->Release();
+	tess_vs->Release();
 	hs->Release();
 	ds->Release();
 

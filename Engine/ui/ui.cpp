@@ -190,6 +190,9 @@ void material_ui(Material& mat, Renderer& renderer, AssetHandler& assets) {
 	select_asset("Ambient", mat.ambient.tex, assets);
 	ImGui::SameLine();
 	ImGui::Image(image, size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), ImVec4(col.x, col.y, col.z, 1.0f));
+	if (mat.ambient.tex.is_none()) {
+		ImGui::ColorEdit3("Ambient", mat.ambient.color.data());
+	}
 
 	col = mat.diffuse.get_color();
 	image = assets.get_or_default(mat.diffuse.tex)->binded.as_ptr().unwrap_unchecked()->srv;
@@ -197,6 +200,9 @@ void material_ui(Material& mat, Renderer& renderer, AssetHandler& assets) {
 	select_asset("Diffuse", mat.diffuse.tex, assets);
 	ImGui::SameLine();
 	ImGui::Image(image, size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), ImVec4(col.x, col.y, col.z, 1.0f));
+	if (mat.diffuse.tex.is_none()) {
+		ImGui::ColorEdit3("Diffuse", mat.diffuse.color.data());
+	}
 
 	col = mat.specular.get_color();
 	image = assets.get_or_default(mat.specular.tex)->binded.as_ptr().unwrap_unchecked()->srv;
@@ -204,13 +210,11 @@ void material_ui(Material& mat, Renderer& renderer, AssetHandler& assets) {
 	select_asset("Specular", mat.specular.tex, assets);
 	ImGui::SameLine();
 	ImGui::Image(image, size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), ImVec4(col.x, col.y, col.z, 1.0f));
+	if (mat.specular.tex.is_none()) {
+		ImGui::ColorEdit3("Specular", mat.specular.color.data());
+	}
 
-	auto val = mat.shinyness.get_value();
-	image = assets.get_or_default(mat.shinyness.tex)->binded.as_ptr().unwrap_unchecked()->srv;
-	ImGui::Text("Shinyness: ");
-	select_asset("Shinyness", mat.shinyness.tex, assets);
-	ImGui::SameLine();
-	ImGui::Image(image, size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), ImVec4(val, val, val, 1.0f));
+	ImGui::DragFloat("Shininess", &mat.shininess);
 }
 
 void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHandler& assets) {
@@ -535,7 +539,7 @@ void update_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 		if (ImGui::Begin("Renderer", &renderer_open)) {
 			if (ImGui::BeginListBox("Render Mode")) {
 
-				for (usize i = 0; i < 7; ++i) {
+				for (usize i = 0; i < NUM_MODES; ++i) {
 					if (ImGui::Selectable(MODES[i], (usize)renderer.second_pass.mode == i)) {
 						renderer.second_pass.mode = (RenderMode)i;
 					}

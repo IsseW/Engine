@@ -35,6 +35,21 @@ Result<ID3D11PixelShader*, RenderCreateError> load_pixel(ID3D11Device* device, c
 	return ok<ID3D11PixelShader*, RenderCreateError>(shader);
 }
 
+
+Result<ID3D11VertexShader*, RenderCreateError> load_vertex_without_layout(ID3D11Device* device, const char* file) {
+	auto maybe_data = load_file_text(file);
+	if (maybe_data.is_none()) {
+		return MissingShaderFile;
+	}
+	auto data = maybe_data.unwrap_unchecked();
+	ID3D11VertexShader* shader;
+	auto hr = device->CreateVertexShader(data.c_str(), data.length(), nullptr, &shader);
+	if (FAILED(hr)) {
+		return FailedShaderCreation;
+	}
+	return ok< ID3D11VertexShader*, RenderCreateError>(shader);
+}
+
 Result<VSIL, RenderCreateError> load_vertex(ID3D11Device* device, const char* file, const std::vector<D3D11_INPUT_ELEMENT_DESC>& input) {
 	auto maybe_data = load_file_text(file);
 	if (maybe_data.is_none()) {

@@ -6,12 +6,14 @@ cbuffer Globals : register(b0) {
     float3 cam_pos;
 };
 
+cbuffer LOCALS : register(b1) {
+    float4x4 world_matrix;
+};
 
 struct HullInput {
     float4 position : SV_POSITION;
-    float3 normal : NORMAL;
     float2 uv : TEXCOORD0;
-    float3 wpos : TEXCOORD1;
+    float3 normal : NORMAL0;
 };
 
 struct ConstantOutput {
@@ -21,21 +23,24 @@ struct ConstantOutput {
 
 struct HullOutput {
     float4 position : SV_POSITION;
-    float3 normal : NORMAL;
     float2 uv : TEXCOORD0;
-    float3 wpos : TEXCOORD1;
+    float3 normal : NORMAL0;
 };
 
 float round_to(float val, float rounding) {
     return round(val / rounding) * rounding;
 }
 
+float3 transform(float4 pos) {
+    return mul(world_matrix, pos).xyz;
+}
+
 ConstantOutput patch_constant_function(const OutputPatch<HullOutput, 3> input_patch, uint patch_id : SV_PrimitiveID) {
     ConstantOutput output;
 
-    float3 patch_zero_d = 1.0 / distance(input_patch[0].wpos.xyz, cam_pos);
-    float3 patch_one_d = 1.0 / distance(input_patch[1].wpos.xyz, cam_pos);
-    float3 patch_two_d = 1.0 / distance(input_patch[2].wpos.xyz, cam_pos);
+    float patch_zero_d = min(1.0 / distance(transform(input_patch[0].position), cam_pos), 1);
+    float patch_one_d = min(1.0 / distance(transform(input_patch[1].position), cam_pos), 1);
+    float patch_two_d = min(1.0 / distance(transform(input_patch[2].position), cam_pos), 1);
 
     float t;
     float inside = 0.0;
@@ -71,7 +76,6 @@ ConstantOutput patch_constant_function(const OutputPatch<HullOutput, 3> input_pa
 HullOutput main(InputPatch<HullInput, 3> patch, uint point_id : SV_OutputControlPointID, uint patch_id : SV_PrimitiveID) {
     HullOutput output;
     
-    output.wpos = patch[point_id].wpos;
     output.position = patch[point_id].position;
     output.uv = patch[point_id].uv;
     output.normal = patch[point_id].normal;

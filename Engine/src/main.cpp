@@ -72,10 +72,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		}
 	}
 
-	world.add(Object(Transform::from_translation({ 0.0f, -5.0f, 0.0 }).with_scale(4.0)).with_mesh(sphere));
+	world.add(Object(Transform::from_translation({ 0.0f, -10.0f, 0.0 }).with_scale(4.0)).with_mesh(sphere));
 
 	world.add(Light::directional(Transform::from_translation({ -2.0f, 5.0f, -2.0f }).looking_at({ 0.0f }), {0.5f}));
-	world.add(Light::spot(Transform::from_translation({ 0.0f, 5.0f, 0.0f }).looking_at({ 0.0f }), { 1.0 }, F32::PI / 4.0f));
+	world.add(Light::spot(Transform::from_translation({ 0.0f, 5.0f, 0.0f }).looking_at({ 0.0f }), { 1.0 }, F32::PI / 16.0f));
 
 	world.add(ParticleSystem::create(renderer.ctx.device, Transform::from_translation({ 15.0f, 4.0f, 0.0f }), 1000));
 	

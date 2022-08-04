@@ -15,8 +15,8 @@ struct VertexOut {
 
 struct PixelIn {
     float4 position : SV_POSITION;
-    float3 normal : NORMAL;
     float2 uv : TEXCOORD0;
+    float3 normal : NORMAL0;
     float3 wpos : TEXCOORD1;
 };
 
@@ -27,9 +27,7 @@ float4 transform_to_camera(float4 vec) {
 }
 
 [maxvertexcount(6)]
-void main(point VertexOut input[1], inout TriangleStream<PixelIn> out_stream)
-{
-
+void main(point VertexOut input[1], inout TriangleStream<PixelIn> out_stream) {
     float3 pos = input[0].wpos.xyz;
     float life_time = input[0].wpos.w;
 

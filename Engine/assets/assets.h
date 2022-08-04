@@ -50,30 +50,20 @@ struct MatTex {
 		}).unwrap_or(this->color);
 	}
 };
-struct MatMap {
-	Option<AId<Image>> tex;
-	f32 value;
-
-	f32 get_value() const {
-		return tex.as_ptr().map<f32>([&](auto t) {
-				return 1.0f;
-			}).unwrap_or(this->value);
-	}
-};
 
 struct MaterialData {
-	Vec3<f32> ambient;
-	Vec3<f32> diffuse;
-	Vec3<f32> specular;
-	f32 shinyness;
-	Vec2<f32> dummy;
+	Vec4<f32> ambient;
+	Vec4<f32> diffuse;
+	Vec4<f32> specular;
+	f32 shininess;
+	Vec3<f32> dummy;
 };
 
 struct Material {
 	MatTex ambient;
 	MatTex diffuse;
 	MatTex specular;
-	MatMap shinyness;
+	f32 shininess;
 
 	std::string name;
 

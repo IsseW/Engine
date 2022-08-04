@@ -280,7 +280,7 @@ Mesh Mesh::load(const fs::path& path, AssetHandler& asset_handler) {
 			auto norm = a_split.len() >= 3 ? 
 				parse_verts(2).map<Vec3<f32>>([&](Index i) {
 					return normals[i];
-				}) : Vec3<Vec3<f32>>((pos.y - pos.x).cross(pos.z - pos.x));
+				}) : Vec3<Vec3<f32>>((pos.y - pos.x).cross(pos.z - pos.x).normalized());
 
 			auto triangle = pos.map<Vertex>([](Vec3<f32> pos, Vec2<f32> uv, Vec3<f32> norm) {
 				return Vertex{
@@ -419,11 +419,7 @@ Material Material::default_asset() {
 		Vec3<f32>(1.0, 1.0, 1.0),
 	};
 	return Material{
-		def, def, def,
-		MatMap {
-			none<AId<Image>>(),
-			1.0,
-		},
+		def, def, def, 1.0f,
 	};
 }
 
@@ -439,7 +435,6 @@ void Material::bind(ID3D11Device* device, AssetHandler& asset_handler) {
 	bind_tex(ambient);
 	bind_tex(diffuse);
 	bind_tex(specular);
-	bind_tex(shinyness);
 }
 
 void Material::clean_up() {}
@@ -496,7 +491,7 @@ MaterialGroup MaterialGroup::load(const fs::path& path, AssetHandler& asset_hand
 			material.name = split[1];
 		}
 		else if (first == "Ns") {
-			material.shinyness.value = std::stof(split[1]);
+			material.shininess = std::stof(split[1]);
 		}
 		else if (first == "Ka") {
 			material.ambient.color = parse_color();
@@ -506,9 +501,6 @@ MaterialGroup MaterialGroup::load(const fs::path& path, AssetHandler& asset_hand
 		}
 		else if (first == "Ks") {
 			material.specular.color = parse_color();
-		}
-		else if (first == "map_Ns") {
-			material.shinyness.tex.insert(asset_handler.load<Image>(fs::path(parent_dir).append(split[1])));
 		}
 		else if (first == "map_Ka") {
 			material.ambient.tex.insert(asset_handler.load<Image>(fs::path(parent_dir).append(split[1])));
@@ -531,9 +523,9 @@ void MaterialGroup::clean_up() {}
 
 MaterialData Material::get_data() const {
 	return MaterialData {
-		ambient.get_color(),
-		diffuse.get_color(),
-		specular.get_color(),
-		shinyness.get_value(),
+		ambient.get_color().with_w(1.0),
+		diffuse.get_color().with_w(1.0),
+		specular.get_color().with_w(1.0),
+		shininess,
 	};
 }

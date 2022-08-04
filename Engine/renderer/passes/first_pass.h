@@ -7,6 +7,7 @@ struct ObjectRenderer {
 	ID3D11VertexShader* vs;
 	ID3D11PixelShader* ps;
 
+	ID3D11VertexShader* tess_vs;
 	ID3D11HullShader* hs;
 	ID3D11DomainShader* ds;
 

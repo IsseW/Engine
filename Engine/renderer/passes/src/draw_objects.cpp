@@ -2,7 +2,6 @@
 
 void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets, FirstPass::Globals globals, bool pixel_shader, Option<Id<Reflective>> skip_reflective) {
 	rend.ctx.context->RSSetState(rend.first_pass.rs_default);
-	rend.ctx.context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	rend.first_pass.globals.update(rend.ctx.context, &globals);
 
@@ -11,17 +10,12 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 	rend.ctx.context->VSSetConstantBuffers(0, UNIFORM_COUNT, uniforms);
 	rend.ctx.context->IASetInputLayout(rend.first_pass.object_renderer.layout);
 
-	rend.ctx.context->HSSetConstantBuffers(0, 1, uniforms);
-
-
-	rend.ctx.context->VSSetShader(rend.first_pass.object_renderer.vs, nullptr, 0);
+	rend.ctx.context->HSSetConstantBuffers(0, 2, uniforms);
+	rend.ctx.context->DSSetConstantBuffers(0, 2, uniforms);
 	
 	if (pixel_shader) {
 		rend.ctx.context->PSSetConstantBuffers(0, UNIFORM_COUNT, uniforms);
 		rend.ctx.context->PSSetShader(rend.first_pass.object_renderer.ps, nullptr, 0);
-	}
-	else {
-		rend.ctx.context->PSSetShader(nullptr, nullptr, 0);
 	}
 
 	auto bind_mat = [&](Option<AId<Material>> mat_handle) {
@@ -36,7 +30,6 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 		bind_image(0, mat->ambient.tex);
 		bind_image(1, mat->diffuse.tex);
 		bind_image(2, mat->specular.tex);
-		bind_image(3, mat->shinyness.tex);
 
 		MaterialData data = mat->get_data();
 		rend.first_pass.object_renderer.material.update(rend.ctx.context, &data);
@@ -56,21 +49,24 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 		return mesh;
 	};
 
-	bool tesselation_on = false;
+	bool tesselation_on = true;
 	auto set_tesselation = [&](bool on) {
 		if (tesselation_on && !on) {
 			rend.ctx.context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			rend.ctx.context->HSSetShader(nullptr, nullptr, 0);
 			rend.ctx.context->DSSetShader(nullptr, nullptr, 0);
+			rend.ctx.context->VSSetShader(rend.first_pass.object_renderer.vs, nullptr, 0);
 			tesselation_on = false;
 		}
 		else if (!tesselation_on && on) {
 			rend.ctx.context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
 			rend.ctx.context->HSSetShader(rend.first_pass.object_renderer.hs, nullptr, 0);
 			rend.ctx.context->DSSetShader(rend.first_pass.object_renderer.ds, nullptr, 0);
+			rend.ctx.context->VSSetShader(rend.first_pass.object_renderer.tess_vs, nullptr, 0);
 			tesselation_on = true;
 		}
 	};
+	set_tesselation(false);
 
 	world.objects.values([&](const Object& obj) {
 		set_tesselation(obj.tesselate);
@@ -138,7 +134,11 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 		rend.ctx.context->Draw(system.num_particles(), 0);
 	});
 	// Unbind
+	rend.ctx.context->VSSetShader(nullptr, nullptr, 0);
+	rend.ctx.context->HSSetShader(nullptr, nullptr, 0);
+	rend.ctx.context->DSSetShader(nullptr, nullptr, 0);
 	rend.ctx.context->GSSetShader(nullptr, nullptr, 0);
+	rend.ctx.context->PSSetShader(nullptr, nullptr, 0);
 	ID3D11Buffer* null = nullptr;
 	u32 stride = sizeof(Vertex);
 	u32 offset = 0;
