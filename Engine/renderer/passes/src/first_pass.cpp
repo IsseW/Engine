@@ -9,6 +9,12 @@ Result<ObjectRenderer, RenderCreateError> ObjectRenderer::create(ID3D11Device* d
 	ID3D11PixelShader* ps;
 	TRY(ps, load_pixel(device, "pixel.cso"));
 
+	ID3D11HullShader* hs;
+	TRY(hs, load_hull(device, "hull.cso"));
+
+	ID3D11DomainShader* ds;
+	TRY(ds, load_domain(device, "domain.cso"));
+
 	Uniform<ObjectData> object;
 	TRY(object, Uniform<ObjectData>::create(device));
 
@@ -18,6 +24,8 @@ Result<ObjectRenderer, RenderCreateError> ObjectRenderer::create(ID3D11Device* d
 	return ok<ObjectRenderer, RenderCreateError>(ObjectRenderer{
 			vsil.vs,
 			ps,
+			hs,
+			ds,
 			vsil.il,
 			object,
 			material,
@@ -27,6 +35,9 @@ Result<ObjectRenderer, RenderCreateError> ObjectRenderer::create(ID3D11Device* d
 void ObjectRenderer::clean_up() {
 	vs->Release();
 	ps->Release();
+	hs->Release();
+	ds->Release();
+
 	layout->Release();
 
 	object.clean_up();
@@ -152,7 +163,7 @@ void FirstPass::clean_up() {
 }
 
 
-void FirstPass::draw(Renderer& rend, const World& world, const AssetHandler& assets) {
+void FirstPass::draw(Renderer& rend, const World& world, const AssetHandler& assets, const Viewpoint& viewpoint) {
 	rend.ctx.context->ClearDepthStencilView(depth.dsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
 	gbuffer.clear(rend.ctx.context);
 
@@ -160,9 +171,13 @@ void FirstPass::draw(Renderer& rend, const World& world, const AssetHandler& ass
 	rend.ctx.context->OMSetRenderTargets(targets.size(), targets.data(), depth.dsv);
 
 	// First update the globals buffer
-	auto g = FirstPass::Globals::from_world(world, rend.ctx.ratio());
+	auto g = FirstPass::Globals{
+		viewpoint.view,
+		viewpoint.proj,
+		viewpoint.pos,
+	};
 
-	draw_objects(rend, world, assets, g, true);
+	draw_objects(rend, world, assets, g, true, viewpoint.skip_reflective);
 }
 
 
@@ -174,15 +189,7 @@ FirstPass::Globals FirstPass::Globals::from_world(const World& world, f32 ratio)
 	};
 }
 
-FirstPass::Globals FirstPass::Globals::from_light(const DirLight& light, const Camera& camera) {
-	return Globals{
-		light.get_view_mat(camera).transposed(),
-		light.get_proj_mat(camera).transposed(),
-		camera.transform.translation,
-	};
-}
-
-FirstPass::Globals FirstPass::Globals::from_light(const SpotLight& light, const Camera& camera) {
+FirstPass::Globals FirstPass::Globals::from_light(const Light& light, const Camera& camera) {
 	return Globals{
 		light.get_view_mat(camera).transposed(),
 		light.get_proj_mat(camera).transposed(),

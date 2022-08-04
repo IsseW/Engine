@@ -22,6 +22,9 @@ struct ParticleSystemData {
 	f32 time;
 
 	u32 particle_count;
+	u32 particles_per_thread;
+
+	Vec3<f32> dummy;
 };
 
 struct ParticleData {
@@ -49,6 +52,8 @@ struct ParticleSystem {
 
 	f32 start_size {0.1f};
 
+	u32 particles_per_thread{ 8 };
+
 	bool paused{ false };
 
 	UAVSBuffer<ParticleData> particle_data;
@@ -59,7 +64,6 @@ struct ParticleSystem {
 	static ParticleSystem create(ID3D11Device* device, Transform transform, usize num_particles);
 	void set_material(AId<Material> material);
 	ParticleSystemData get_data(f32 time, f32 delta_time) const;
-	ObjectData get_object_data() const;
 	usize num_particles() const;
 	void clean_up();
 };

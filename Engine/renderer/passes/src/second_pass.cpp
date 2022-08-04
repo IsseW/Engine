@@ -8,11 +8,8 @@ Result<SecondPass, RenderCreateError> SecondPass::create(ID3D11Device* device) {
 	Uniform<ObjectData> object;
 	TRY(object, Uniform<ObjectData>::create(device));
 
-	SBuffer<Directional> dir_lights;
-	TRY(dir_lights, SBuffer<Directional>::create(device, 10));
-
-	SBuffer<Spot> spot_lights;
-	TRY(spot_lights, SBuffer<Spot>::create(device, 10));
+	SBuffer<LightData> lights;
+	TRY(lights, SBuffer<LightData>::create(device, 10));
 
 
 	D3D11_SAMPLER_DESC sampler_desc;
@@ -34,8 +31,7 @@ Result<SecondPass, RenderCreateError> SecondPass::create(ID3D11Device* device) {
 	return ok<SecondPass, RenderCreateError>(SecondPass{
 			deferred,
 			object,
-			dir_lights,
-			spot_lights,
+			lights,
 			shadow_sampler_state,
 	});
 }
@@ -44,36 +40,28 @@ void SecondPass::clean_up() {
 	if (deferred) deferred->Release();
 }
 
-void SecondPass::draw(Renderer& rend, const World& world) {
+void SecondPass::draw(Renderer& rend, const World& world, const Viewpoint& viewpoint) {
 	// Unbind render targets. 
 	rend.ctx.context->OMSetRenderTargets(0, NULL, NULL);
 
 	rend.ctx.context->CSSetShader(deferred, NULL, 0);
 
 	// Bind lights.
-	Vec<Directional> directional {};
-	world.dir_lights.values([&](const DirLight& light) {
-		directional.push(Directional::from_light(light, world.camera));
+	Vec<LightData> lights {};
+	world.lights.values([&](const Light& light) {
+		lights.push(LightData::from_light(light, world.camera));
 	});
-	dir_lights.update(rend.ctx.context, directional.raw(), directional.len());
-
-	Vec<Spot> spot{};
-	world.spot_lights.values([&](const SpotLight& light) {
-		spot.push(Spot::from_light(light, world.camera));
-	});
-	spot_lights.update(rend.ctx.context, spot.raw(), spot.len());
+	this->lights.update(rend.ctx.context, lights.raw(), lights.len());
 
 	ObjectData object = {
-		world.camera.transform.translation,
+		viewpoint.pos,
 		mode,
-		directional.len(),
-		spot.len(),
+		lights.len(),
 	};
 	this->object.update(rend.ctx.context, &object);
 	rend.ctx.context->CSSetConstantBuffers(0, 1, &this->object.buffer);
 
-
-	const usize SRV_COUNT = 10;
+	const usize SRV_COUNT = 8;
 	ID3D11ShaderResourceView* srv[SRV_COUNT] = {
 		rend.first_pass.gbuffer.ambient.srv,
 		rend.first_pass.gbuffer.diffuse.srv,
@@ -81,15 +69,12 @@ void SecondPass::draw(Renderer& rend, const World& world) {
 		rend.first_pass.gbuffer.normal.srv,
 		rend.first_pass.gbuffer.position.srv,
 		rend.first_pass.depth.srv,
-		rend.shadow_pass.directional_shadows.srv,
-		rend.shadow_pass.spot_shadows.srv,
-		dir_lights.srv,
-		spot_lights.srv,
+		rend.shadow_pass.shadows.srv,
+		this->lights.srv,
 	};
 	rend.ctx.context->CSSetShaderResources(0, SRV_COUNT, srv);
-	rend.ctx.context->CSSetUnorderedAccessViews(0, 1, &rend.ctx.screen.uav, nullptr);
+	rend.ctx.context->CSSetUnorderedAccessViews(0, 1, &viewpoint.render_target, nullptr);
 	rend.ctx.context->CSSetSamplers(0, 1, &shadow_sampler);
-
 
 	auto size = rend.ctx.size();
 	rend.ctx.context->Dispatch(size.x, size.y, 1);
@@ -101,26 +86,14 @@ void SecondPass::draw(Renderer& rend, const World& world) {
 	rend.ctx.context->CSSetUnorderedAccessViews(0, 1, &empty_uav, nullptr);
 }
 
-SecondPass::Directional SecondPass::Directional::from_light(const DirLight& light, const Camera& camera)
-{
-	return Directional{
+SecondPass::LightData SecondPass::LightData::from_light(const Light& light, const Camera& camera) {
+	return LightData {
 		light.get_view_mat(camera).transposed(),
 		light.get_proj_mat(camera).transposed(),
 		light.transform.translation,
 		light.transform.forward(),
-		light.light.color,
-		light.light.strength,
-	};
-}
-
-SecondPass::Spot SecondPass::Spot::from_light(const SpotLight& light, const Camera& camera)
-{
-	return Spot{
-		light.get_view_mat(camera).transposed(),
-		light.get_proj_mat(camera).transposed(),
-		light.transform.translation,
-		light.transform.forward(),
-		light.light.color,
-		light.light.strength,
+		light.color,
+		(u32)light.light_type,
+		std::cos(light.angle),
 	};
 }

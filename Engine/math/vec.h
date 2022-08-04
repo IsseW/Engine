@@ -163,7 +163,7 @@ Vec operator op() const {			\
 			return Vec<T, 3> { crs(o, 1, 2), crs(o, 2, 0), crs(o, 0, 1) };
 		}
 		constexpr Vec<T, 7> cross(const Vec<T, 7>& o) const requires(L == 7) {
-			return Vec<T, 7> {  
+			return Vec<T, 7> {
 				crs(o, 1, 3) + crs(o, 2, 6) + crs(o, 4, 5),
 				crs(o, 2, 4) + crs(o, 3, 0) + crs(o, 5, 6),
 				crs(o, 3, 5) + crs(o, 4, 1) + crs(o, 6, 0),

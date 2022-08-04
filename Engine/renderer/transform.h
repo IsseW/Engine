@@ -1,6 +1,7 @@
 #pragma once
 #include<math/mat.h>
 
+struct ObjectData;
 struct Transform {
 	static Transform from_translation(Vec3<f32> trans);
 	static Transform from_scale(Vec3<f32> scale);
@@ -22,6 +23,7 @@ struct Transform {
 	Vec3<f32> down() const;
 
 	Mat4<f32> get_mat() const;
+	ObjectData get_data() const;
 };
 
 struct Camera {

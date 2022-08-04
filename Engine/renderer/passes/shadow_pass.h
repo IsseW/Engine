@@ -6,9 +6,7 @@ struct ShadowPass {
 	ID3D11VertexShader* vs;
 	ID3D11InputLayout* il;
 
-	DepthTextures directional_shadows;
-
-	DepthTextures spot_shadows;
+	DepthTextures shadows;
 
 	static Result<ShadowPass, RenderCreateError> create(ID3D11Device* device, Vec2<u16> size);
 

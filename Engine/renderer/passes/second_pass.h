@@ -17,44 +17,33 @@ struct SecondPass {
 	struct ObjectData {
 		Vec3<f32> cam_pos;
 		RenderMode mode;
-		u32 num_dir;
-		u32 num_spot;
-		Vec2<f32> dummy;
+		u32 num_lights;
+		Vec3<f32> dummy;
 	};
 
-	struct Directional {
+	struct LightData {
 		Mat4<f32> view_mat;
 		Mat4<f32> proj_mat;
 		Vec3<f32> pos;
 		Vec3<f32> direction;
 		Vec3<f32> color;
-		f32 strength;
+
+		u32 light_type;
+		f32 cutoff;
 		
-		static Directional from_light(const DirLight& light, const Camera& camera);
-	};
-
-	struct Spot {
-		Mat4<f32> view_mat;
-		Mat4<f32> proj_mat;
-		Vec3<f32> pos;
-		Vec3<f32> direction;
-		Vec3<f32> color;
-		f32 strength;
-
-		static Spot from_light(const SpotLight& light, const Camera& camera);
+		static LightData from_light(const Light& light, const Camera& camera);
 	};
 
 	ID3D11ComputeShader* deferred;
 
 	Uniform<ObjectData> object;
 
-	SBuffer<Directional> dir_lights;
-	SBuffer<Spot> spot_lights;
+	SBuffer<LightData> lights;
 	ID3D11SamplerState* shadow_sampler;
 
 	RenderMode mode = RenderMode::Deferred;
 
-	void draw(Renderer& rend, const World& world);
+	void draw(Renderer& rend, const World& world, const Viewpoint& viewpoint);
 
 	static Result<SecondPass, RenderCreateError> create(ID3D11Device* device);
 

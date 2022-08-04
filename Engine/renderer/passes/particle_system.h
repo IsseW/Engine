@@ -17,8 +17,6 @@ struct ParticleRenderer {
 	Uniform<ParticleSystemData> system_data;
 	Uniform<Globals> gs_globals;
 
-	ID3D11Buffer* quad_index_buffer;
-
 	
 	void run(Renderer& rend, const World& world, f32 delta_time);
 	static Result<ParticleRenderer, RenderCreateError> create(ID3D11Device* device);

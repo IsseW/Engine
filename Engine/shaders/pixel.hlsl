@@ -9,9 +9,9 @@ SamplerState shinyness_sampler : register(s3);
 
 struct PixelShaderInput {
     float4 position : SV_POSITION;
+    float3 normal : NORMAL;
     float2 uv : TEXCOORD0;
-    float3 normal : TEXCOORD1;
-    float3 wpos : TEXCOORD2;
+    float3 wpos : TEXCOORD1;
 };
 
 struct PixelShaderOutput {

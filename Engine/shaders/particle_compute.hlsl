@@ -26,6 +26,7 @@ cbuffer SystemData : register(b0) {
 	float time;
 
 	uint particle_count;
+	uint particles_per_thread;
 }
 
 float4 hash(float3 p, float t) {
@@ -42,45 +43,48 @@ float3 rotate_around_axis(float3 v, float3 x, float a) {
 
 [numthreads(8, 1, 1)]
 void main(uint3 dispatch_id : SV_DispatchThreadID) {
-	uint id = dispatch_id.x;
+	uint start = dispatch_id.x * particles_per_thread;
+	uint end = min(start + particles_per_thread, particle_count);
 
-	float3 pos = particle_pos[id].xyz;
+	for (uint id = start; id < end; id++) {
+		float3 pos = particle_pos[id].xyz;
 
-	float expected_life_time = particle_data[id].expected_life_time;
+		float expected_life_time = particle_data[id].expected_life_time;
 
-	float life_time = particle_pos[id].w * expected_life_time - delta_time;
+		float life_time = particle_pos[id].w * expected_life_time - delta_time;
 
-	if (life_time < 0.0) {
-		float seed = time + (float)id;
-		float4 r1 = hash(pos, seed);
-		float4 r2 = hash(pos.xzy, -seed);
+		if (life_time < 0.0) {
+			float seed = time + (float)id;
+			float4 r1 = hash(pos, seed);
+			float4 r2 = hash(pos.xzy, -seed);
 
-		// Select starting position
-		particle_pos[id] = float4(min_spawn_point.xyz + (max_spawn_point.xyz - min_spawn_point.xyz) * r1.yzw, 1.0);
+			// Select starting position
+			particle_pos[id] = float4(min_spawn_point.xyz + (max_spawn_point.xyz - min_spawn_point.xyz) * r1.yzw, 1.0);
 
-		// Pick a new lifetime
-		particle_data[id].expected_life_time = min_life_time + (max_life_time - min_life_time) * r1.x;
+			// Pick a new lifetime
+			particle_data[id].expected_life_time = min_life_time + (max_life_time - min_life_time) * r1.x;
 
-		// Pick new velocity
-		float vel_magnitude = vel_magnitude_min + (vel_magnitude_max - vel_magnitude_min) * r2.y;
+			// Pick new velocity
+			float vel_magnitude = vel_magnitude_min + (vel_magnitude_max - vel_magnitude_min) * r2.y;
 
-		float a = start_angle_random * r2.z;
-		float b = 2.0 * 3.141592643 * r2.w;
-		float3 orth;
-		float3 right = float3(1.0, 0.0, 0.0);
-		if (dot(start_dir.xyz, right) == 0.0) {
-			orth = float3(0.0, 1.0, 0.0);
+			float a = start_angle_random * r2.z;
+			float b = 2.0 * 3.141592643 * r2.w;
+			float3 orth;
+			float3 right = float3(1.0, 0.0, 0.0);
+			if (dot(start_dir.xyz, right) == 0.0) {
+				orth = float3(0.0, 1.0, 0.0);
+			}
+			else {
+				orth = normalize(cross(start_dir.xyz, right));
+			}
+			float3 axis = rotate_around_axis(orth, start_dir.xyz, b);
+			float3 start_d = rotate_around_axis(start_dir.xyz, axis, a);
+			particle_data[id].velocity = vel_magnitude * start_d;
 		}
 		else {
-			orth = normalize(cross(start_dir.xyz, right));
+			pos += particle_data[id].velocity * delta_time;
+			particle_data[id].velocity += acceleration.xyz * delta_time;
+			particle_pos[id] = float4(pos, life_time / expected_life_time);
 		}
-		float3 axis = rotate_around_axis(orth, start_dir.xyz, b);
-		float3 start_d = rotate_around_axis(start_dir.xyz, axis, a);
-		particle_data[id].velocity = vel_magnitude * start_d;
-	}
-	else {
-		pos += particle_data[id].velocity * delta_time;
-		particle_data[id].velocity += acceleration.xyz * delta_time;
-		particle_pos[id] = float4(pos, life_time / expected_life_time);
 	}
 }

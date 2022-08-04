@@ -86,3 +86,33 @@ Result<ID3D11GeometryShader*, RenderCreateError> load_geometry(ID3D11Device* dev
 	}
 	return ok<ID3D11GeometryShader*, RenderCreateError>(shader);
 }
+
+Result<ID3D11HullShader*, RenderCreateError> load_hull(ID3D11Device* device, const char* file) {
+	auto maybe_data = load_file_text(file);
+	if (maybe_data.is_none()) {
+		return MissingShaderFile;
+	}
+
+	std::string data = maybe_data.unwrap_unchecked();
+	ID3D11HullShader* shader;
+
+	if (FAILED(device->CreateHullShader(data.c_str(), data.length(), nullptr, &shader))) {
+		return FailedShaderCreation;
+	}
+	return ok<ID3D11HullShader*, RenderCreateError>(shader);
+}
+
+Result<ID3D11DomainShader*, RenderCreateError> load_domain(ID3D11Device* device, const char* file) {
+	auto maybe_data = load_file_text(file);
+	if (maybe_data.is_none()) {
+		return MissingShaderFile;
+	}
+
+	std::string data = maybe_data.unwrap_unchecked();
+	ID3D11DomainShader* shader;
+
+	if (FAILED(device->CreateDomainShader(data.c_str(), data.length(), nullptr, &shader))) {
+		return FailedShaderCreation;
+	}
+	return ok<ID3D11DomainShader*, RenderCreateError>(shader);
+}

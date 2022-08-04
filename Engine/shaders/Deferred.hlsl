@@ -1,21 +1,12 @@
 
-struct DirLight {
+struct Light {
 	float4x4 view_mat;
 	float4x4 proj_mat;
 	float3 pos;
 	float3 dir;
 	float3 color;
-	float strength;
-};
-
-
-struct SpotLight {
-	float4x4 view_mat;
-	float4x4 proj_mat;
-	float3 pos;
-	float3 dir;
-	float3 color;
-	float strength;
+	uint light_type;
+	float cutoff;
 };
 
 Texture2D ambient_map : register(t0);
@@ -24,27 +15,26 @@ Texture2D specular_map : register(t2);
 Texture2D normal : register(t3);
 Texture2D position : register(t4);
 Texture2D depth : register(t5);
-Texture2DArray dir_shadows : register(t6);
-Texture2DArray spot_shadows : register(t7);
+Texture2DArray shadows : register(t6);
 SamplerState shadow_sampler : register(s0);
-StructuredBuffer<DirLight> dir_lights : register(t8);
-StructuredBuffer<SpotLight> spot_lights : register(t9);
+StructuredBuffer<Light> lights : register(t7);
 
 cbuffer ObjectData : register(b0) {
 	float3 cam_pos;
 	uint render_mode;
-	uint num_dir;
-	uint num_spot;
+	uint num_lights;
 }
 
 RWTexture2D<float4> output : register(u0);
+
+#define DIR_LIGHT 0
+#define SPOT_LIGHT 1
 
 void deferred(uint2 pos) {
 	if (position[pos].w == 0.0) {
 		output[pos] = float4(0.2, 0.2, 0.2, 1.0);
 	}
 	else {
-		int dir_light_count = 0;
 
 		float3 p = position[pos].xyz;
 		float3 n = normal[pos].xyz;
@@ -59,29 +49,40 @@ void deferred(uint2 pos) {
 		float3 diffuse;
 		float3 specular;
 
-		for (uint i = 0; i < num_dir; i++) {
+		for (uint i = 0; i < num_lights; i++) {
 
 			float bias = 0.001f;
 
-			DirLight light = dir_lights[i];
+			Light light = lights[i];
 
 			float4 shadow_uv = mul(light.proj_mat, mul(light.view_mat, float4(p, 1.0)));
 			shadow_uv /= shadow_uv.w;
-			float shadow = dir_shadows.SampleLevel(
+			float shadow = shadows.SampleLevel(
 				shadow_sampler,
-				float3(1.0 + shadow_uv.xy * float2(1.0, -1.0), (float)i),
+				float3(0.5 + shadow_uv.xy * float2(0.5, -0.5), (float)i),
 				0, 0
 			).x + bias;
 
-			float d = shadow_uv.z;
-			output[pos] = float4(d, d, d, 1.0);
+			float d = pow((abs(shadow_uv.z - shadow)), 0.5) * 2.0;
+			// output[pos] = float4(d, d, d, 1.0);
 
 			if (shadow_uv.z < shadow) {
-				diffuse += saturate(dot(n, -light.dir)) * light.color;
-				// Using Blinn half angle modification for performance over correctness
-				// TODO: Fix maybe
-				float3 h = normalize(view_dir - light.dir);
-				specular += pow(saturate(dot(h, n)), 4.0) * light.color;
+				if (light.light_type == DIR_LIGHT) {
+					diffuse += saturate(dot(n, -light.dir)) * light.color;
+					// Using Blinn half angle modification for performance over correctness
+					// TODO: Fix maybe
+					float3 h = normalize(view_dir - light.dir);
+					specular += pow(saturate(dot(h, n)), shinyness) * light.color;
+				}
+				else if (light.light_type == SPOT_LIGHT) {
+					float3 ldir = normalize(p - light.pos);
+					if (dot(light.dir, ldir) > light.cutoff) {
+						diffuse += saturate(dot(n, -ldir)) * light.color;
+
+						float3 h = normalize(view_dir - ldir);
+						specular += pow(saturate(dot(h, n)), shinyness) * light.color;
+					}
+				}
 			}
 		}
 
@@ -115,7 +116,7 @@ void main(uint3 dispatch_id : SV_DispatchThreadID) {
 		break;
 	}
 	case DEPTH: {
-		float d = pow((1.0 - depth[pos]).x, 0.5) * 2.0;
+		float d = pow((1.0 - depth[pos].x), 0.5) * 2.0;
 		output[pos] = float4(d, d, d, 1.0);
 		break;
 	}

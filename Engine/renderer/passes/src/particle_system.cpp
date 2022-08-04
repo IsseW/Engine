@@ -17,7 +17,8 @@ void ParticleRenderer::run(Renderer& rend, const World& world, f32 delta_time) {
 			system.particle_data.uav,
 		};
 		rend.ctx.context->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
-		rend.ctx.context->Dispatch(system.num_particles(), 1, 1);
+		u32 threads = (system.num_particles() + system.particles_per_thread - 1) / system.particles_per_thread;
+		rend.ctx.context->Dispatch(threads, 1, 1);
 	});
 	// Unbind
 	ID3D11UnorderedAccessView* uavs[2] = {nullptr, nullptr};
@@ -41,27 +42,6 @@ Result<ParticleRenderer, RenderCreateError> ParticleRenderer::create(ID3D11Devic
 	Uniform<Globals> gs_globals;
 	TRY(gs_globals, Uniform<Globals>::create(device));
 
-	Index indices[] = {
-		0,  1,  2,
-		1,  2,  3,
-	};
-	D3D11_BUFFER_DESC buffer_desc;
-	buffer_desc.Usage = D3D11_USAGE_IMMUTABLE;
-	buffer_desc.ByteWidth = sizeof(Index) * 6;
-	buffer_desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	buffer_desc.CPUAccessFlags = 0;
-	buffer_desc.MiscFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA data;
-	data.pSysMem = indices;
-	data.SysMemPitch = 0;
-	data.SysMemSlicePitch = 0;
-
-	ID3D11Buffer* quad_index_buffer;
-	if (FAILED(device->CreateBuffer(&buffer_desc, &data, &quad_index_buffer))) {
-		return FailedBufferCreation;
-	}
-
 	return ok<ParticleRenderer, RenderCreateError>(ParticleRenderer{
 		vsil.vs,
 		vsil.il,
@@ -69,7 +49,6 @@ Result<ParticleRenderer, RenderCreateError> ParticleRenderer::create(ID3D11Devic
 		gs,
 		system_data,
 		gs_globals,
-		quad_index_buffer,
 	});
 }
 
@@ -82,6 +61,4 @@ void ParticleRenderer::clean_up() {
 
 	system_data.clean_up();
 	gs_globals.clean_up();
-
-	quad_index_buffer->Release();
 }

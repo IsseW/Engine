@@ -237,6 +237,8 @@
     <FxCompile Include="shaders\particle_compute.hlsl" />
     <FxCompile Include="shaders\particle_geometry.hlsl" />
     <FxCompile Include="shaders\particle_vertex.hlsl" />
+    <FxCompile Include="shaders\hull.hlsl" />
+    <FxCompile Include="shaders\domain.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

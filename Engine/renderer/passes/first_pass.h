@@ -6,6 +6,10 @@
 struct ObjectRenderer {
 	ID3D11VertexShader* vs;
 	ID3D11PixelShader* ps;
+
+	ID3D11HullShader* hs;
+	ID3D11DomainShader* ds;
+
 	ID3D11InputLayout* layout;
 
 	Uniform<ObjectData> object;
@@ -37,8 +41,7 @@ struct GBuffer {
 struct FirstPass {
 	struct Globals {
 		static Globals from_world(const World& world, f32 ratio);
-		static Globals from_light(const DirLight& light, const Camera& camera);
-		static Globals from_light(const SpotLight& light, const Camera& camera);
+		static Globals from_light(const Light& light, const Camera& camera);
 
 		Mat4<f32> view_matrix;
 		Mat4<f32> proj_matrix;
@@ -57,7 +60,7 @@ struct FirstPass {
 	ID3D11RasterizerState* rs_wireframe;
 	ID3D11RasterizerState* rs_cull_none;
 
-	void draw(Renderer& rend, const World& world, const AssetHandler& assets);
+	void draw(Renderer& rend, const World& world, const AssetHandler& assets, const Viewpoint& viewpoint);
 
 	static Result<FirstPass, RenderCreateError> create(ID3D11Device* device, Vec2<u16> size);
 

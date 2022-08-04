@@ -36,12 +36,7 @@ ParticleSystemData ParticleSystem::get_data(f32 time, f32 delta_time) const {
 		delta_time,
 		time,
 		num_particles(),
-	};
-}
-
-ObjectData ParticleSystem::get_object_data() const {
-	return ObjectData{
-		transform.get_mat().transposed(),
+		particles_per_thread,
 	};
 }
 

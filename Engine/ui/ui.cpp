@@ -100,7 +100,8 @@ bool edit(const char* label, Mat4<f32>& v) {
 
 bool edit(const char* label, Quat<f32>& quat) {
 	auto euler = quat.to_euler() * F32::TO_DEG;
-	if (edit(label, euler)) {
+
+	if (edit("Rotation", euler)) {
 		quat = Quat<f32>::from_euler(euler * F32::TO_RAD);
 		return true;
 	}
@@ -111,13 +112,6 @@ bool edit(Transform& transform) {
 	bool e = edit("Trans", transform.translation);
 	e |= edit("Scale", transform.scale);
 	e |= edit("Rotation", transform.rotation);
-
-	return e;
-}
-
-bool edit(Light& light) {
-	bool e = ImGui::ColorEdit3("Color", light.color.data());
-	e |= ImGui::DragFloat("Strength", &light.strength);
 
 	return e;
 }
@@ -159,20 +153,30 @@ void select_asset(const char* name, Option<AId<T>>& asset_id, AssetHandler& asse
 }
 
 
-void object_ui(Object& obj, AssetHandler& assets) {
+void light_ui(Light& light) {
+	edit(light.transform);
+	ImGui::ColorEdit3("Color", light.color.data());
+
+	if (ImGui::Selectable("Directional", light.light_type == LightType::Directional)) {
+		light.light_type = LightType::Directional;
+	}
+
+	if (ImGui::Selectable("Spot", light.light_type == LightType::Spot)) {
+		light.light_type = LightType::Spot;
+	}
+
+	if (light.light_type == LightType::Spot) {
+		ImGui::SliderAngle("Angle", &light.angle, 0.0f, 80.0f);
+	}
+}
+
+template<typename T>
+void object_ui(T& obj, AssetHandler& assets) {
 	edit(obj.transform);
 
 	select_asset("Mesh", obj.mesh, assets);
-}
 
-void dir_light_ui(DirLight& light) {
-	edit(light.transform);
-	edit(light.light);
-}
-
-void spot_light_ui(SpotLight& light) {
-	edit(light.transform);
-	edit(light.light);
+	ImGui::Checkbox("Tesselate", &obj.tesselate);
 }
 
 void material_ui(Material& mat, Renderer& renderer, AssetHandler& assets) {
@@ -266,25 +270,6 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 
 					auto mat = obj.transform.get_mat();
 
-					obj.mesh.as_ptr().then_do([&](AId<Mesh>* mesh) {
-						if (ImGui::CollapsingHeader("Vertices")) {
-							ImGui::Indent();
-							if (ImGui::CollapsingHeader("Local")) {
-								edit_vertices(assets.get(*mesh), Mat4<f32>::identity());
-							}
-							if (ImGui::CollapsingHeader("Global")) {
-								edit_vertices(assets.get(*mesh), mat);
-							}
-							if (ImGui::CollapsingHeader("View")) {
-								edit_vertices(assets.get(*mesh), mat * view_mat);
-							}
-							if (ImGui::CollapsingHeader("Proj")) {
-								edit_vertices(assets.get(*mesh), mat * view_mat * proj_mat);
-							}
-							ImGui::Unindent();
-						}
-						});
-
 					if (ImGui::Button("Remove")) {
 						world.remove(id);
 					}
@@ -308,23 +293,61 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 			ImGui::PopID();
 		}
 
-		if (ImGui::CollapsingHeader("Dir Lights")) {
+		if (ImGui::CollapsingHeader("Reflective Objects")) {
+			ImGui::PushID(1);
+			ImGui::Indent();
+			world.reflective.iter([&](Id<Reflective> id, Reflective& obj) {
+				std::string s("Object.");
+				s += id.to_string();
+				if (ImGui::CollapsingHeader(s.data())) {
+					ImGui::PushID(id.idx());
+					ImGui::Indent();
+
+					object_ui(obj, assets);
+
+					auto mat = obj.transform.get_mat();
+
+					if (ImGui::Button("Remove")) {
+						world.remove(id);
+					}
+
+					ImGui::Unindent();
+					ImGui::PopID();
+				}
+				});
+			if (ImGui::CollapsingHeader("New Object")) {
+				static Reflective new_object = Reflective(Transform());
+				ImGui::Indent();
+				object_ui(new_object, assets);
+
+				if (ImGui::Button("Add")) {
+					new_object.create_texture(renderer.ctx.device);
+					world.add(std::move(new_object));
+					new_object = Reflective(Transform());
+				}
+				ImGui::Unindent();
+			}
+			ImGui::Unindent();
+			ImGui::PopID();
+		}
+
+		if (ImGui::CollapsingHeader("Lights")) {
 			ImGui::PushID(2);
 			ImGui::Indent();
 			usize index = 0;
-			world.dir_lights.iter([&](Id<DirLight> id, DirLight& light) {
+			world.lights.iter([&](Id<Light> id, Light& light) {
 				std::string s("Light.");
 				s += id.to_string();
 				if (ImGui::CollapsingHeader(s.data())) {
 					ImGui::PushID(id.idx());
 					ImGui::Indent();
 
-					dir_light_ui(light);
+					light_ui(light);
 
 					if (ImGui::CollapsingHeader("Shadow")) {
 						ImGui::Indent();
-						auto size = renderer.shadow_pass.directional_shadows.size.as<f32>().xy().normalized();
-						ImGui::Image(renderer.shadow_pass.directional_shadows.srvs[index], ImVec2(300.0f * size.x / size.y, 300.0f));
+						auto size = renderer.shadow_pass.shadows.size.as<f32>().xy().normalized();
+						ImGui::Image(renderer.shadow_pass.shadows.srvs[index], ImVec2(300.0f * size.x / size.y, 300.0f));
 
 						ImGui::Unindent();
 					}
@@ -338,16 +361,17 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 					ImGui::PopID();
 				}
 				++index;
-				});
+			});
+
 			if (ImGui::CollapsingHeader("New Light")) {
-				static DirLight light = DirLight{};
+				static Light light = Light{};
 				ImGui::Indent();
 
-				dir_light_ui(light);
+				light_ui(light);
 
 				if (ImGui::Button("Add")) {
 					world.add(std::move(light));
-					light = DirLight{};
+					light = Light{};
 				}
 
 				ImGui::Unindent();
@@ -356,54 +380,6 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 			ImGui::PopID();
 		}
 
-		if (ImGui::CollapsingHeader("Spot Lights")) {
-			ImGui::PushID(3);
-			ImGui::Indent();
-			usize index = 0;
-			world.spot_lights.iter([&](Id<SpotLight> id, SpotLight& light) {
-				std::string s("Light.");
-				s += id.to_string();
-				if (ImGui::CollapsingHeader(s.data())) {
-					ImGui::PushID(id.idx());
-					ImGui::Indent();
-
-					spot_light_ui(light);
-
-					if (ImGui::CollapsingHeader("Shadow")) {
-						ImGui::Indent();
-						auto size = renderer.shadow_pass.spot_shadows.size.as<f32>().xy().normalized();
-						ImGui::Image(renderer.shadow_pass.spot_shadows.srvs[index], ImVec2(300.0f * size.x / size.y, 300.0f));
-
-						ImGui::Unindent();
-					}
-
-
-					if (ImGui::Button("Remove")) {
-						world.remove(id);
-					}
-
-					ImGui::Unindent();
-					ImGui::PopID();
-				}
-				++index;
-				});
-			if (ImGui::CollapsingHeader("New Light")) {
-				static SpotLight light = SpotLight{};
-				ImGui::Indent();
-
-				spot_light_ui(light);
-
-				if (ImGui::Button("Add")) {
-					world.add(std::move(light));
-					light = SpotLight{};
-				}
-
-				ImGui::Unindent();
-			}
-			ImGui::Unindent();
-			ImGui::PopID();
-		}
-	
 		if (ImGui::CollapsingHeader("Particle Systems")) {
 			ImGui::PushID(3);
 			ImGui::Indent();

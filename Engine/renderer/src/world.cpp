@@ -11,9 +11,9 @@ Object&& Object::with_mesh(AId<Mesh> mesh) {
 	return std::move(*this);
 }
 
-ObjectData Object::get_data() const {
+ObjectData Transform::get_data() const {
 	return ObjectData{
-		transform.get_mat().transposed(),
+		get_mat().transposed(),
 	};
 }
 
@@ -22,32 +22,30 @@ World::World(Camera camera) : camera(camera) { }
 Id<Object> World::add(Object&& object) {
 	return objects.insert(std::move(object));
 }
-Id<SpotLight> World::add(SpotLight&& object) {
-	return spot_lights.insert(std::move(object));
+Id<Light> World::add(Light&& object) {
+	return lights.insert(std::move(object));
 }
-
-Id<DirLight> World::add(DirLight&& object)
-{
-	return dir_lights.insert(std::move(object));
-}
-
-Id<ParticleSystem> World::add(ParticleSystem&& object)
-{
+Id<ParticleSystem> World::add(ParticleSystem&& object) {
 	return particle_systems.insert(std::move(object));
+}
+Id<Reflective> World::add(Reflective&& object) {
+	return reflective.insert(std::move(object));
 }
 
 void World::remove(Id<Object> id) {
 	objects.remove(id);
 }
-void World::remove(Id<SpotLight> id) {
-	spot_lights.remove(id);
-}
-void World::remove(Id<DirLight> id) {
-	dir_lights.remove(id);
+void World::remove(Id<Light> id) {
+	lights.remove(id);
 }
 void World::remove(Id<ParticleSystem> id) {
 	particle_systems.remove(id).then_do([](ParticleSystem system) {
 		system.clean_up();
+	});
+}
+void World::remove(Id<Reflective> id) {
+	reflective.remove(id).then_do([](Reflective reflective) {
+		reflective.clean_up();
 	});
 }
 
@@ -111,30 +109,76 @@ void World::clean_up() {
 	});
 }
 
-Mat4<f32> SpotLight::get_view_mat(const Camera& viewpoint) const {
-	return transform.get_mat().invert(); 
+Mat4<f32> Light::get_view_mat(const Camera& viewpoint) const {
+	switch (light_type) {
+	case LightType::Directional: {
+		Vec3<f32> dir = transform.forward();
+		Vec3<f32> target_pos = viewpoint.transform.translation;
+		return Transform::from_translation(target_pos).with_rotation(Quat<f32>::looking_dir(dir, Vec3<f32>::unit_z(), Vec3<f32>::unit_y())).get_mat().invert();
+	}
+	case LightType::Spot:
+		return transform.get_mat().invert();
+	}
+	return Mat4<f32>::identity();
 }
 
-Mat4<f32> SpotLight::get_proj_mat(const Camera& viewpoint) const {
-	return math::create_persp_proj(-5.0f, 5.0f, -5.0f, 5.0f, 0.01f, 100.0f);
+Mat4<f32> Light::get_proj_mat(const Camera& viewpoint) const {
+	switch (light_type) {
+	case LightType::Directional: {
+		float radius = 25.0f;
+		return math::create_orth_proj(
+			-radius,
+			radius,
+			-radius,
+			radius,
+			-100.0f,
+			100.0f
+		);
+	}
+	case LightType::Spot: {
+		f32 n = 0.01f;
+		f32 top = tanf(angle) * n;
+		f32 bottom = -top;
+		f32 right = top;
+		f32 left = -right;
+		return math::create_persp_proj(left, right, bottom, top, n, 100.0f);
+	}
+	}
+	return Mat4<f32>::identity();
 }
 
-Mat4<f32> DirLight::get_view_mat(const Camera& viewpoint) const {
-	float radius = 10.0f;
-	Vec3<f32> dir = transform.forward();
-	Vec3<f32> target_pos = viewpoint.transform.translation;
-	Vec3<f32> light_pos = target_pos + dir * radius;
-	return Transform::from_translation(target_pos).with_rotation(Quat<f32>::looking_dir(dir, Vec3<f32>::unit_z(), Vec3<f32>::unit_y())).get_mat().invert();
+Light Light::directional(Transform trans, Vec3<f32> col)
+{
+	return Light{
+		trans,
+		col,
+		LightType::Directional,
+		0.0,
+	};
 }
 
-Mat4<f32> DirLight::get_proj_mat(const Camera& viewpoint) const {
-	float radius = 25.0f;
-	return math::create_orth_proj(
-		-radius,
-		radius,
-		-radius,
-		radius,
-		-100.0f,
-		100.0f
-	);
+Light Light::spot(Transform trans, Vec3<f32> col, f32 angle)
+{
+	return Light{
+		trans,
+		col,
+		LightType::Spot,
+		angle,
+	};
+}
+
+Reflective::Reflective(Transform transform) : transform(transform), mesh() { }
+Reflective::Reflective(ID3D11Device* device, Transform transform) : cube_texture(CubeTexture::create(device, { 500, 500 }).unwrap()), transform(transform), mesh() { }
+
+Reflective&& Reflective::with_mesh(AId<Mesh> mesh) {
+	this->mesh.insert(mesh);
+	return std::move(*this);
+}
+
+void Reflective::create_texture(ID3D11Device* device) {
+	cube_texture = CubeTexture::create(device, { 500, 500 }).unwrap();
+}
+
+void Reflective::clean_up() {
+	cube_texture.clean_up();
 }

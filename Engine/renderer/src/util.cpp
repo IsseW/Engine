@@ -355,3 +355,62 @@ void Buffer::clean_up(){
 	uav->Release();
 	buffer->Release();
 }
+
+Result<CubeTexture, RenderCreateError> CubeTexture::create(ID3D11Device* device, Vec2<u16> size) {
+	D3D11_TEXTURE2D_DESC textureDesc;
+	textureDesc.Width = size.x;
+	textureDesc.Height = size.y;
+	textureDesc.MipLevels = 1;
+	textureDesc.ArraySize = 6;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+
+	CubeTexture res;
+	if (FAILED(device->CreateTexture2D(&textureDesc, nullptr, &res.texture))) {
+		return FailedTextureCreation;
+	}
+
+	for (usize i = 0; i < 6; ++i) {
+		D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc;
+		uav_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		uav_desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
+		uav_desc.Texture2DArray = {
+			0,
+			i,
+			1
+		};
+
+		if (FAILED(device->CreateUnorderedAccessView(res.texture, &uav_desc, &res.uav[i]))) {
+			return FailedUAVCreation;
+		}
+	}
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc;
+	resource_desc.Texture2D = { 0, 1 };
+	resource_desc.Format = textureDesc.Format;
+	resource_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	ID3D11ShaderResourceView* srv;
+	if (FAILED(device->CreateShaderResourceView(res.texture, &resource_desc, &srv))) {
+		return FailedSRVCreation;
+	}
+
+	return ok<CubeTexture, RenderCreateError>(res);
+}
+
+void CubeTexture::resize(ID3D11Device* device, Vec2<u16> size) {
+	clean_up();
+	*this = create(device, size).unwrap();
+}
+
+void CubeTexture::clean_up() {
+	for (usize i = 0; i < 6; ++i) {
+		uav[i]->Release();
+	}
+	srv->Release();
+	texture->Release();
+}

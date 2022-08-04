@@ -22,11 +22,21 @@ struct RendererCtx {
 
 struct Window;
 
-struct DrawingContext {
+struct Viewpoint {
 	Vec<Id<Object>> objects_in_camera;
+
+	Mat4<f32> view;
+	Mat4<f32> proj;
+	Vec3<f32> pos;
+	ID3D11UnorderedAccessView* render_target;
+	Option<Id<Reflective>> skip_reflective;
+};
+
+struct DrawingContext {
+	Vec<Viewpoint> viewpoints;
 	Aabb<f32> psr_bounds;
 
-	static DrawingContext create(const World& world, const AssetHandler& assets);
+	static DrawingContext create(const Renderer& renderer, const World& world, const AssetHandler& assets);
 };
 
 struct Renderer {

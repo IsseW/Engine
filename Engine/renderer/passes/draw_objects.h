@@ -1,4 +1,4 @@
 #pragma once
 #include<renderer/renderer.h>
 
-void draw_objects(Renderer& renderer, const World& world, const AssetHandler& assets, FirstPass::Globals globals, bool pixel_shader);
+void draw_objects(Renderer& renderer, const World& world, const AssetHandler& assets, FirstPass::Globals globals, bool pixel_shader, Option<Id<Reflective>> skip_reflective = {});

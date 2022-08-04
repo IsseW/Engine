@@ -214,6 +214,18 @@ struct DepthTextures {
 	ID3D11DepthStencilView** end() const;
 };
 
+struct RenderTarget {
+	ID3D11Texture2D* texture;
+	ID3D11UnorderedAccessView* uav;
+	ID3D11RenderTargetView* rtv;
+
+	static Result<RenderTarget, RenderCreateError> create(ID3D11Device* device, IDXGISwapChain* swap_chain);
+
+	void resize(ID3D11Device* device, IDXGISwapChain* swap_chain);
+
+	void clean_up();
+};
+
 struct RenderTexture {
 	ID3D11RenderTargetView* rtv;
 	ID3D11Texture2D* texture;
@@ -229,14 +241,14 @@ struct RenderTexture {
 	void clean_up();
 };
 
-struct RenderTarget {
+struct CubeTexture {
 	ID3D11Texture2D* texture;
-	ID3D11UnorderedAccessView* uav;
-	ID3D11RenderTargetView* rtv;
+	ID3D11ShaderResourceView* srv;
+	std::array<ID3D11UnorderedAccessView*, 6> uav;
 
-	static Result<RenderTarget, RenderCreateError> create(ID3D11Device* device, IDXGISwapChain* swap_chain);
+	static Result<CubeTexture, RenderCreateError> create(ID3D11Device* device, Vec2<u16> size);
 
-	void resize(ID3D11Device* device, IDXGISwapChain* swap_chain);
+	void resize(ID3D11Device* device, Vec2<u16> size);
 
 	void clean_up();
 };
@@ -253,5 +265,9 @@ Result<ID3D11ComputeShader*, RenderCreateError> load_compute(ID3D11Device* devic
 
 Result<ID3D11GeometryShader*, RenderCreateError> load_geometry(ID3D11Device* device, const char* file);
 
+Result<ID3D11HullShader*, RenderCreateError> load_hull(ID3D11Device* device, const char* file);
+Result<ID3D11DomainShader*, RenderCreateError> load_domain(ID3D11Device* device, const char* file);
+
 struct Renderer;
 struct RendererCtx;
+struct Viewpoint;

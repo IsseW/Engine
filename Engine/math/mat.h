@@ -5,8 +5,8 @@
 namespace math {
 	template<typename T, const usize W, const usize H>
 	struct Mat {
-		Mat() : _rows() {}
-		Mat(const Vec<Vec<T, W>, H>& rows) : _rows(rows) {}
+		constexpr Mat() : _rows() {}
+		constexpr Mat(const Vec<Vec<T, W>, H>& rows) : _rows(rows) {}
 		template<typename... Args>
 		constexpr Mat(Args... args) requires (sizeof...(Args) == W * H) {
 			set_all(args...);
