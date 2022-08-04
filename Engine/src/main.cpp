@@ -126,7 +126,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		processed_frames += 1;
 		average_frametime = fps_ts + average_frametime * (0.80 / processed_frames);
 		if (processed_frames >= 60) {
-			fps = (f32)processed_frames*1000/average_frametime;
+			fps = 1000.0f/average_frametime;
 			processed_frames = 0;
 		}
 
