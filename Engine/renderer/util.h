@@ -9,6 +9,7 @@
 enum RenderCreateError {
 	FailedWindowCreation,
 	FailedDeviceCreation,
+	FailedSwapChainCreation,
 	FailedRTVCreation,
 	FailedUAVCreation,
 	FailedDSVCreation,

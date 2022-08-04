@@ -4,6 +4,7 @@
 #include<iostream>
 #include<memory>
 #include<renderer/window.h>
+#include<dxgidebug.h>
 
 struct DeviceCreationRes {
 	ID3D11Device* device;
@@ -39,8 +40,41 @@ create_interfaces(const Window& window)
 	// If the project is in a debug build, enable the debug layer.
 	creation_flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
-	D3D_FEATURE_LEVEL feature_level;
+	D3D_FEATURE_LEVEL feature_level = D3D_FEATURE_LEVEL_11_0;
 	const D3D_FEATURE_LEVEL feature_level_array[2] = {D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0};
+	
+	if (FAILED(D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, creation_flags, feature_level_array, 2, D3D11_SDK_VERSION, &device, &feature_level, &context))) {
+		return FailedDeviceCreation;
+	}
+
+#if defined(_DEBUG)
+	// IDXGIDebug* debug = nullptr;
+	// if (FAILED(DXGIGetDebugInterface(__uuidof(IDXGIDebug), (void**)&debug))) {
+	// 	return FailedDeviceCreation;
+	// }
+	// debug->ReportLiveObjects(DXGI_DEBUG_D3D11, DXGI_DEBUG_RLO_ALL);
+#endif
+
+	IDXGIDevice* idxgi_device = nullptr;
+	if (FAILED(device->QueryInterface(__uuidof(IDXGIDevice), (void**)&idxgi_device))) {
+		return FailedSwapChainCreation;
+	}
+	
+	IDXGIAdapter* adapter = nullptr;
+	if (FAILED(idxgi_device->GetAdapter(&adapter))) {
+		return FailedSwapChainCreation;
+	}
+
+	IDXGIFactory* factory = nullptr;
+	if (FAILED(adapter->GetParent(__uuidof(IDXGIFactory), (void**)&factory))) {
+		return FailedSwapChainCreation;
+	}
+
+	if (FAILED(factory->CreateSwapChain(device, &swap_chain_desc, &swap_chain))) {
+		return FailedSwapChainCreation;
+	}
+	
+	/*
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(
 		NULL, 
 		D3D_DRIVER_TYPE_HARDWARE, 
@@ -55,10 +89,11 @@ create_interfaces(const Window& window)
 		&feature_level,
 		&context
 	);
-
 	if FAILED(hr) {
 		return err<DeviceCreationRes, RenderCreateError>(FailedDeviceCreation);
 	}
+	*/
+
 	else {
 		return ok<DeviceCreationRes, RenderCreateError>(DeviceCreationRes { device, context, swap_chain });
 	}

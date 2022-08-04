@@ -104,8 +104,11 @@ void World::update(f32 dt, const Window& window) {
 }
 
 void World::clean_up() {
-	particle_systems.values([](ParticleSystem& system) {
-		system.clean_up();
+	particle_systems.values([](ParticleSystem& obj) {
+		obj.clean_up();
+	});
+	reflective.values([](Reflective& obj) {
+		obj.clean_up();
 	});
 }
 

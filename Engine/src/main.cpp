@@ -51,7 +51,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	if (maybe_renderer.is_err()) {
 		delete window;
 		std::cout << "Err: " << maybe_renderer.unwrap_err() << std::endl;
-		return 1;
+		PANIC("Error");
 	}
 	Renderer renderer = maybe_renderer.unwrap();
 	window->set_renderer(&renderer);

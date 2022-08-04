@@ -397,6 +397,10 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 					if (ImGui::Button(system.paused ? "Play" : "Pause")) {
 						system.paused = !system.paused;
 					}
+
+					if (ImGui::Button("Remove")) {
+						world.remove(id);
+					}
 				}
 				ImGui::PopID();
 			});
