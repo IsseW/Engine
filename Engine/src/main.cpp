@@ -92,8 +92,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	MSG msg = { };
 	auto last_frame = std::chrono::high_resolution_clock::now();
 	u64 processed_frames = 0;
-	f32 time_spent_on_frames = 0.0f;
 	f32 fps = 0.0f;
+	f32 average_frametime = 0.0f;
 	while (true) {
 		window->new_frame();
 		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -122,16 +122,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 		renderer.ctx.context->OMSetRenderTargets(1, &renderer.ctx.screen.rtv, nullptr);
 
-		auto fps_ts = (std::chrono::high_resolution_clock::now() - now).count();
+		auto fps_ts = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::high_resolution_clock::now() - now)).count();
 		processed_frames += 1;
-		time_spent_on_frames = (time_spent_on_frames + fps_ts);
+		average_frametime = fps_ts + average_frametime * (0.80 / processed_frames);
 		if (processed_frames >= 60) {
-			fps = 1'000'000'000.0f / (time_spent_on_frames / processed_frames);
+			fps = (f32)processed_frames*1000/average_frametime;
 			processed_frames = 0;
-			time_spent_on_frames = 0;
 		}
 
-		update_ui(*window, renderer, world, assets, fps);
+		update_ui(*window, renderer, world, assets, fps, average_frametime);
 
 		renderer.present();
 	}
