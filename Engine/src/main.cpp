@@ -65,10 +65,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 	auto cam = Camera::perspective(Transform::from_translation({ 0.0, 5.0, -10.0 }).looking_at({0.0}), 60.0f * F32::TO_RAD);
 	World world(cam);
-
-	for (usize z = 0; z <= 6; ++z) {
-		for (usize x = 0; x <= 12; ++x) {
-			world.add(Object(Transform::from_translation({(f32)x * 2.5f - 15.0f, 0.0f, (f32)z * 5.0f - 15.0f})).with_mesh(croc));
+	
+	for (usize y = 0; y < 1; ++y) {
+		for (usize z = 0; z <= 6; ++z) {
+			for (usize x = 0; x <= 12; ++x) {
+				world.add(Object(Transform::from_translation({ (f32)x * 2.5f - 15.0f, (f32)y * 1.0f, (f32)z * 5.0f - 15.0f })).with_mesh(croc));
+			}
 		}
 	}
 
@@ -92,8 +94,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	MSG msg = { };
 	auto last_frame = std::chrono::high_resolution_clock::now();
 	u64 processed_frames = 0;
-	f32 fps = 0.0f;
-	f32 average_frametime = 0.0f;
+	f64 fps = 0.0;
+	f64 average_frametime = 0.0;
 	while (true) {
 		window->new_frame();
 		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -122,11 +124,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 		renderer.ctx.context->OMSetRenderTargets(1, &renderer.ctx.screen.rtv, nullptr);
 
-		auto fps_ts = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::high_resolution_clock::now() - now)).count();
+		auto fps_ts = (f64)std::chrono::duration_cast<std::chrono::nanoseconds>((std::chrono::high_resolution_clock::now() - now)).count() / 1000000.0;
 		processed_frames += 1;
 		average_frametime = fps_ts + average_frametime * (0.80 / processed_frames);
 		if (processed_frames >= 60) {
-			fps = 1000.0f/average_frametime;
+			fps = 1000.0 / average_frametime;
 			processed_frames = 0;
 		}
 
