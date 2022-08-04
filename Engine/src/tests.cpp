@@ -126,14 +126,49 @@ namespace math {
 }
 
 namespace data_structures {
-	void test_sparse_octree() {
-		SparseOctree<u32, 4> octree{ };
-		auto val = octree.insert(Vec3<f32>::one() / 2, 1);
-		ASSERT(val.is_ok());
+	void test_sparse_octree_vec() {
+		SparseOctree<u32, 8> octree{ Vec3<f32>::zero(), 500};
+		auto insert1_pos = Vec3<f32>::one() / 2;
+		auto insert1 = octree.insert(insert1_pos, 1);
+		ASSERT(insert1.is_ok());
+		auto insert2_pos = Vec3<f32>{ 200, 300, 500 };
+		auto insert2 = octree.insert(insert2_pos, 2);
+		ASSERT(insert2.is_ok());
+		auto insert3_pos = Vec3<f32>{ 20, 10, 5 };
+		auto insert3 = octree.insert(insert3_pos, 3);
+		ASSERT(insert3.is_ok());
+		ASSERT(octree.at(insert1_pos).is_some());
+		ASSERT(*octree.at(insert1_pos).unwrap() == 1);
+		ASSERT(octree.at(insert2_pos).is_some());
+		ASSERT(*octree.at(insert2_pos).unwrap() == 2);
+		ASSERT(octree.at(insert3_pos).is_some());
+		ASSERT(*octree.at(insert3_pos).unwrap() == 3);
+		ASSERT(octree.at(insert1_pos + insert2_pos + insert3_pos).is_none());
+	}
+
+	void test_sparse_octree_aabb() {
+		SparseOctree<u32, 5> octree{ Vec3<f32>::zero(), 2 };
+		auto insert_min = Vec3<f32>{ 0,0,0 };
+		auto insert_max = Vec3<f32>{ 1,1,1 };
+		auto insert_aabb = Aabb<f32>{ insert_min, insert_max };
+		auto insert = octree.insert(insert_aabb, 1);
+		ASSERT(insert.is_ok());
+		ASSERT(octree.at(insert_min).is_some());
+		ASSERT(*octree.at(insert_min).unwrap() == 1);
+		ASSERT(octree.at(insert_max).is_some());
+		ASSERT(*octree.at(insert_max).unwrap() == 1);
+		ASSERT(octree.at(insert_min - 0.40f).is_none());
+		ASSERT(octree.at(insert_max + 0.40f).is_none());
+		ASSERT(octree.at(insert_min + 0.40f).is_some());
+		ASSERT(octree.at(insert_max - 0.40f).is_some());
+		ASSERT(*octree.at(insert_min + 0.40f).unwrap() == 1);
+		ASSERT(*octree.at(insert_max - 0.40f).unwrap() == 1);
+		ASSERT(octree.at(insert_min + (insert_max - insert_min ) / 2.0f).is_some());
 	}
 
 	void test() {
-		test_sparse_octree();
+		test_sparse_octree_vec();
+		test_sparse_octree_aabb();
 	}
 }
 

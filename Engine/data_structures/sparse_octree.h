@@ -33,7 +33,9 @@ struct OctreeLeaf: OctreeNode {
 template<typename T, usize DEPTH>
 struct SparseOctree {
 	static_assert(DEPTH != 0, "Octree can't have a depth of 0");
-	
+
+	SparseOctree(Vec3<f32> origin, f32 len) : origin{ origin }, len{ len } {}
+
 	Result<EmptyTuple, OctreeError> insert(Vec3<f32> pos, T&& val) {
 		auto index = index_of(pos);
 		if (index.is_some()) {
@@ -76,11 +78,19 @@ struct SparseOctree {
 		return Vec3<i32>{1 << DEPTH};
 	}
 
-
-	Option<T*> at(Vec3<i32> pos) const {
+	Option<const T*> at(Vec3<f32> pos) const {
 		auto node_index_opt = index_of(pos);
 		if (node_index_opt.is_none()) {
-			return none<T, OctreeError>();
+			return none<T*>();
+		}
+		auto node_index = node_index_opt.unwrap_unchecked();
+		return find(node_index);
+	}
+
+	Option<T*> at(Vec3<f32> pos) {
+		auto node_index_opt = index_of(pos);
+		if (node_index_opt.is_none()) {
+			return none<T*>();
 		}
 		auto node_index = node_index_opt.unwrap_unchecked();
 		return find(node_index);
@@ -92,8 +102,7 @@ private:
 			auto shift = depth * 3;
 			usize bits = (node_index >> shift) & 0b111;
 			auto branch = dynamic_cast<OctreeBranch*>(node);
-			auto child = branch->children[bits].get();
-			if (child != nullptr) {
+			if (auto child = branch->children[bits].get(); child != nullptr) {
 				node = child;
 			}
 			else {
@@ -107,28 +116,50 @@ private:
 		return ok<T*, OctreeError>(&leaf->data[bits]);
 	}
 
-	Option<T*> find(u64 node_index) const {
+	Option<const T*> find(u64 node_index) const {
 		const OctreeNode* node = _root.get();
 		for (usize depth = DEPTH; depth > 0; --depth) {
-			auto shift = depth * 3;
-			auto bits = (node_index >> shift) & 0b111;
+			usize shift = depth * 3;
+			usize bits = (node_index >> shift) & 0b111;
 			auto branch = dynamic_cast<const OctreeBranch*>(node);
 			node = branch->children[bits].get();
 			if (node == nullptr) {
 				return none<T>();
 			}
 		}
-		auto bits = node_index & 0b111;
+		usize bits = node_index & 0b111;
 		auto leaf = dynamic_cast<const OctreeLeaf<T>*>(node);
+		return some<const T*>(&leaf->data[bits]);
+	}
+
+	Option<T*> find(u64 node_index) {
+		OctreeNode* node = _root.get();
+		for (usize depth = DEPTH; depth > 0; --depth) {
+			usize shift = depth * 3;
+			usize bits = (node_index >> shift) & 0b111;
+			auto branch = dynamic_cast<OctreeBranch*>(node);
+			node = branch->children[bits].get();
+			if (node == nullptr) {
+				return none<T*>();
+			}
+		}
+		usize bits = node_index & 0b111;
+		auto leaf = dynamic_cast<OctreeLeaf<T>*>(node);
 		return some<T*>(&leaf->data[bits]);
 	}
 
 	Option<u64> index_of(Vec3<f32> pos) const {
 		auto offset = pos - this->origin;
 		auto len = this->len;
+		bool out_of_range = false;
 		auto absolute = offset.map<f32>([&](auto elem) {
-			return elem / len;
+			auto val = elem / len;
+			out_of_range |= val < -1 || val > 1;
+			return val;
 		});
+		if (out_of_range) {
+			return none<u64>();
+		}
 		return some<u64>(index_of_recurse(DEPTH, absolute, 0));
 	}
 
@@ -150,40 +181,44 @@ private:
 
 	Option<Vec<u64>> index_of_multiple(Aabb<f32> bb) const {
 		auto len = this->len;
+		bool out_of_range = false;
 		auto ratio = [&](auto elem) {
-			return elem / len;
+			auto val = elem / len;
+			out_of_range |= val < -1 || val > 1;
+			return val;
 		};
 		auto absolute = Aabb<f32>{ bb.min.map<f32>(ratio), bb.max.map<f32>(ratio) };
+		if (out_of_range) {
+			return none<Vec<u64>>();
+		}
 		auto vec = Vec<u64>{};
 		index_of_multiple_recurse(DEPTH, absolute, 0, vec);
 		return some<Vec<u64>>(vec);
 	}
 
 	void index_of_multiple_recurse(usize depth, Aabb<f32> bb, u64 result, Vec<u64>& results) const {
-		u64 val = 0;
-		if (bb.min == Vec3<f32>{0, 0, 0} || bb.max == Vec3<f32>{1.0f,1.0f,1.0f}) {
-			u64 upper = result << (depth + 1);
-			for (u64 index = 0; index < upper; ++index) {
-				results.push(upper | index);
+		auto min_cmp = (bb.min/2 + 1).as<usize>();
+		auto max_cmp = (bb.max/2 + 1).as<usize>();
+		if (depth > 0) {
+			for (usize x = min_cmp.x; x <= max_cmp.x; ++x) {
+				for (usize y = min_cmp.y; y <= max_cmp.y; ++y) {
+					for (usize z = min_cmp.z; z <= max_cmp.z; z++) {
+						usize val = x | (y << 1) | (z << 2);
+						auto offset = Vec3<f32>{ x,y,z }*2 - 1;
+						auto new_bb = Aabb<f32>{ (bb.min*2  - offset).clamp(-1.0f, 1.0f), (bb.max * 2 - offset).clamp(-1.0f, 1.0f)};
+						index_of_multiple_recurse(depth - 1, new_bb, (result << 3) | val, results);
+					}
+				}
 			}
-			return;
 		}
-		for (usize oct = 0; oct < 8; ++oct) {
-			auto offset_max = bb.max.map<f32>([](auto elem) {
-				return elem >= 0 ? 1.0f : -1.0f;
-			});
-			auto offset_min = bb.min.map<f32>([](auto elem) {
-				return elem >= 0 ? 1.0f : -1.0f;
-			});
-			if(depth > 0){
-				auto new_bb = Aabb<f32>{
-					bb.max * 2 - offset_max,
-					bb.min * 2 - offset_min
-				};
-				index_of_multiple_recurse(depth - 1, new_bb, (result << 3) | val, results);
-			}
-			else {
-
+		else {
+			for (usize x = min_cmp.x; x <= max_cmp.x; ++x) {
+				for (usize y = min_cmp.y; y <= max_cmp.y; ++y) {
+					for (usize z = min_cmp.z; z <= max_cmp.z; z++) {
+						usize val = x | (y << 1) | (z << 2);
+						results.push((result << 3) | val);
+					}
+				}
 			}
 		}
 	}

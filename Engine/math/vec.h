@@ -174,6 +174,12 @@ Vec operator op() const {			\
 			};
 		}
 
+		constexpr Vec clamp(Vec min, Vec max) const {
+			return this->map<T>([](auto elem, auto min, auto max) {
+				return elem < min ? min : elem > max ? max : elem;
+			}, min, max);
+		}
+
 		template<typename F>
 		constexpr T reduce(F f) const {
 			T acc = _elems[0];
