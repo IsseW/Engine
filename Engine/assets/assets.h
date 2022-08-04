@@ -3,8 +3,8 @@
 #include<unordered_map>
 #include<rstd/primitives.h>
 #include<rstd/depot.h>
-#include<rstd/vector.h>
 #include<math/aab.h>
+#include<math/consts.h>
 #include<d3d11.h>
 #include<array>
 #include <filesystem>
@@ -118,7 +118,7 @@ struct Mesh {
 	Vec<Index> indices;
 	Vec<SubMesh> submeshes;
 	Option<Binded> binded;
-	Aabb<f32> bounds{};
+	Aabb<f32> bounds{ F32::INF, F32::NEG_INF };
 
 	static Mesh default_asset();
 	static Mesh load(const fs::path& path, AssetHandler& asset_handler);

@@ -67,7 +67,7 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 		}
 		if (tesselation_on) {
 
-			auto data = DetailData{ 8.0f * min(1.0f, 1.0f / bounds.distance_to(world.camera.transform.translation)) };
+			auto data = DetailData{ 8.0f / (1.0f + bounds.distance_to(world.camera.transform.translation)) };
 			rend.first_pass.object_renderer.detail_data.update(rend.ctx.context, &data);
 		}
 	};

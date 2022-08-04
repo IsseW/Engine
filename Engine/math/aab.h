@@ -51,7 +51,7 @@ namespace math {
 				auto a = min - t;
 				auto b = t - max;
 				auto v = a > b ? a : b;
-				return  a > ZERO ? a : ZERO;
+				return  v > ZERO ? v : ZERO;
 			}, min, max);
 		
 			return d.length_sqr();
