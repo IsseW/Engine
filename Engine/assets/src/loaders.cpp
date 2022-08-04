@@ -77,27 +77,10 @@ void Image::bind(ID3D11Device* device) {
 		PANIC("Failed to create shader resource view for texture.");
 	}
 
-	D3D11_SAMPLER_DESC sampler_desc;
-	ZeroMemory(&sampler_desc, sizeof(D3D11_SAMPLER_DESC));
-	sampler_desc.Filter = D3D11_FILTER_ANISOTROPIC;
-	sampler_desc.MaxAnisotropy = 4;
-	sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampler_desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	sampler_desc.MaxLOD = D3D11_FLOAT32_MAX;
-
-	ID3D11SamplerState* sampler_state;
-	res = device->CreateSamplerState(&sampler_desc, &sampler_state);
-	if (FAILED(res)) {
-		PANIC("Failed to create sampler state for texture.");
-	}
-
 	binded.insert(Binded{
 			texture,
 			srv,
-			sampler_state
-		});
+	});
 }
 
 
@@ -115,7 +98,6 @@ void Image::clean_up() {
 		Binded b = binded.take().unwrap_unchecked();
 		b.srv->Release();
 		b.texture->Release();
-		b.sampler_state->Release();
 	}
 	stbi_image_free(data);
 	data = nullptr;

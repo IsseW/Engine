@@ -16,6 +16,8 @@ struct ObjectRenderer {
 	Uniform<ObjectData> object;
 	Uniform<MaterialData> material;
 
+	ID3D11SamplerState* sampler_state;
+
 	static Result<ObjectRenderer, RenderCreateError> create(ID3D11Device* device);
 
 	void clean_up();

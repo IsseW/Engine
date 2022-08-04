@@ -24,6 +24,21 @@ Result<ObjectRenderer, RenderCreateError> ObjectRenderer::create(ID3D11Device* d
 	Uniform<MaterialData> material;
 	TRY(material, Uniform<MaterialData>::create(device));
 
+	D3D11_SAMPLER_DESC sampler_desc;
+	ZeroMemory(&sampler_desc, sizeof(D3D11_SAMPLER_DESC));
+	sampler_desc.Filter = D3D11_FILTER_ANISOTROPIC;
+	sampler_desc.MaxAnisotropy = 4;
+	sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampler_desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	sampler_desc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	ID3D11SamplerState* sampler_state;
+	if (FAILED(device->CreateSamplerState(&sampler_desc, &sampler_state))) {
+		return FailedSamplerStateCreation;
+	}
+
 	return ok<ObjectRenderer, RenderCreateError>(ObjectRenderer{
 			vsil.vs,
 			ps,
@@ -33,6 +48,7 @@ Result<ObjectRenderer, RenderCreateError> ObjectRenderer::create(ID3D11Device* d
 			vsil.il,
 			object,
 			material,
+			sampler_state,
 		});
 }
 
@@ -46,6 +62,8 @@ void ObjectRenderer::clean_up() {
 	layout->Release();
 
 	object.clean_up();
+
+	sampler_state->Release();
 }
 
 Result<GBuffer, RenderCreateError> GBuffer::create(ID3D11Device* device, Vec2<u16> size) {

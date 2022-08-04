@@ -25,14 +25,18 @@ cbuffer ObjectData : register(b0) {
 	uint num_lights;
 }
 
-RWTexture2D<float4> output : register(u0);
+RWTexture2DArray<unorm float4> output : register(u0);
+
+void write(uint2 pos, float4 c) {
+	output[uint3(pos, 0)] = c;
+}
 
 #define DIR_LIGHT 0
 #define SPOT_LIGHT 1
 
 void deferred(uint2 pos) {
 	if (normal[pos].w == 0.0) {
-		output[pos] = float4(0.2, 0.2, 0.2, 1.0);
+		write(pos, float4(0.2, 0.2, 0.2, 1.0));
 	}
 	else {
 
@@ -90,8 +94,8 @@ void deferred(uint2 pos) {
 				}
 			}
 		}
-
-		output[pos] =  saturate(float4(ambient_c + saturate(diffuse + 0.05) * diffuse_c + 0.5 * saturate(specular) * specular_c, 1.0));
+		float4 c = saturate(float4(ambient_c + saturate(diffuse + 0.05) * diffuse_c + 0.5 * saturate(specular) * specular_c, 1.0));
+		write(pos, c);
 	}
 }
 
@@ -110,33 +114,33 @@ void main(uint3 dispatch_id : SV_DispatchThreadID) {
 
 	switch (render_mode) {
 	case AMBIENT: {
-		output[pos] = ambient_map[pos];
+		write(pos, ambient_map[pos]);
 		break;
 	}
 	case DIFFUSE: {
-		output[pos] = diffuse_map[pos];
+		write(pos, diffuse_map[pos]);
 		break;
 	}
 	case SPECULAR: {
-		output[pos] = specular_map[pos];
+		write(pos, specular_map[pos]);
 		break;
 	}
 	case SHININESS: {
 		float d = position[pos].w;
-		output[pos] = float4(d, d, d, 1.0);
+		write(pos, float4(d, d, d, 1.0));
 		break;
 	}
 	case DEPTH: {
 		float d = pow((1.0 - depth[pos].x), 0.5) * 2.0;
-		output[pos] = float4(d, d, d, 1.0);
+		write(pos, float4(d, d, d, 1.0));
 		break;
 	}
 	case NORMAL: {
-		output[pos] = normal[pos];
+		write(pos, normal[pos]);
 		break;
 	}
 	case POSITION: {
-		output[pos] = position[pos];
+		write(pos, position[pos]);
 		break;
 	}
 	default:

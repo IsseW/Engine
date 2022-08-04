@@ -279,7 +279,16 @@ Result<RenderTarget, RenderCreateError> RenderTarget::create(ID3D11Device* devic
 		return FailedRTVCreation;
 	}
 
-	if (FAILED(device->CreateUnorderedAccessView(back_buffer, NULL, &uav))) {
+	D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc;
+	uav_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	uav_desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
+	uav_desc.Texture2DArray = {
+		0,
+		0,
+		1,
+	};
+
+	if (FAILED(device->CreateUnorderedAccessView(back_buffer, &uav_desc, &uav))) {
 		std::cout << "screen FailedUAVCreation" << std::endl;
 		return FailedUAVCreation;
 	}

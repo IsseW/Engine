@@ -272,8 +272,6 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 
 					object_ui(obj, assets);
 
-					auto mat = obj.transform.get_mat();
-
 					if (ImGui::Button("Remove")) {
 						world.remove(id);
 					}
@@ -309,7 +307,9 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 
 					object_ui(obj, assets);
 
-					auto mat = obj.transform.get_mat();
+					if (ImGui::CollapsingHeader("Environment Map")) {
+						ImGui::Image(obj.cube_texture.srv, ImVec2(300.0f, 300.0f));
+					}
 
 					if (ImGui::Button("Remove")) {
 						world.remove(id);

@@ -16,6 +16,7 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 	if (pixel_shader) {
 		rend.ctx.context->PSSetConstantBuffers(0, UNIFORM_COUNT, uniforms);
 		rend.ctx.context->PSSetShader(rend.first_pass.object_renderer.ps, nullptr, 0);
+		rend.ctx.context->PSSetSamplers(0, 1, &rend.first_pass.object_renderer.sampler_state);
 	}
 
 	auto bind_mat = [&](Option<AId<Material>> mat_handle) {
@@ -23,8 +24,7 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 			const Image* image = assets.get_or_default(image_handle);
 			image->binded.as_ptr().then_do([&](const Image::Binded* binded) {
 				rend.ctx.context->PSSetShaderResources(slot, 1, &binded->srv);
-				rend.ctx.context->PSSetSamplers(slot, 1, &binded->sampler_state);
-				});
+			});
 		};
 		const Material* mat = assets.get_or_default(mat_handle);
 		bind_image(0, mat->ambient.tex);
@@ -97,6 +97,23 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 		auto mesh = bind_mesh(reflective.mesh);
 
 		if (mesh) {
+
+			auto default_srv = assets.assets<Image>().default_asset()->binded.as_ptr().unwrap()->srv;
+			ID3D11ShaderResourceView* srvs[3] = {
+				default_srv,
+				reflective.cube_texture.srv,
+				default_srv,
+			};
+			rend.ctx.context->PSGetShaderResources(0, 3, srvs);
+
+			auto mat_data = MaterialData{
+				0.0,
+				1.0,
+				1.0,
+				500.0,
+			};
+			rend.first_pass.object_renderer.material.update(rend.ctx.context, &mat_data);
+
 			for (const SubMesh& sub_mesh : mesh->submeshes) {
 				rend.ctx.context->DrawIndexed(sub_mesh.end_index - sub_mesh.start_index, sub_mesh.start_index, 0);
 			}

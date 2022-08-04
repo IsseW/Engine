@@ -24,7 +24,6 @@ struct Image {
 	struct Binded {
 		ID3D11Texture2D* texture;
 		ID3D11ShaderResourceView* srv;
-		ID3D11SamplerState* sampler_state;
 	};
 
 	u8* data;
