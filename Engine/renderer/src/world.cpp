@@ -11,6 +11,12 @@ Object&& Object::with_mesh(AId<Mesh> mesh) {
 	return std::move(*this);
 }
 
+Aabb<f32> Object::get_bounds(const AssetHandler& assets) const {
+	auto bounds = assets.get_or_default(mesh)->bounds;
+	bounds = bounds.transformed(transform.get_mat());
+	return bounds;
+}
+
 ObjectData Transform::get_data() const {
 	return ObjectData{
 		get_mat().transposed(),
@@ -183,12 +189,16 @@ Light Light::spot(Transform trans, Vec3<f32> col, f32 angle)
 	};
 }
 
-Reflective::Reflective(Transform transform) : transform(transform), mesh() { }
+Reflective::Reflective(Transform transform) : transform(transform), mesh(), cube_texture() { }
 Reflective::Reflective(ID3D11Device* device, Transform transform) : cube_texture(CubeTexture::create(device, { 500, 500 }).unwrap()), transform(transform), mesh() { }
 
 Reflective&& Reflective::with_mesh(AId<Mesh> mesh) {
 	this->mesh.insert(mesh);
 	return std::move(*this);
+}
+
+Aabb<f32> Reflective::get_bounds(const AssetHandler& assets) const {
+	return assets.get_or_default(mesh)->bounds.transformed(transform.get_mat());
 }
 
 void Reflective::create_texture(ID3D11Device* device) {

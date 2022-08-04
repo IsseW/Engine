@@ -132,7 +132,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			processed_frames = 0;
 		}
 
-		update_ui(*window, renderer, world, assets, fps, average_frametime);
+		update_ui(*window, renderer, world, assets, (f32)fps, (f32)average_frametime);
 
 		renderer.present();
 	}

@@ -10,7 +10,7 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 	rend.ctx.context->VSSetConstantBuffers(0, UNIFORM_COUNT, uniforms);
 	rend.ctx.context->IASetInputLayout(rend.first_pass.object_renderer.layout);
 
-	rend.ctx.context->HSSetConstantBuffers(0, 2, uniforms);
+	rend.ctx.context->HSSetConstantBuffers(0, 1, &rend.first_pass.object_renderer.detail_data.buffer);
 	rend.ctx.context->DSSetConstantBuffers(0, 2, uniforms);
 	
 	if (pixel_shader) {
@@ -50,7 +50,7 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 	};
 
 	bool tesselation_on = true;
-	auto set_tesselation = [&](bool on) {
+	auto set_tesselation = [&](bool on, Aabb<f32> bounds) {
 		if (tesselation_on && !on) {
 			rend.ctx.context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			rend.ctx.context->HSSetShader(nullptr, nullptr, 0);
@@ -65,11 +65,16 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 			rend.ctx.context->VSSetShader(rend.first_pass.object_renderer.tess_vs, nullptr, 0);
 			tesselation_on = true;
 		}
+		if (tesselation_on) {
+
+			auto data = DetailData{ 8.0f * min(1.0f, 1.0f / bounds.distance_to(world.camera.transform.translation)) };
+			rend.first_pass.object_renderer.detail_data.update(rend.ctx.context, &data);
+		}
 	};
-	set_tesselation(false);
+	set_tesselation(false, {});
 
 	world.objects.values([&](const Object& obj) {
-		set_tesselation(obj.tesselate);
+		set_tesselation(obj.tesselate, obj.get_bounds(assets));
 		ObjectData object_data = obj.transform.get_data();
 		rend.first_pass.object_renderer.object.update(rend.ctx.context, &object_data);
 
@@ -89,7 +94,7 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 		if (skip_reflective.as_ptr().map<bool>([&](const Id<Reflective>* skip) { return *skip == id; }).unwrap_or(false)) {
 			return;
 		}
-		set_tesselation(reflective.tesselate);
+		set_tesselation(reflective.tesselate, reflective.get_bounds(assets));
 
 		ObjectData object_data = reflective.transform.get_data();
 		rend.first_pass.object_renderer.object.update(rend.ctx.context, &object_data);
@@ -119,7 +124,7 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 			}
 		}
 	});
-	set_tesselation(false);
+	set_tesselation(false, {});
 
 	rend.ctx.context->RSSetState(rend.first_pass.rs_cull_none);
 

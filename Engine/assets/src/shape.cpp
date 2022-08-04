@@ -76,5 +76,6 @@ Mesh unit_cube() {
 		end,
 		none<AId<Material>>(),
 	});
+	mesh.calculate_bounds();
 	return mesh;
 }

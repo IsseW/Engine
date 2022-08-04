@@ -168,6 +168,7 @@ struct std::hash<Vertex> {
 Mesh Mesh::load(const fs::path& path, AssetHandler& asset_handler) {
 	auto file = std::ifstream{path};
 	if (!file.is_open()) {
+		std::cout << "Couldn't find: " << path << std::endl;
 		PANIC("Unable to load mesh!");
 	}
 
@@ -314,11 +315,13 @@ Mesh Mesh::load(const fs::path& path, AssetHandler& asset_handler) {
 		});
 	}
 	file.close();
-	return Mesh{
+	auto mesh = Mesh{
 		verts,
 		indices,
 		submeshes
 	};
+	mesh.calculate_bounds();
+	return mesh;
 }
 
 void SubMesh::bind(ID3D11Device* device, AssetHandler& asset_handler) {

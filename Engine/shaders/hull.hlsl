@@ -1,13 +1,7 @@
 
 
-cbuffer Globals : register(b0) {
-    float4x4 view_matrix;
-    float4x4 proj_matrix;
-    float3 cam_pos;
-};
-
-cbuffer LOCALS : register(b1) {
-    float4x4 world_matrix;
+cbuffer DATA {
+    float detail;
 };
 
 struct HullInput {
@@ -31,13 +25,16 @@ float round_to(float val, float rounding) {
     return round(val / rounding) * rounding;
 }
 
+/*
 float3 transform(float4 pos) {
     return mul(world_matrix, pos).xyz;
 }
+*/
 
 ConstantOutput patch_constant_function(const OutputPatch<HullOutput, 3> input_patch, uint patch_id : SV_PrimitiveID) {
     ConstantOutput output;
 
+    /*
     float patch_zero_d = min(1.0 / distance(transform(input_patch[0].position), cam_pos), 1);
     float patch_one_d = min(1.0 / distance(transform(input_patch[1].position), cam_pos), 1);
     float patch_two_d = min(1.0 / distance(transform(input_patch[2].position), cam_pos), 1);
@@ -64,6 +61,12 @@ ConstantOutput patch_constant_function(const OutputPatch<HullOutput, 3> input_pa
     inside = round_to(inside, 0.01);
 
     output.inside = inside * 12.0;
+    */
+
+    output.edges[0] = detail;
+    output.edges[1] = detail;
+    output.edges[2] = detail;
+    output.inside = detail;
 
     return output;
 }

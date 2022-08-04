@@ -3,6 +3,11 @@
 #include<renderer/world.h>
 #include"particle_system.h"
 
+struct DetailData {
+	f32 detail;
+	Vec3<f32> dummy;
+};
+
 struct ObjectRenderer {
 	ID3D11VertexShader* vs;
 	ID3D11PixelShader* ps;
@@ -15,6 +20,8 @@ struct ObjectRenderer {
 
 	Uniform<ObjectData> object;
 	Uniform<MaterialData> material;
+
+	Uniform<DetailData> detail_data;
 
 	ID3D11SamplerState* sampler_state;
 

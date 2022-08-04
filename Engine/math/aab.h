@@ -1,5 +1,5 @@
 #pragma once
-#include"vec.h"
+#include"mat.h"
 
 namespace math {
 
@@ -43,6 +43,37 @@ namespace math {
 					max[i] = point[i];
 				}
 			}
+		}
+	
+		T distance_to_sqr(const Vec<T, L>& point) const {
+			constexpr T ZERO = (T)0;
+			Vec<T, L> d = point.map<T>([&](const T& t, const T& min, const T& max) {
+				auto a = min - t;
+				auto b = t - max;
+				auto v = a > b ? a : b;
+				return  a > ZERO ? a : ZERO;
+			}, min, max);
+		
+			return d.length_sqr();
+		}
+		
+		T distance_to(const Vec<T, L>& point) const {
+			return std::sqrt(distance_to_sqr(point));
+		}
+
+		Aab rotated(const Mat<T, L, L>& mat) const {
+			return Aab{
+				mat * min,
+				mat * max,
+			}.valid();
+		}
+
+		Aab transformed(const Mat<T, L + 1, L + 1>& mat) const {
+			constexpr T ONE = (T)1;
+			return Aab{
+				Vec<T, L>::from_higher(mat * min.with<L>(ONE)),
+				Vec<T, L>::from_higher(mat * max.with<L>(ONE)),
+			}.valid();
 		}
 	};
 }

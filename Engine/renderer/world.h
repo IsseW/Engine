@@ -30,9 +30,11 @@ struct Object {
 	Object(Transform transform);
 
 	Object&& with_mesh(AId<Mesh> mesh);
+	Aabb<f32> get_bounds(const AssetHandler& assets) const;
 
 	Transform transform;
 	Option<AId<Mesh>> mesh;
+
 
 	bool tesselate{ true };
 };
@@ -42,6 +44,7 @@ struct Reflective {
 	Reflective(ID3D11Device* device, Transform transform);
 
 	Reflective&& with_mesh(AId<Mesh> mesh);
+	Aabb<f32> get_bounds(const AssetHandler& assets) const;
 
 	void create_texture(ID3D11Device* device);
 

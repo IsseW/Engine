@@ -24,6 +24,9 @@ Result<ObjectRenderer, RenderCreateError> ObjectRenderer::create(ID3D11Device* d
 	Uniform<MaterialData> material;
 	TRY(material, Uniform<MaterialData>::create(device));
 
+	Uniform<DetailData> detail_data;
+	TRY(detail_data, Uniform<DetailData>::create(device));
+
 	D3D11_SAMPLER_DESC sampler_desc;
 	ZeroMemory(&sampler_desc, sizeof(D3D11_SAMPLER_DESC));
 	sampler_desc.Filter = D3D11_FILTER_ANISOTROPIC;
@@ -48,6 +51,7 @@ Result<ObjectRenderer, RenderCreateError> ObjectRenderer::create(ID3D11Device* d
 			vsil.il,
 			object,
 			material,
+			detail_data,
 			sampler_state,
 		});
 }
@@ -62,6 +66,8 @@ void ObjectRenderer::clean_up() {
 	layout->Release();
 
 	object.clean_up();
+
+	detail_data.clean_up();
 
 	sampler_state->Release();
 }
