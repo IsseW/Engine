@@ -1,5 +1,6 @@
 #pragma once
 #include"particle.h"
+#include<data_structures/sparse_octree.h>
 #include<math/consts.h>
 
 enum class LightType {
@@ -69,7 +70,7 @@ struct World {
 	void remove(Id<Reflective> id);
 	void remove(Id<ParticleSystem> id);
 
-	void update(f32 dt, const Window& window);
+	void update(f32 dt, const Window& window, const AssetHandler& asset_handler);
 
 	void clean_up();
 
@@ -79,4 +80,7 @@ struct World {
 	Depot<Object> objects;
 	Depot<Reflective> reflective;
 	Depot<ParticleSystem> particle_systems;
+	SparseOctree<Id<Object>, 5> octree_obj{ Vec3<f32>{0,0,0}, 80 };
+	SparseOctree<Id<Reflective>, 5> octree_reflective{ Vec3<f32>{0,0,0}, 80 };
+	Vec<Id<Object>> object_to_add_into_octree;
 };

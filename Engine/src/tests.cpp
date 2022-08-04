@@ -137,12 +137,17 @@ namespace data_structures {
 		auto insert3_pos = Vec3<f32>{ 20, 10, 5 };
 		auto insert3 = octree.insert(insert3_pos, 3);
 		ASSERT(insert3.is_ok());
+		auto insert4_pos = insert3_pos;
+		auto insert4 = octree.insert(insert3_pos, 4);
+		ASSERT(insert4.is_ok());
 		ASSERT(octree.at(insert1_pos).is_some());
-		ASSERT(*octree.at(insert1_pos).unwrap() == 1);
+		ASSERT(*octree.at(insert1_pos).unwrap()->get(0).unwrap() == 1);
 		ASSERT(octree.at(insert2_pos).is_some());
-		ASSERT(*octree.at(insert2_pos).unwrap() == 2);
+		ASSERT(*octree.at(insert2_pos).unwrap()->get(0).unwrap() == 2);
 		ASSERT(octree.at(insert3_pos).is_some());
-		ASSERT(*octree.at(insert3_pos).unwrap() == 3);
+		ASSERT(*octree.at(insert3_pos).unwrap()->get(0).unwrap() == 3);
+		ASSERT(octree.at(insert4_pos).is_some());
+		ASSERT(*octree.at(insert4_pos).unwrap()->get(1).unwrap() == 4);
 		ASSERT(octree.at(insert1_pos + insert2_pos + insert3_pos).is_none());
 	}
 
@@ -154,15 +159,15 @@ namespace data_structures {
 		auto insert = octree.insert(insert_aabb, 1);
 		ASSERT(insert.is_ok());
 		ASSERT(octree.at(insert_min).is_some());
-		ASSERT(*octree.at(insert_min).unwrap() == 1);
+		ASSERT(*octree.at(insert_min).unwrap()->get(0).unwrap() == 1);
 		ASSERT(octree.at(insert_max).is_some());
-		ASSERT(*octree.at(insert_max).unwrap() == 1);
+		ASSERT(*octree.at(insert_max).unwrap()->get(0).unwrap() == 1);
 		ASSERT(octree.at(insert_min - 0.40f).is_none());
 		ASSERT(octree.at(insert_max + 0.40f).is_none());
 		ASSERT(octree.at(insert_min + 0.40f).is_some());
 		ASSERT(octree.at(insert_max - 0.40f).is_some());
-		ASSERT(*octree.at(insert_min + 0.40f).unwrap() == 1);
-		ASSERT(*octree.at(insert_max - 0.40f).unwrap() == 1);
+		ASSERT(*octree.at(insert_min + 0.40f).unwrap()->get(0).unwrap() == 1);
+		ASSERT(*octree.at(insert_max - 0.40f).unwrap()->get(0).unwrap() == 1);
 		ASSERT(octree.at(insert_min + (insert_max - insert_min ) / 2.0f).is_some());
 	}
 

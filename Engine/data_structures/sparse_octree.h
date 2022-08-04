@@ -25,7 +25,7 @@ struct OctreeBranch: OctreeNode {
 
 template<typename T>
 struct OctreeLeaf: OctreeNode {
-	std::array<T, 8> data{};
+	std::array<Vec<T>, 8> data{};
 
 	~OctreeLeaf() final = default;
 };
@@ -36,7 +36,7 @@ struct SparseOctree {
 
 	SparseOctree(Vec3<f32> origin, f32 len) : origin{ origin }, len{ len } {}
 
-	Result<EmptyTuple, OctreeError> insert(Vec3<f32> pos, T&& val) {
+	Result<EmptyTuple, OctreeError> insert(Vec3<f32> pos, T val) {
 		auto index = index_of(pos);
 		if (index.is_some()) {
 			auto idx = index.unwrap_unchecked();
@@ -48,12 +48,12 @@ struct SparseOctree {
 		}
 	}
 
-	Result<EmptyTuple, OctreeError> insert(Aabb<f32> bb, T&& val) {
+	Result<EmptyTuple, OctreeError> insert(Aabb<f32> bb, T val) {
 		auto index = index_of_multiple(bb);
 		if (index.is_some()) {
 			auto idx = index.unwrap_unchecked();
 			for (auto cur : idx) {
-				insert(cur, std::move(val));
+				insert(cur, val);
 			}
 			return ok<EmptyTuple, OctreeError>(EmptyTuple{});
 		}
@@ -78,25 +78,25 @@ struct SparseOctree {
 		return Vec3<i32>{1 << DEPTH};
 	}
 
-	Option<const T*> at(Vec3<f32> pos) const {
+	Option<const Vec<T>*> at(Vec3<f32> pos) const {
 		auto node_index_opt = index_of(pos);
 		if (node_index_opt.is_none()) {
-			return none<T*>();
+			return none<Vec<T>*>();
 		}
 		auto node_index = node_index_opt.unwrap_unchecked();
 		return find(node_index);
 	}
 
-	Option<T*> at(Vec3<f32> pos) {
+	Option<Vec<T>*> at(Vec3<f32> pos) {
 		auto node_index_opt = index_of(pos);
 		if (node_index_opt.is_none()) {
-			return none<T*>();
+			return none<Vec<T>*>();
 		}
 		auto node_index = node_index_opt.unwrap_unchecked();
 		return find(node_index);
 	}
 private:
-	Result<T*, OctreeError> find_or_create(u64 node_index) {
+	Result<Vec<T>*, OctreeError> find_or_create(u64 node_index) {
 		OctreeNode* node = _root.get();
 		for (usize depth = DEPTH; depth > 0; --depth) {
 			auto shift = depth * 3;
@@ -113,10 +113,10 @@ private:
 		}
 		usize bits = node_index & 0b111;
 		auto leaf = dynamic_cast<OctreeLeaf<T>*>(node);
-		return ok<T*, OctreeError>(&leaf->data[bits]);
+		return ok<Vec<T>*, OctreeError>(&leaf->data[bits]);
 	}
 
-	Option<const T*> find(u64 node_index) const {
+	Option<const Vec<T>*> find(u64 node_index) const {
 		const OctreeNode* node = _root.get();
 		for (usize depth = DEPTH; depth > 0; --depth) {
 			usize shift = depth * 3;
@@ -124,15 +124,15 @@ private:
 			auto branch = dynamic_cast<const OctreeBranch*>(node);
 			node = branch->children[bits].get();
 			if (node == nullptr) {
-				return none<T>();
+				return none<const Vec<T>*>();
 			}
 		}
 		usize bits = node_index & 0b111;
 		auto leaf = dynamic_cast<const OctreeLeaf<T>*>(node);
-		return some<const T*>(&leaf->data[bits]);
+		return some<const Vec<T>*>(&leaf->data[bits]);
 	}
 
-	Option<T*> find(u64 node_index) {
+	Option<Vec<T>*> find(u64 node_index) {
 		OctreeNode* node = _root.get();
 		for (usize depth = DEPTH; depth > 0; --depth) {
 			usize shift = depth * 3;
@@ -140,12 +140,12 @@ private:
 			auto branch = dynamic_cast<OctreeBranch*>(node);
 			node = branch->children[bits].get();
 			if (node == nullptr) {
-				return none<T*>();
+				return none<Vec<T>*>();
 			}
 		}
 		usize bits = node_index & 0b111;
 		auto leaf = dynamic_cast<OctreeLeaf<T>*>(node);
-		return some<T*>(&leaf->data[bits]);
+		return some<Vec<T>*>(&leaf->data[bits]);
 	}
 
 	Option<u64> index_of(Vec3<f32> pos) const {
@@ -223,9 +223,9 @@ private:
 		}
 	}
 
-	void insert(u64 node_index, T&& val) {
+	void insert(u64 node_index, T val) {
 		auto elem = find_or_create(node_index).unwrap();
-		*elem = std::move(val);
+		elem->push(val);
 	}
 
 	std::unique_ptr<OctreeBranch> _root = std::unique_ptr<OctreeBranch>{ new OctreeBranch{} };

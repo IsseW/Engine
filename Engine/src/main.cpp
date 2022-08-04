@@ -118,7 +118,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		f32 dt = std::chrono::duration_cast<std::chrono::duration<f32, std::ratio<1, 1>>>(now - last_frame).count();
 		last_frame = now;
 
-		world.update(dt, *window);
+		world.update(dt, *window, assets);
 
 		renderer.draw(world, assets, dt);
 

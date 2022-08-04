@@ -20,7 +20,9 @@ ObjectData Transform::get_data() const {
 World::World(Camera camera) : camera(camera) { }
 
 Id<Object> World::add(Object&& object) {
-	return objects.insert(std::move(object));
+	auto id = objects.insert(std::move(object));
+	object_to_add_into_octree.push(id);
+	return id;
 }
 Id<Light> World::add(Light&& object) {
 	return lights.insert(std::move(object));
@@ -98,8 +100,19 @@ void update_camera(Camera& cam, f32 dt, const Window& window) {
 	cam.transform.rotation = Quat<f32>::angle_axis(Vec3<f32>::unit_y(), cam.yaw) * Quat<f32>::angle_axis(Vec3<f32>::unit_x(), cam.pitch);
 }
 
-void World::update(f32 dt, const Window& window) {
+void World::update(f32 dt, const Window& window, const AssetHandler& asset_handler) {
 	time += dt;
+	while(object_to_add_into_octree.len() > 0){
+		auto id = object_to_add_into_octree.pop().unwrap_unchecked();
+		auto object = this->objects.get(id).unwrap();
+		object->mesh.as_ptr().then_do([&](AId<Mesh>* mesh) {
+			const auto mesh_data = asset_handler.get<Mesh>(*mesh).unwrap();
+			auto bounds = mesh_data->bounds;
+			auto transform = object->transform.get_mat();
+			auto new_bounds = Aabb<f32>{ (transform * bounds.min.with_w(1)).xyz(), (transform * bounds.max.with_w(1)).xyz() };
+			this->octree_obj.insert(new_bounds, id);
+		});
+	}
 	update_camera(camera, dt, window);
 }
 
