@@ -504,7 +504,7 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 
 }
 
-void update_ui(const Window& window, Renderer& renderer, World& world, AssetHandler& assets) {
+void update_ui(const Window& window, Renderer& renderer, World& world, AssetHandler& assets, f32 fps) {
 	start();
 
 	ImGui_ImplWin32_GetDpiScaleForHwnd(window.window());
@@ -523,6 +523,7 @@ void update_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 	if (ImGui::Button("Toggle Renderer")) {
 		display_renderer = !display_renderer;
 	}
+	ImGui::Text("fps: %f", fps);
 	ImGui::EndMainMenuBar();
 
 	if (display_info) {
