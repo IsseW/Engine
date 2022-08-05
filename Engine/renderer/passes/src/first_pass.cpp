@@ -4,22 +4,22 @@
 Result<ObjectRenderer, RenderCreateError> ObjectRenderer::create(ID3D11Device* device)
 {
 	VSIL vsil;
-	TRY(vsil, load_vertex(device, "vertex.cso", VERTEX_LAYOUT));
+	TRY(vsil, load_vertex(device, "shaders/vertex.cso", VERTEX_LAYOUT));
 
 	ID3D11PixelShader* ps;
-	TRY(ps, load_pixel(device, "pixel.cso"));
+	TRY(ps, load_pixel(device, "shaders/pixel.cso"));
 
 	ID3D11VertexShader* tess_vs;
-	TRY(tess_vs, load_vertex_without_layout(device, "tesselation_vertex.cso"));
+	TRY(tess_vs, load_vertex_without_layout(device, "shaders/tesselation_vertex.cso"));
 
 	ID3D11HullShader* hs;
-	TRY(hs, load_hull(device, "hull.cso"));
+	TRY(hs, load_hull(device, "shaders/hull.cso"));
 
 	ID3D11DomainShader* ds;
-	TRY(ds, load_domain(device, "domain.cso"));
+	TRY(ds, load_domain(device, "shaders/domain.cso"));
 
 	ID3D11PixelShader* refl_ps;
-	TRY(refl_ps, load_pixel(device, "reflective.cso"));
+	TRY(refl_ps, load_pixel(device, "shaders/reflective.cso"));
 
 	Uniform<ObjectData> object;
 	TRY(object, Uniform<ObjectData>::create(device));

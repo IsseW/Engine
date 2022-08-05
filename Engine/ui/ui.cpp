@@ -123,7 +123,7 @@ bool edit_vertices(Option<Mesh*> mesh, Mat4<f32> mat) {
 		auto& vertices = mesh->vertices;
 		for (usize j = 0; j < vertices.len(); ++j) {
 			ImGui::PushID(j * mesh->submeshes.len());
-			auto t = mat.transform_point(vertices[j].v);
+			auto t = mat.transform_point(vertices[j].v.xyz());
 			edited |= edit("vertex", t);
 			ImGui::PopID();
 		}
@@ -217,6 +217,17 @@ void material_ui(Material& mat, Renderer& renderer, AssetHandler& assets) {
 	}
 
 	ImGui::DragFloat("Shininess", &mat.shininess);
+
+
+	col = mat.normal.get_color();
+	image = assets.get_or_default(mat.normal.tex)->binded.as_ptr().unwrap_unchecked()->srv;
+	ImGui::Text("Normal: ");
+	select_asset("Normal", mat.normal.tex, assets);
+	ImGui::SameLine();
+	ImGui::Image(image, size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), ImVec4(col.x, col.y, col.z, 1.0f));
+	if (mat.normal.tex.is_none()) {
+		ImGui::ColorEdit3("Normal", mat.normal.color.data());
+	}
 }
 
 void particle_system_ui(ParticleSystem& system, AssetHandler& assets) {

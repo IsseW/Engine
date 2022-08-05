@@ -161,7 +161,7 @@ struct std::hash<Vertex> {
 				return _rotr(a, 1) ^ b;
 			});
 		};
-		return hash(k.v) ^ _rotr(hash(k.uv), 7) ^ _rotr(hash(k.vn), 17);
+		return hash(k.v) ^ _rotr(hash(k.uv), 7) ^ _rotr(hash(k.vn), 13) ^ _rotr(hash(k.tan), 19);
 	}
 };
 
@@ -260,18 +260,37 @@ Mesh Mesh::load(const fs::path& path, AssetHandler& asset_handler) {
 					return uvs[i];
 				}) : Vec3<Vec2<f32>>();
 
+
 			auto norm = a_split.len() >= 3 ? 
 				parse_verts(2).map<Vec3<f32>>([&](Index i) {
 					return normals[i];
 				}) : Vec3<Vec3<f32>>((pos.y - pos.x).cross(pos.z - pos.x).normalized());
 
-			auto triangle = pos.map<Vertex>([](Vec3<f32> pos, Vec2<f32> uv, Vec3<f32> norm) {
+
+			auto get_tan = [](auto pos, auto uv) {
+				auto e1 = pos.y - pos.x;
+				auto e2 = pos.z - pos.x;
+
+				auto c0 = (uv.y - uv.x);
+				auto c1 = (uv.z - uv.x);
+
+				return (e1 * c0.y - e2 * c1.y) / (c0.x * c1.y - c1.x * c0.y);
+			};
+
+			auto tangent = Vec3<Vec3<f32>>(
+				get_tan(pos.xyz(), uv.xyz()),
+				get_tan(pos.yzx(), uv.yzx()),
+				get_tan(pos.zxy(), uv.zxy())
+			);
+
+			auto triangle = pos.map<Vertex>([](Vec3<f32> pos, Vec2<f32> uv, Vec3<f32> norm, Vec3<f32> tan) {
 				return Vertex{
 					pos,
 					norm,
-					uv,
+					tan,
+					uv.with_z(0.0),
 				};
-			}, uv, norm).map<Index>([&](Vertex vert) {
+			}, uv, norm, tangent).map<Index>([&](Vertex vert) {
 				auto found = vertice_indices.find(vert);
 
 				if (found == vertice_indices.end()) {
@@ -398,7 +417,7 @@ void Mesh::clean_up() {
 
 void Mesh::calculate_bounds() {
 	for (const Vertex& vertex : vertices) {
-		bounds.grow_to_contain(vertex.v);
+		bounds.grow_to_contain(vertex.v.xyz());
 	}
 }
 
@@ -407,8 +426,12 @@ Material Material::default_asset() {
 		none<AId<Image>>(),
 		Vec3<f32>(1.0, 1.0, 1.0),
 	};
+	MatTex norm = MatTex{
+		none<AId<Image>>(),
+		Vec3<f32>(0.5, 0.5, 1.0),
+	};
 	return Material{
-		def, def, def, 1.0f,
+		def, def, def, norm, 1.0f,
 	};
 }
 
@@ -424,6 +447,7 @@ void Material::bind(ID3D11Device* device, AssetHandler& asset_handler) {
 	bind_tex(ambient);
 	bind_tex(diffuse);
 	bind_tex(specular);
+	bind_tex(normal);
 }
 
 void Material::clean_up() {}
@@ -449,14 +473,14 @@ MaterialGroup MaterialGroup::load(const fs::path& path, AssetHandler& asset_hand
 	std::unordered_map<std::string, AId<Material>> materials {};
 
 	std::string name {};
-	Material material {};
+	Material material = Material::default_asset();
 
 	auto insert = [&]() {
 		if (name.size() > 0) {
 			auto mat = asset_handler.insert(std::move(material), name);
 			materials.insert({ name, mat });
 			name.clear();
-			material = Material{};
+			material = Material::default_asset();
 		}
 	};
 
@@ -500,6 +524,9 @@ MaterialGroup MaterialGroup::load(const fs::path& path, AssetHandler& asset_hand
 		else if (first == "map_Ks") {
 			material.specular.tex.insert(asset_handler.load<Image>(fs::path(parent_dir).append(split[1])));
 		}
+		else if (first == "norm") {
+			material.normal.tex.insert(asset_handler.load<Image>(fs::path(parent_dir).append(split[1])));
+		}
 	}
 	insert();
 
@@ -515,6 +542,7 @@ MaterialData Material::get_data() const {
 		ambient.get_color().with_w(1.0),
 		diffuse.get_color().with_w(1.0),
 		specular.get_color().with_w(1.0),
+		normal.get_color().with_w(1.0),
 		shininess,
 	};
 }

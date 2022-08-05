@@ -13,12 +13,9 @@ void ParticleSystem::create_buffers(ID3D11Device* device, u32 num_particles) {
 	memset(data, 0, sizeof(ParticleData) * num_particles);
 	particle_data = UAVSBuffer<ParticleData>::create(device, data, num_particles).unwrap();
 
-	Vec4<f32>* p = new Vec4<f32>[num_particles * 2];
-	memset(p, 0, sizeof(Vec4<f32>) * num_particles * 2);
-	particles = Buffer::create(device, p, num_particles).unwrap();
+	particles = Buffer::create(device, num_particles).unwrap();
 
 	delete[] data;
-	delete[] p;
 }
 
 void ParticleSystem::set_material(AId<Material> material) {

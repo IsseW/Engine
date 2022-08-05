@@ -10,6 +10,7 @@ struct PixelShaderInput {
     float3 normal : NORMAL0;
     float3 wpos : TEXCOORD1;
     float3 obj_pos : TEXCOORD2;
+    float3x3 tbn : MATRIX;
 };
 
 struct PixelShaderOutput {

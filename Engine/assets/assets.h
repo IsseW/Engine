@@ -7,7 +7,7 @@
 #include<math/consts.h>
 #include<d3d11.h>
 #include<array>
-#include <filesystem>
+#include<filesystem>
 namespace fs = std::filesystem;
 
 struct AssetHandler;
@@ -54,6 +54,7 @@ struct MaterialData {
 	Vec4<f32> ambient;
 	Vec4<f32> diffuse;
 	Vec4<f32> specular;
+	Vec4<f32> normal;
 	f32 shininess;
 	Vec3<f32> dummy;
 };
@@ -62,6 +63,7 @@ struct Material {
 	MatTex ambient;
 	MatTex diffuse;
 	MatTex specular;
+	MatTex normal;
 	f32 shininess;
 
 	std::string name;
@@ -83,10 +85,13 @@ struct MaterialGroup {
 	void clean_up();
 };
 
+__pragma(pack(push, 1))
+__pragma(pack(pop))
 struct Vertex{
 	Vec3<f32> v;
 	Vec3<f32> vn;
-	Vec2<f32> uv;
+	Vec3<f32> tan;
+	Vec3<f32> uv;
 
 	bool operator ==(const Vertex& other) const {
 		return memcmp(this, &other, sizeof(Vertex)) == 0;
@@ -104,9 +109,10 @@ struct SubMesh {
 };
 
 static std::vector<D3D11_INPUT_ELEMENT_DESC> VERTEX_LAYOUT = {
-			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-			{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	{"TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	{"TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 };
 
 struct Mesh {

@@ -8,7 +8,7 @@ void RendererCtx::clean_up() {
 	screen_gbuffer.clean_up();
 
 	reflection_depth.clean_up();
-	screen_gbuffer.clean_up();
+	reflection_gbuffer.clean_up();
 
 	swap_chain->Release();
 	context->Release();

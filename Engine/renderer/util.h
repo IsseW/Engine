@@ -68,7 +68,7 @@ struct Buffer {
 	ID3D11UnorderedAccessView* uav;
 	usize len;
 
-	static Result<Buffer, RenderCreateError> create(ID3D11Device* device, const Vec4<f32>* data, usize len);
+	static Result<Buffer, RenderCreateError> create(ID3D11Device* device, usize len);
 	void clean_up();
 };
 

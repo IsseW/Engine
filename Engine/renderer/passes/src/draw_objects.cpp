@@ -32,6 +32,7 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 		bind_image(0, mat->ambient.tex);
 		bind_image(1, mat->diffuse.tex);
 		bind_image(2, mat->specular.tex);
+		bind_image(3, mat->normal.tex);
 
 		MaterialData data = mat->get_data();
 		rend.first_pass.object_renderer.material.update(rend.ctx.context, &data);
@@ -111,7 +112,7 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 
 		if (mesh) {
 			if (pixel_shader) {
-				rend.ctx.context->PSSetShaderResources(3, 1, &reflective.cube_texture.srv);
+				rend.ctx.context->PSSetShaderResources(4, 1, &reflective.cube_texture.srv);
 			}
 
 			for (const SubMesh& sub_mesh : mesh->submeshes) {
@@ -158,6 +159,8 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 		rend.ctx.context->Draw(system.num_particles(), 0);
 	});
 	// Unbind
+	ID3D11ShaderResourceView* views[5] = { nullptr, nullptr, nullptr, nullptr, nullptr };
+	rend.ctx.context->PSSetShaderResources(0, 5, views);
 	rend.ctx.context->VSSetShader(nullptr, nullptr, 0);
 	rend.ctx.context->HSSetShader(nullptr, nullptr, 0);
 	rend.ctx.context->DSSetShader(nullptr, nullptr, 0);

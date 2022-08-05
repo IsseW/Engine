@@ -3,7 +3,7 @@
 
 Result<SecondPass, RenderCreateError> SecondPass::create(ID3D11Device* device) {
 	ID3D11ComputeShader* deferred;
-	TRY(deferred, load_compute(device, "deferred.cso"));
+	TRY(deferred, load_compute(device, "shaders/deferred.cso"));
 
 	Uniform<ObjectData> object;
 	TRY(object, Uniform<ObjectData>::create(device));

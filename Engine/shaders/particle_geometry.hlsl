@@ -19,6 +19,7 @@ struct PixelIn {
     float3 normal : NORMAL0;
     float3 wpos : TEXCOORD1;
     float3 obj_pos : TEXCOORD2;
+    float3x3 tbn : MATRIX;
 };
 
 float4 transform_to_camera(float4 vec) {
@@ -53,6 +54,7 @@ void main(point VertexOut input[1], inout TriangleStream<PixelIn> out_stream) {
 
     PixelIn output;
     output.normal = normal;
+    output.tbn = (float3x3)0.0;
 
     output.wpos = pos + axis1 + axis2;
     output.position = transform_to_camera(float4(output.wpos, 1.0));

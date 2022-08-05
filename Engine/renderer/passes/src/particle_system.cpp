@@ -28,13 +28,16 @@ void ParticleRenderer::run(Renderer& rend, const World& world, f32 delta_time) {
 Result<ParticleRenderer, RenderCreateError> ParticleRenderer::create(ID3D11Device* device)
 {
 	VSIL vsil;
-	TRY(vsil, load_vertex(device, "particle_vertex.cso", { { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 } }));
+	TRY(vsil, load_vertex(device, "shaders/particle_vertex.cso", { { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 } }));
 
 	ID3D11ComputeShader* cs;
-	TRY(cs, load_compute(device, "particle_compute.cso"));
+	TRY(cs, load_compute(device, "shaders/particle_compute.cso"));
 
 	ID3D11GeometryShader* gs;
-	TRY(gs, load_geometry(device, "particle_geometry.cso"));
+	TRY(gs, load_geometry(device, "shaders/particle_geometry.cso"));
+
+	ID3D11PixelShader* ps;
+	TRY(ps, load_pixel(device, "shaders/particle_pixel.cso"));
 
 	Uniform<ParticleSystemData> system_data;
 	TRY(system_data, Uniform<ParticleSystemData>::create(device));
@@ -47,6 +50,7 @@ Result<ParticleRenderer, RenderCreateError> ParticleRenderer::create(ID3D11Devic
 		vsil.il,
 		cs,
 		gs,
+		ps,
 		system_data,
 		gs_globals,
 	});
@@ -58,6 +62,7 @@ void ParticleRenderer::clean_up() {
 
 	cs->Release();
 	gs->Release();
+	ps->Release();
 
 	system_data.clean_up();
 	gs_globals.clean_up();

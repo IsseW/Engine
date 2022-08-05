@@ -13,6 +13,7 @@ struct ParticleRenderer {
 
 	ID3D11ComputeShader* cs;
 	ID3D11GeometryShader* gs;
+	ID3D11PixelShader* ps;
 
 	Uniform<ParticleSystemData> system_data;
 	Uniform<Globals> gs_globals;

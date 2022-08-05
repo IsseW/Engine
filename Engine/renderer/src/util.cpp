@@ -1,4 +1,5 @@
 #include<renderer/util.h>
+#include<assets/assets.h>
 
 
 void DepthTexture::clean_up() {
@@ -319,24 +320,27 @@ Result<ID3D11ShaderResourceView*, RenderCreateError> create_buffer_srv(ID3D11Dev
 	return ok<ID3D11ShaderResourceView*, RenderCreateError>(srv);
 }
 
-Result<Buffer, RenderCreateError> Buffer::create(ID3D11Device* device, const Vec4<f32>* data, usize len) {
+Result<Buffer, RenderCreateError> Buffer::create(ID3D11Device* device, usize len) {
 	D3D11_BUFFER_DESC desc;
-	desc.ByteWidth = sizeof(Vec4<f32>) * len * 2;
+	desc.ByteWidth = sizeof(Vertex) * len;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_VERTEX_BUFFER;
 	desc.CPUAccessFlags = 0;
 	desc.MiscFlags = 0;
 	desc.StructureByteStride = 0;
-
 	D3D11_SUBRESOURCE_DATA res_data;
+	auto data = new Vertex[len];
+	ZeroMemory(data, len * sizeof(Vertex));
 	res_data.pSysMem = data;
 	res_data.SysMemPitch = 0;
 	res_data.SysMemSlicePitch = 0;
+
 
 	ID3D11Buffer* buffer;
 	if (FAILED(device->CreateBuffer(&desc, &res_data, &buffer))) {
 		return FailedBufferCreation;
 	}
+	delete[] data;
 
 	D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc;
 	uav_desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
