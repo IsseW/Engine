@@ -48,7 +48,7 @@ struct ParticleSystem {
 	f32 min_life_time {4.0f};
 	f32 max_life_time {8.0f};
 
-	Vec3<f32> acceleration {0.0f, -9.81f, 0.0f};
+	Vec3<f32> acceleration {0.0f, -9.8f, 0.0f};
 
 	f32 start_size {0.1f};
 
@@ -62,6 +62,7 @@ struct ParticleSystem {
 	Option<AId<Material>> material;
 
 	static ParticleSystem create(ID3D11Device* device, Transform transform, usize num_particles);
+	void create_buffers(ID3D11Device* device, u32 num_particles);
 	void set_material(AId<Material> material);
 	ParticleSystemData get_data(f32 time, f32 delta_time) const;
 	usize num_particles() const;

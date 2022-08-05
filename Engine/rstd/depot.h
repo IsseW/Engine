@@ -90,8 +90,8 @@ struct Depot {
 		PANIC("This shouldn't happen");
 	}
 
-	Option<T>&& remove(Id<T> id) {
-		return std::move(_entries.get(id.idx()).and_then<T>([&](Entry* e) {
+	Option<T> remove(Id<T> id) {
+		return _entries.get(id.idx()).and_then<T>([&](Entry* e) {
 				if (e->gen == id.gen()) {
 					_free_entries.push(id.idx());
 					return e->item.take();
@@ -99,7 +99,7 @@ struct Depot {
 				else {
 					return none<T>();
 				}
-			}));
+			});
 	}
 
 

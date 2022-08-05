@@ -46,62 +46,62 @@ void end() {
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
-bool edit(const char* label, Vec2<f32>& v) {
-	return ImGui::DragFloat2(label, v.data());
+bool edit(const char* label, Vec2<f32>& v, f32 speed = 1.0f) {
+	return ImGui::DragFloat2(label, v.data(), speed);
 }
 
-bool edit(const char* label, Vec3<f32>& v) {
-	return ImGui::DragFloat3(label, v.data());
+bool edit(const char* label, Vec3<f32>& v, f32 speed = 1.0f) {
+	return ImGui::DragFloat3(label, v.data(), speed);
 }
 
-bool edit(const char* label, Vec4<f32>& v) {
-	return ImGui::DragFloat4(label, v.data());
+bool edit(const char* label, Vec4<f32>& v, f32 speed = 1.0f) {
+	return ImGui::DragFloat4(label, v.data(), speed);
 }
 
-bool edit(const char* label, Mat3<f32>& v) {
+bool edit(const char* label, Mat3<f32>& v, f32 speed = 1.0f) {
 	if (ImGui::CollapsingHeader(label)) {
 		bool edited = false;
 		ImGui::Indent();
 		std::string s = label;
 		s += " row 0";
-		edited |= edit(s.data(), v[0]);
+		edited |= edit(s.data(), v[0], speed);
 		s = label;
 		s += " row 1";
-		edited |= edit(s.data(), v[1]);
+		edited |= edit(s.data(), v[1], speed);
 		s = label;
 		s += " row 2";
-		edited |= edit(s.data(), v[2]);
+		edited |= edit(s.data(), v[2], speed);
 		ImGui::Unindent();
 		return edited;
 	}
 	return false;
 }
 
-bool edit(const char* label, Mat4<f32>& v) {
+bool edit(const char* label, Mat4<f32>& v, f32 speed = 1.0f) {
 	if (ImGui::CollapsingHeader(label)) {
 		bool edited = false;
 		ImGui::Indent();
 		std::string s = label;
 		s += " row 0";
-		edited |= edit(s.data(), v[0]);
+		edited |= edit(s.data(), v[0], speed);
 		s = label;
 		s += " row 1";
-		edited |= edit(s.data(), v[1]);
+		edited |= edit(s.data(), v[1], speed);
 		s = label;
 		s += " row 2";
-		edited |= edit(s.data(), v[2]);
+		edited |= edit(s.data(), v[2], speed);
 		s += " row 3";
-		edited |= edit(s.data(), v[3]);
+		edited |= edit(s.data(), v[3], speed);
 		ImGui::Unindent();
 		return edited;
 	}
 	return false;
 }
 
-bool edit(const char* label, Quat<f32>& quat) {
+bool edit(const char* label, Quat<f32>& quat, f32 speed = 1.0f) {
 	auto euler = quat.to_euler() * F32::TO_DEG;
 
-	if (edit("Rotation", euler)) {
+	if (edit("Rotation", euler, speed)) {
 		quat = Quat<f32>::from_euler(euler * F32::TO_RAD);
 		return true;
 	}
@@ -109,9 +109,9 @@ bool edit(const char* label, Quat<f32>& quat) {
 }
 
 bool edit(Transform& transform) {
-	bool e = edit("Trans", transform.translation);
-	e |= edit("Scale", transform.scale);
-	e |= edit("Rotation", transform.rotation);
+	bool e = edit("Trans", transform.translation, 0.2f);
+	e |= edit("Scale", transform.scale, 0.1f);
+	e |= edit("Rotation", transform.rotation, 1.0f);
 
 	return e;
 }
@@ -156,6 +156,8 @@ void select_asset(const char* name, Option<AId<T>>& asset_id, AssetHandler& asse
 void light_ui(Light& light) {
 	edit(light.transform);
 	ImGui::ColorEdit3("Color", light.color.data());
+
+	ImGui::DragFloat("Far", &light.far_plane);
 
 	if (ImGui::Selectable("Directional", light.light_type == LightType::Directional)) {
 		light.light_type = LightType::Directional;
@@ -215,6 +217,34 @@ void material_ui(Material& mat, Renderer& renderer, AssetHandler& assets) {
 	}
 
 	ImGui::DragFloat("Shininess", &mat.shininess);
+}
+
+void particle_system_ui(ParticleSystem& system, AssetHandler& assets) {
+	edit(system.transform);
+
+	select_asset("Material", system.material, assets);
+
+	if (ImGui::CollapsingHeader("System Data")) {
+		if (edit("Min spawn point", system.min_spawn_point, 0.1f)) {
+			system.max_spawn_point = system.max_spawn_point.map<f32>([](f32 a, f32 b) {
+				return max(a, b);
+				}, system.min_spawn_point);
+		}
+		if (edit("Max spawn point", system.max_spawn_point, 0.1f)) {
+			system.min_spawn_point = system.min_spawn_point.map<f32>([](f32 a, f32 b) {
+				return min(a, b);
+				}, system.max_spawn_point);
+		}
+
+		edit("Start direction", system.start_dir, 0.1f);
+		ImGui::SliderAngle("Angle random", &system.start_angle_random, 0.0f, 90.0f);
+
+		ImGui::DragFloatRange2("Start speed", &system.vel_magnitude_min, &system.vel_magnitude_max, 0.1f);
+		edit("Acceleration", system.acceleration, 0.1f);
+		ImGui::DragFloatRange2("Start lifetime", &system.min_life_time, &system.max_life_time, 0.1f);
+
+		ImGui::DragFloat("Start size", &system.start_size, 0.01f);
+	}
 }
 
 void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHandler& assets) {
@@ -390,9 +420,8 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 			world.particle_systems.iter([&](Id<ParticleSystem> id, ParticleSystem& system) {
 				ImGui::PushID(id.idx());
 				if (ImGui::CollapsingHeader(id.to_string().data())) {
-					edit(system.transform);
-
-					select_asset("Material", system.material, assets);
+					
+					particle_system_ui(system, assets);
 
 					if (ImGui::Button(system.paused ? "Play" : "Pause")) {
 						system.paused = !system.paused;
@@ -404,6 +433,20 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 				}
 				ImGui::PopID();
 			});
+			if (ImGui::CollapsingHeader("New")) {
+				static ParticleSystem system = ParticleSystem{};
+				static i32 num_particles = 100;
+
+				particle_system_ui(system, assets);
+				ImGui::DragInt("Num Particles", &num_particles, 1.0f, 1);
+
+				if (ImGui::Button("Add")) {
+					system.create_buffers(renderer.ctx.device, num_particles);
+					world.add(std::move(system));
+					system = ParticleSystem{};
+					num_particles = 100;
+				}
+			}
 			ImGui::Unindent();
 			ImGui::PopID();
 		}

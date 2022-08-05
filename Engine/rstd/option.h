@@ -22,7 +22,7 @@ struct Option {
 		}
 	}
 
-	Option() : _is_some(false) { zero(); }
+	Option() : _is_some(false) { /*zero();*/ }
 
 	Option(Option&& other) noexcept requires std::movable<T> {
 		if (other.is_some()) {
@@ -31,10 +31,8 @@ struct Option {
 		}
 		else {
 			_is_some = false;
-			zero();
 		}
 		other._is_some = false;
-		other.zero();
 	}
 
 	Option(const Option& other) noexcept requires std::copyable<T> {
@@ -46,7 +44,6 @@ struct Option {
 		}
 		else {
 			_is_some = false;
-			zero();
 		}
 	}
 
@@ -57,7 +54,6 @@ struct Option {
 		}
 		else {
 			_is_some = false;
-			zero();
 		}
 		return *this;
 	}
@@ -69,7 +65,6 @@ struct Option {
 		}
 		else {
 			_is_some = false;
-			zero();
 		}
 		return *this;
 	}
@@ -176,10 +171,6 @@ struct Option {
 
 	Option<T> insert(T item) {
 		Option res(*this);
-		if (_is_some) {
-			_v.~T();
-			zero();
-		}
 		_is_some = true;
 		_v = item;
 		return res;
@@ -188,18 +179,9 @@ struct Option {
 private:
 	Option(const T& v) : _is_some(true), _v(v) {}
 
-	void zero() {
-		memset(__t, 0, sizeof(T));
-	}
-
 	bool _is_some;
 	union {
 		T _v;
-		char __t[sizeof(T)];
-	};
-	union VV {
-		T _v;
-		char __t[sizeof(T)];
 	};
 };
 

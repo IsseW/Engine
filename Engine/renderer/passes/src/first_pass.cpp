@@ -90,7 +90,7 @@ Result<GBuffer, RenderCreateError> GBuffer::create(ID3D11Device* device, Vec2<u1
 			specular,
 			normal,
 			position,
-		});
+	});
 }
 
 void GBuffer::resize(ID3D11Device* device, Vec2<u16> size) {

@@ -4,18 +4,21 @@
 ParticleSystem ParticleSystem::create(ID3D11Device* device, Transform transform, usize num_particles) {
 	ParticleSystem system {};
 	system.transform = transform;
+	system.create_buffers(device, num_particles);
+	return system;
+}
 
+void ParticleSystem::create_buffers(ID3D11Device* device, u32 num_particles) {
 	ParticleData* data = new ParticleData[num_particles];
 	memset(data, 0, sizeof(ParticleData) * num_particles);
-	system.particle_data = UAVSBuffer<ParticleData>::create(device, data, num_particles).unwrap();
+	particle_data = UAVSBuffer<ParticleData>::create(device, data, num_particles).unwrap();
 
 	Vec4<f32>* p = new Vec4<f32>[num_particles * 2];
 	memset(p, 0, sizeof(Vec4<f32>) * num_particles * 2);
-	system.particles = Buffer::create(device, p, num_particles).unwrap();
+	particles = Buffer::create(device, p, num_particles).unwrap();
 
 	delete[] data;
 	delete[] p;
-	return system;
 }
 
 void ParticleSystem::set_material(AId<Material> material) {

@@ -153,8 +153,8 @@ Mat4<f32> Light::get_proj_mat(const Camera& viewpoint) const {
 			radius,
 			-radius,
 			radius,
-			-100.0f,
-			100.0f
+			-far_plane,
+			far_plane
 		);
 	}
 	case LightType::Spot: {
@@ -163,7 +163,7 @@ Mat4<f32> Light::get_proj_mat(const Camera& viewpoint) const {
 		f32 bottom = -top;
 		f32 right = top;
 		f32 left = -right;
-		return math::create_persp_proj(left, right, bottom, top, n, 100.0f);
+		return math::create_persp_proj(left, right, bottom, top, n, far_plane);
 	}
 	}
 	return Mat4<f32>::identity();
@@ -175,7 +175,8 @@ Light Light::directional(Transform trans, Vec3<f32> col)
 		trans,
 		col,
 		LightType::Directional,
-		0.0,
+		0.0f,
+		100.0f,
 	};
 }
 
@@ -186,6 +187,7 @@ Light Light::spot(Transform trans, Vec3<f32> col, f32 angle)
 		col,
 		LightType::Spot,
 		angle,
+		100.0f,
 	};
 }
 

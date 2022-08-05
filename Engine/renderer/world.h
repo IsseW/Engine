@@ -14,6 +14,7 @@ struct Light {
 	// Is directional if false
 	LightType light_type;
 	f32 angle { F32::PI / 4.0f };
+	f32 far_plane { F32::PI / 4.0f };
 
 	Mat4<f32> get_view_mat(const Camera& viewpoint) const;
 	Mat4<f32> get_proj_mat(const Camera& viewpoint) const;

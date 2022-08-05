@@ -109,7 +109,7 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 				reflective.cube_texture.srv,
 				default_srv,
 			};
-			rend.ctx.context->PSGetShaderResources(0, 3, srvs);
+			rend.ctx.context->PSSetShaderResources(0, 3, srvs);
 
 			auto mat_data = MaterialData{
 				0.0,
