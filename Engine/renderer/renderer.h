@@ -3,6 +3,7 @@
 #include"passes/shadow_pass.h"
 #include"passes/first_pass.h"
 #include"passes/second_pass.h"
+#include"passes/debug_pass.h"
 
 struct RendererCtx {
 	ID3D11Device* device;
@@ -45,7 +46,7 @@ struct DrawingContext {
 	Vec<Viewpoint> viewpoints;
 	Aabb<f32> psr_bounds;
 
-	static DrawingContext create(Renderer& renderer, const World& world, const AssetHandler& assets);
+	static DrawingContext create(Renderer& renderer, const World& world, const AssetHandler& assets, Vec<Line>& debug_lines);
 };
 
 struct Renderer {
@@ -54,6 +55,7 @@ struct Renderer {
 	ShadowPass shadow_pass;
 	FirstPass first_pass;
 	SecondPass second_pass;
+	DebugPass debug_pass;
 
 	void clean_up();
 	void draw(const World& world, AssetHandler& assets, f32 delta);

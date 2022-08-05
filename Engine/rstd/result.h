@@ -13,7 +13,7 @@ struct Result {
 		this->_is_ok = false;
 		this->_err = std::move(e);
 	}
-	Result(Result&& r) {
+	Result(Result&& r) noexcept {
 		this->_is_ok = r._is_ok;
 		if (r._is_ok){
 			this->_ok = std::move(r._ok);

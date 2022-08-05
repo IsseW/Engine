@@ -39,7 +39,6 @@ void deferred(uint2 pos) {
 		write(pos, float4(0.2, 0.2, 0.2, 1.0));
 	}
 	else {
-
 		float3 p = position[pos].xyz;
 		float3 n = normal[pos].xyz;
 		float shininess = position[pos].w;

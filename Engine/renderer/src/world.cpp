@@ -58,7 +58,6 @@ void World::remove(Id<Reflective> id) {
 }
 
 void update_camera(Camera& cam, f32 dt, const Window& window) {
-
 	if (window.input().mouse_locked()) {
 		// Translation
 		Vec3<f32> move;

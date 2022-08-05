@@ -115,9 +115,9 @@ private:
 			for (usize y = 0; y <= 1; ++y) {
 				for (usize z = 0; z <= 1; ++z) {
 					Vec3<f32> offset = Vec3<f32>{
-						x * 2 - 1,
-						y * 2 - 1,
-						z * 2 - 1,
+						(f32)x * 2 - 1,
+						(f32)y * 2 - 1,
+						(f32)z * 2 - 1,
 					};
 					origins[index++] = origin + offset * new_len;
 				}
@@ -128,15 +128,14 @@ private:
 			for (usize oct = 0; oct < 8; ++oct) {
 				auto oct_origin = origins[oct];
 				if (f(oct_origin, new_len)) {
-					collect_inner(f, collector, branch->children[oct].get(), depth - 1, oct_origin, new_len);
+					collect_inner(f, collector, branch->children[oct].get(), depth - 1, oct_origin, new_len); 
 				}
 			}
 		}
 		else {
 			auto leaf = dynamic_cast<OctreeLeaf<T>*>(cur_node);
 			for (usize oct = 0; oct < 8; ++oct) {
-				auto oct_origin = origins[oct];
-				if (f(oct_origin, new_len)) {
+				if (f(origins[oct], new_len)) {
 					collector->push(&leaf->data[oct]);
 				}
 			}

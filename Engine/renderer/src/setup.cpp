@@ -175,11 +175,15 @@ Result<Renderer, RenderCreateError> Renderer::create(const Window& window) {
 	SecondPass second_pass;
 	TRY(second_pass, SecondPass::create(ctx.device));
 
+	DebugPass debug_pass;
+	TRY(debug_pass, DebugPass::create(ctx.device));
+
 	return ok<Renderer, RenderCreateError>(Renderer {
 		ctx,
 		shadow_pass,
 		first_pass,
 		second_pass,
+		debug_pass,
 	});
 }
 

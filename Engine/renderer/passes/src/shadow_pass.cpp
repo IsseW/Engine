@@ -31,7 +31,7 @@ void ShadowPass::draw(Renderer& rend, const World& world, const AssetHandler& as
 	world.lights.values([&](const Light& light) {
 		rend.ctx.context->OMSetRenderTargets(0, rtv, shadows.dsvs[i++]);
 		auto g = FirstPass::Globals::from_light(light, world.camera);
-		draw_objects(rend, world, assets, g, false);
+		draw_objects(rend, world, assets, g, false, Vec<Id<Object>>{}, Vec<Id<Reflective>>{});
 	});
 }
 

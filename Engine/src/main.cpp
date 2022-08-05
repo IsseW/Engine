@@ -6,6 +6,7 @@
 #include<math/consts.h>
 #include<renderer/transform.h>
 #include<assets/shape.h>
+#include<functional>
 
 struct Console {
 	Console() {
@@ -63,9 +64,42 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	auto sphere = assets.load<Mesh>(std::filesystem::path{ "resources/sphere.wavefront" });
 	auto croc = assets.load<Mesh>(std::filesystem::path{ "resources/croc.wavefront" });
 
-	auto cam = Camera::perspective(Transform::from_translation({ 0.0, 5.0, -10.0 }).looking_at({0.0}), 60.0f * F32::TO_RAD);
+	auto cam = Camera::perspective(Transform::from_translation({ 0.0, 2.0, -5}).looking_at({0.0}), 60.0f * F32::TO_RAD);
 	World world(cam);
-	
+
+	auto cube_mesh = assets.insert<Mesh>(unit_cube());
+
+	std::function<void(usize, Vec3<f32>, f32)> func = [&](usize depth, Vec3<f32> origin, f32 len) {
+		Vec3<f32> origins[8];
+		f32 new_len = len / 2;
+		usize index = 0;
+		for (usize x = 0; x <= 1; ++x) {
+			for (usize y = 0; y <= 1; ++y) {
+				for (usize z = 0; z <= 1; ++z) {
+					Vec3<f32> offset = Vec3<f32>{
+						(f32)x * 2 - 1,
+						(f32)y * 2 - 1,
+						(f32)z * 2 - 1,
+					};
+					origins[index++] = origin + offset * new_len;
+				}
+			}
+		}
+		if (depth != 0) {
+			for (usize oct = 0; oct < 8; ++oct) {
+				auto oct_origin = origins[oct];
+				func(depth - 1, oct_origin, new_len);
+			}
+		}
+		else {
+			for (usize oct = 0; oct < 8; ++oct) {
+				auto oct_origin = origins[oct];
+				world.add(Object(Transform::from_translation(oct_origin).with_scale(new_len)).with_mesh(cube_mesh));
+			}
+		}
+	};
+	//func(0, {0,0,0}, 1);
+
 	for (usize y = 0; y < 1; ++y) {
 		for (usize z = 0; z <= 6; ++z) {
 			for (usize x = 0; x <= 12; ++x) {
@@ -83,8 +117,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 	world.add(Reflective(renderer.ctx.device, Transform::from_translation({ 2.0f, 4.0f, 2.0f })).with_mesh(sphere));
 	
-
-
 	auto cleanup = [&]() {
 		clean_up_ui();
 		assets.clean_up();

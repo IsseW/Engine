@@ -105,6 +105,9 @@
     <ClCompile Include="renderer\src\particle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\passes\src\debug_pass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer\renderer.h">
@@ -224,6 +227,9 @@
     <ClInclude Include="renderer\particle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="renderer\passes\debug_pass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\vertex.hlsl">
@@ -240,6 +246,8 @@
     <FxCompile Include="shaders\domain.hlsl" />
     <FxCompile Include="shaders\tesselation_vertex.hlsl" />
     <FxCompile Include="shaders\reflective.hlsl" />
+    <FxCompile Include="shaders\debug_vertex.hlsl" />
+    <FxCompile Include="shaders\debug_pixel.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

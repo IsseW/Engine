@@ -38,28 +38,46 @@ void Renderer::resize(const Window& window, Vec2<u16> size)  {
 	ctx.resize(size);
 }
 
-DrawingContext DrawingContext::create(Renderer& renderer, const World& world, const AssetHandler& assets) {
+
+
+DrawingContext DrawingContext::create(Renderer& renderer, const World& world, const AssetHandler& assets, Vec<Line>& debug_lines) {
 	DrawingContext context{};
 
-	Vec<Id<Object>> objects_in_camera{};
+	static Transform transform{};
+	static float rotation = 0.0;
+	transform.rotation = Quat<f32>::angle_axis(Vec3<f32>{0,0,1.0f}, rotation);
+	rotation += 0.01;
 
-	world.objects.values([&](const Object& obj) {
-		// TODO: collect info from scene.
-	});
-
+	auto camera_transform = world.camera.transform.get_mat();
 	auto camera_proj = world.camera.get_proj(renderer.ctx.ratio());
 	auto frustrum_planes = DirectX::BoundingFrustum{ to_direct(camera_proj) };
+
+	DirectX::BoundingFrustum bounding_frustrum;
+	auto transform_mat = to_direct(camera_transform);
+	DirectX::FXMMATRIX mat{ transform_mat };
+	frustrum_planes.Transform(bounding_frustrum, mat);
+
 	auto intersected_objects_camera = world.octree_obj.collect([&](Vec3<f32> origin, f32 len) {
 		auto bounding_box = DirectX::BoundingOrientedBox{};
 		auto xm_vec = to_direct(origin);
 		DirectX::XMFLOAT3 center;
 		DirectX::XMStoreFloat3(&center, xm_vec);
 		bounding_box.Center = center;
-		bounding_box.Extents = DirectX::XMFLOAT3{len, len, len};
-		return frustrum_planes.Intersects(bounding_box);
+		bounding_box.Extents = DirectX::XMFLOAT3{ len, len, len };
+		return bounding_frustrum.Intersects(bounding_box);
 	});
 
-	std::cout << intersected_objects_camera.len() << "\n";
+	Vec<Id<Object>> objects_in_camera{};
+
+	for (auto* obj_id : intersected_objects_camera) {
+		for (auto& id : *obj_id) {
+			objects_in_camera.push(id);
+		}
+	}
+
+	//world.objects.values([&](const Object& obj) {
+	//
+	//});
 
 	world.reflective.iter([&](Id<Reflective> id, const Reflective& reflective) {
 		constexpr Mat4<f32> LOOKDIRS[6] = {
@@ -152,7 +170,8 @@ void Renderer::draw(const World& world, AssetHandler& assets, f32 delta) {
 		assets.get_or_default(obj.mesh)->bind(ctx.device, assets);
 	});
 
-	DrawingContext context = DrawingContext::create(*this, world, assets);
+	Vec<Line> debug_lines;
+	DrawingContext context = DrawingContext::create(*this, world, assets, debug_lines);
 
 	shadow_pass.draw(*this, world, assets);
 
@@ -162,6 +181,8 @@ void Renderer::draw(const World& world, AssetHandler& assets, f32 delta) {
 
 		second_pass.draw(*this, world, v);
 	}
+
+	debug_pass.draw(*this, world, debug_lines);
 }
 
 void Renderer::present() {
