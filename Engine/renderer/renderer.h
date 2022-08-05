@@ -11,12 +11,17 @@ struct RendererCtx {
 	D3D11_VIEWPORT viewport;
 
 	RenderTarget screen;
+	DepthTexture screen_depth;
+	GBuffer screen_gbuffer;
+
+	D3D11_VIEWPORT reflection_viewport;
+	DepthTexture reflection_depth;
+	GBuffer reflection_gbuffer;
 
 	static Result<RendererCtx, RenderCreateError> create(const Window& window);
 	void resize(Vec2<u16> size);
 	void clean_up();
 
-	Vec2<u16> size() const;
 	f32 ratio() const;
 };
 
@@ -29,14 +34,18 @@ struct Viewpoint {
 	Mat4<f32> proj;
 	Vec3<f32> pos;
 	ID3D11UnorderedAccessView* render_target;
+	DepthTexture& depth;
+	GBuffer& gbuffer;
+	const D3D11_VIEWPORT& viewport;
 	Option<Id<Reflective>> skip_reflective;
+	Vec2<u16> size() const;
 };
 
 struct DrawingContext {
 	Vec<Viewpoint> viewpoints;
 	Aabb<f32> psr_bounds;
 
-	static DrawingContext create(const Renderer& renderer, const World& world, const AssetHandler& assets);
+	static DrawingContext create(Renderer& renderer, const World& world, const AssetHandler& assets);
 };
 
 struct Renderer {

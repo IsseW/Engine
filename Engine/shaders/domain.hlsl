@@ -54,7 +54,7 @@ DomainOutput main(ConstantOutput input, float3 uvw: SV_DomainLocation, const Out
 
 	output.uv = uvw.x * patch[0].uv + uvw.y * patch[1].uv + uvw.z * patch[2].uv;
 	float3 normal = uvw.x * patch[0].normal + uvw.y * patch[1].normal + uvw.z * patch[2].normal;
-	output.normal = mul(world_matrix, float4(normal, 0.0)).xyz;
+	output.normal = normalize(mul(world_matrix, float4(normal, 0.0)).xyz);
 
 	return output;
 }

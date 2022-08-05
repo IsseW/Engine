@@ -192,7 +192,7 @@ Light Light::spot(Transform trans, Vec3<f32> col, f32 angle)
 }
 
 Reflective::Reflective(Transform transform) : transform(transform), mesh(), cube_texture() { }
-Reflective::Reflective(ID3D11Device* device, Transform transform) : cube_texture(CubeTexture::create(device, { 500, 500 }).unwrap()), transform(transform), mesh() { }
+Reflective::Reflective(ID3D11Device* device, Transform transform) : cube_texture(CubeTexture::create(device, REFLECTION_SIZE).unwrap()), transform(transform), mesh() { }
 
 Reflective&& Reflective::with_mesh(AId<Mesh> mesh) {
 	this->mesh.insert(mesh);
@@ -204,7 +204,7 @@ Aabb<f32> Reflective::get_bounds(const AssetHandler& assets) const {
 }
 
 void Reflective::create_texture(ID3D11Device* device) {
-	cube_texture = CubeTexture::create(device, { 500, 500 }).unwrap();
+	cube_texture = CubeTexture::create(device, REFLECTION_SIZE).unwrap();
 }
 
 void Reflective::clean_up() {

@@ -246,6 +246,7 @@ struct CubeTexture {
 	ID3D11Texture2D* texture;
 	ID3D11ShaderResourceView* srv;
 	std::array<ID3D11UnorderedAccessView*, 6> uav;
+	std::array<ID3D11ShaderResourceView*, 6> side_srv;
 
 	static Result<CubeTexture, RenderCreateError> create(ID3D11Device* device, Vec2<u16> size);
 

@@ -63,12 +63,12 @@ void SecondPass::draw(Renderer& rend, const World& world, const Viewpoint& viewp
 
 	const usize SRV_COUNT = 8;
 	ID3D11ShaderResourceView* srv[SRV_COUNT] = {
-		rend.first_pass.gbuffer.ambient.srv,
-		rend.first_pass.gbuffer.diffuse.srv,
-		rend.first_pass.gbuffer.specular.srv,
-		rend.first_pass.gbuffer.normal.srv,
-		rend.first_pass.gbuffer.position.srv,
-		rend.first_pass.depth.srv,
+		viewpoint.gbuffer.ambient.srv,
+		viewpoint.gbuffer.diffuse.srv,
+		viewpoint.gbuffer.specular.srv,
+		viewpoint.gbuffer.normal.srv,
+		viewpoint.gbuffer.position.srv,
+		viewpoint.depth.srv,
 		rend.shadow_pass.shadows.srv,
 		this->lights.srv,
 	};
@@ -76,7 +76,7 @@ void SecondPass::draw(Renderer& rend, const World& world, const Viewpoint& viewp
 	rend.ctx.context->CSSetUnorderedAccessViews(0, 1, &viewpoint.render_target, nullptr);
 	rend.ctx.context->CSSetSamplers(0, 1, &shadow_sampler);
 
-	auto size = rend.ctx.size();
+	auto size = viewpoint.size();
 	rend.ctx.context->Dispatch(size.x, size.y, 1);
 
 	// Unbind resources

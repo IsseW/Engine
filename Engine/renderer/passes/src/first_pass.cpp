@@ -138,12 +138,6 @@ Result<FirstPass, RenderCreateError> FirstPass::create(ID3D11Device* device, Vec
 	Uniform<Globals> globals;
 	TRY(globals, Uniform<Globals>::create(device));
 
-	DepthTexture depth;
-	TRY(depth, DepthTexture::create(device, size));
-
-	GBuffer gbuffer;
-	TRY(gbuffer, GBuffer::create(device, size));
-
 	D3D11_RASTERIZER_DESC rs_desc;
 	ZeroMemory(&rs_desc, sizeof(D3D11_RASTERIZER_DESC));
 	rs_desc.FillMode = D3D11_FILL_SOLID;
@@ -170,26 +164,16 @@ Result<FirstPass, RenderCreateError> FirstPass::create(ID3D11Device* device, Vec
 		object_renderer,
 		particle_renderer,
 		globals,
-		depth,
-		gbuffer,
 		rs_default,
 		rs_wireframe,
 		rs_cull_none,
 	});
 }
 
-void FirstPass::resize(ID3D11Device* device, Vec2<u16> size) {
-	depth.resize(device, size);
-	gbuffer.resize(device, size);
-}
-
 void FirstPass::clean_up() {
 	object_renderer.clean_up();
 	particle_renderer.clean_up();
 	globals.clean_up();
-
-	depth.clean_up();
-	gbuffer.clean_up();
 
 	rs_default->Release();
 	rs_wireframe->Release();
@@ -198,11 +182,11 @@ void FirstPass::clean_up() {
 
 
 void FirstPass::draw(Renderer& rend, const World& world, const AssetHandler& assets, const Viewpoint& viewpoint) {
-	rend.ctx.context->ClearDepthStencilView(depth.dsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
-	gbuffer.clear(rend.ctx.context);
+	rend.ctx.context->ClearDepthStencilView(viewpoint.depth.dsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	viewpoint.gbuffer.clear(rend.ctx.context);
 
-	auto targets = gbuffer.targets();
-	rend.ctx.context->OMSetRenderTargets(targets.size(), targets.data(), depth.dsv);
+	auto targets = viewpoint.gbuffer.targets();
+	rend.ctx.context->OMSetRenderTargets(targets.size(), targets.data(), viewpoint.depth.dsv);
 
 	// First update the globals buffer
 	auto g = FirstPass::Globals{

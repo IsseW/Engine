@@ -338,7 +338,23 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 					object_ui(obj, assets);
 
 					if (ImGui::CollapsingHeader("Environment Map")) {
-						ImGui::Image(obj.cube_texture.srv, ImVec2(300.0f, 300.0f));
+						const f32 W = 100.0f;
+						const f32 I = W + 8.0f;
+						ImGui::Indent(I);
+						ImGui::Image(obj.cube_texture.side_srv[2], ImVec2(W, W));
+						ImGui::Unindent(I);
+
+						ImGui::Image(obj.cube_texture.side_srv[4], ImVec2(W, W));
+						ImGui::SameLine();
+						ImGui::Image(obj.cube_texture.side_srv[0], ImVec2(W, W));
+						ImGui::SameLine();
+						ImGui::Image(obj.cube_texture.side_srv[5], ImVec2(W, W));
+						ImGui::SameLine();
+						ImGui::Image(obj.cube_texture.side_srv[1], ImVec2(W, W));
+
+						ImGui::Indent(I);
+						ImGui::Image(obj.cube_texture.side_srv[3], ImVec2(W, W));
+						ImGui::Unindent(I);
 					}
 
 					if (ImGui::Button("Remove")) {

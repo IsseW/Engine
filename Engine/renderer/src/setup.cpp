@@ -119,6 +119,8 @@ void RendererCtx::resize(Vec2<u16> size) {
 		PANIC("Failed to resize swap chain");
 	}
 	screen = RenderTarget::create(device, swap_chain).unwrap();
+	screen_depth.resize(device, size);
+	screen_gbuffer.resize(device, size);
 }
 
 Result<RendererCtx, RenderCreateError> RendererCtx::create(const Window& window) {
@@ -131,7 +133,20 @@ Result<RendererCtx, RenderCreateError> RendererCtx::create(const Window& window)
 	RenderTarget screen;
 	TRY(screen, RenderTarget::create(device, swap_chain));
 
+	DepthTexture screen_depth;
+	TRY(screen_depth, DepthTexture::create(device, window.size()));
+
+	GBuffer screen_gbuffer;
+	TRY(screen_gbuffer, GBuffer::create(device, window.size()));
+
+	DepthTexture reflection_depth;
+	TRY(reflection_depth, DepthTexture::create(device, REFLECTION_SIZE));
+
+	GBuffer reflection_gbuffer;
+	TRY(reflection_gbuffer, GBuffer::create(device, REFLECTION_SIZE));
+
 	auto view_port = create_viewport(window.size());
+	auto reflection_viewport = create_viewport(REFLECTION_SIZE);
 
 	return ok<RendererCtx, RenderCreateError>(RendererCtx{
 		device,
@@ -139,6 +154,11 @@ Result<RendererCtx, RenderCreateError> RendererCtx::create(const Window& window)
 		swap_chain,
 		view_port,
 		screen,
+		screen_depth,
+		screen_gbuffer,
+		reflection_viewport,
+		reflection_depth,
+		reflection_gbuffer,
 	});
 }
 

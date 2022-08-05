@@ -65,9 +65,6 @@ struct FirstPass {
 	ParticleRenderer particle_renderer;
 	Uniform<Globals> globals;
 
-	DepthTexture depth;
-	GBuffer gbuffer;
-
 	ID3D11RasterizerState* rs_default;
 	ID3D11RasterizerState* rs_wireframe;
 	ID3D11RasterizerState* rs_cull_none;
@@ -75,8 +72,6 @@ struct FirstPass {
 	void draw(Renderer& rend, const World& world, const AssetHandler& assets, const Viewpoint& viewpoint);
 
 	static Result<FirstPass, RenderCreateError> create(ID3D11Device* device, Vec2<u16> size);
-
-	void resize(ID3D11Device* device, Vec2<u16> size);
 
 	void clean_up();
 };

@@ -107,24 +107,13 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 
 		if (mesh) {
 			if (pixel_shader) {
-				auto default_srv = assets.assets<Image>().default_asset()->binded.as_ptr().unwrap()->srv;
-				ID3D11ShaderResourceView* srvs[3] = {
-					default_srv,
-					reflective.cube_texture.srv,
-					default_srv,
-				};
-				rend.ctx.context->PSSetShaderResources(0, 3, srvs);
-
-				auto mat_data = MaterialData{
-					0.0,
-					1.0,
-					1.0,
-					500.0,
-				};
-				rend.first_pass.object_renderer.material.update(rend.ctx.context, &mat_data);
+				rend.ctx.context->PSSetShaderResources(3, 1, &reflective.cube_texture.srv);
 			}
 
 			for (const SubMesh& sub_mesh : mesh->submeshes) {
+				if (pixel_shader) {
+					bind_mat(sub_mesh.material);
+				}
 				rend.ctx.context->DrawIndexed(sub_mesh.end_index - sub_mesh.start_index, sub_mesh.start_index, 0);
 			}
 		}

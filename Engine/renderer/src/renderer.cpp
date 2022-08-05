@@ -3,13 +3,18 @@
 
 void RendererCtx::clean_up() {
 	screen.clean_up();
+	screen_depth.clean_up();
+	screen_gbuffer.clean_up();
+
+	reflection_depth.clean_up();
+	screen_gbuffer.clean_up();
 
 	swap_chain->Release();
 	context->Release();
 	device->Release();
 }
 
-Vec2<u16> RendererCtx::size() const {
+Vec2<u16> Viewpoint::size() const {
 	return Vec2<u16>(viewport.Width, viewport.Height);
 }
 
@@ -30,13 +35,9 @@ void Renderer::resize(const Window& window, Vec2<u16> size)  {
 	}
 
 	ctx.resize(size);
-	// Do we want to do this? Might be unrelated to screen size. Otherwise will probably need more thinking of how we choose a size for the shadow texture
-	// shadow_pass.resize(ctx.device, size);
-
-	first_pass.resize(ctx.device, size);
 }
 
-DrawingContext DrawingContext::create(const Renderer& renderer, const World& world, const AssetHandler& assets) {
+DrawingContext DrawingContext::create(Renderer& renderer, const World& world, const AssetHandler& assets) {
 	DrawingContext context{};
 
 	Vec<Id<Object>> objects_in_camera{};
@@ -49,39 +50,39 @@ DrawingContext DrawingContext::create(const Renderer& renderer, const World& wor
 	world.reflective.iter([&](Id<Reflective> id, const Reflective& reflective) {
 		constexpr Mat4<f32> LOOKDIRS[6] = {
 			Mat4<f32> {Vec4<Vec4<f32>> {
-				Vec4<f32> {1.0, 0.0, 0.0, 0.0},
+				Vec4<f32> {0.0, 0.0, 1.0, 0.0},
 				Vec4<f32> {0.0, 1.0, 0.0, 0.0},
-				Vec4<f32> {0.0, 0.0, 1.0, 0.0},
-				Vec4<f32> {0.0, 0.0, 0.0, 1.0},
-			}},
-			Mat4<f32> {Vec4<Vec4<f32>> {
-				Vec4<f32> {0.0, -1.0, 0.0, 0.0},
-				Vec4<f32> {1.0, 0.0, 0.0, 0.0},
-				Vec4<f32> {0.0, 0.0, 1.0, 0.0},
-				Vec4<f32> {0.0, 0.0, 0.0, 1.0},
-			}},
-			Mat4<f32> {Vec4<Vec4<f32>> {
-				Vec4<f32> {1.0, 0.0, 0.0, 0.0},
-				Vec4<f32> {0.0, -1.0, 0.0, 0.0},
-				Vec4<f32> {0.0, 0.0, 1.0, 0.0},
-				Vec4<f32> {0.0, 0.0, 0.0, 1.0},
-			}},
-			Mat4<f32> {Vec4<Vec4<f32>> {
-				Vec4<f32> {0.0, -1.0, 0.0, 0.0},
 				Vec4<f32> {-1.0, 0.0, 0.0, 0.0},
-				Vec4<f32> {0.0, 0.0, 1.0, 0.0},
-				Vec4<f32> {0.0, 0.0, 0.0, 1.0},
-			}},
-			Mat4<f32> {Vec4<Vec4<f32>> {
-				Vec4<f32> {0.0, 0.0, 1.0, 0.0},
-				Vec4<f32> {0.0, 1.0, 0.0, 0.0},
-				Vec4<f32> {1.0, 0.0, 0.0, 0.0},
 				Vec4<f32> {0.0, 0.0, 0.0, 1.0},
 			}},
 			Mat4<f32> {Vec4<Vec4<f32>> {
 				Vec4<f32> {0.0, 0.0, -1.0, 0.0},
 				Vec4<f32> {0.0, 1.0, 0.0, 0.0},
 				Vec4<f32> {1.0, 0.0, 0.0, 0.0},
+				Vec4<f32> {0.0, 0.0, 0.0, 1.0},
+			}},
+			Mat4<f32> {Vec4<Vec4<f32>> {
+				Vec4<f32> {1.0, 0.0, 0.0, 0.0},
+				Vec4<f32> {0.0, 0.0, 1.0, 0.0},
+				Vec4<f32> {0.0, -1.0, 0.0, 0.0},
+				Vec4<f32> {0.0, 0.0, 0.0, 1.0},
+			}},
+			Mat4<f32> {Vec4<Vec4<f32>> {
+				Vec4<f32> {1.0, 0.0, 0.0, 0.0},
+				Vec4<f32> {0.0, 0.0, -1.0, 0.0},
+				Vec4<f32> {0.0, 1.0, 0.0, 0.0},
+				Vec4<f32> {0.0, 0.0, 0.0, 1.0},
+			}},
+			Mat4<f32> {Vec4<Vec4<f32>> {
+				Vec4<f32> {1.0, 0.0, 0.0, 0.0},
+				Vec4<f32> {0.0, 1.0, 0.0, 0.0},
+				Vec4<f32> {0.0, 0.0, 1.0, 0.0},
+				Vec4<f32> {0.0, 0.0, 0.0, 1.0},
+			}},
+			Mat4<f32> {Vec4<Vec4<f32>> {
+				Vec4<f32> {-1.0, 0.0, 0.0, 0.0},
+				Vec4<f32> {0.0, 1.0, 0.0, 0.0},
+				Vec4<f32> {0.0, 0.0, -1.0, 0.0},
 				Vec4<f32> {0.0, 0.0, 0.0, 1.0},
 			}},
 		};
@@ -103,6 +104,9 @@ DrawingContext DrawingContext::create(const Renderer& renderer, const World& wor
 				proj,
 				reflective.transform.translation,
 				reflective.cube_texture.uav[i],
+				renderer.ctx.reflection_depth,
+				renderer.ctx.reflection_gbuffer,
+				renderer.ctx.reflection_viewport,
 				some(id),
 			});
 		}
@@ -114,6 +118,9 @@ DrawingContext DrawingContext::create(const Renderer& renderer, const World& wor
 		world.camera.get_proj(renderer.ctx.ratio()).transposed(),
 		world.camera.transform.translation,
 		renderer.ctx.screen.uav,
+		renderer.ctx.screen_depth,
+		renderer.ctx.screen_gbuffer,
+		renderer.ctx.viewport,
 		none<Id<Reflective>>(),
 	});
 
@@ -135,8 +142,8 @@ void Renderer::draw(const World& world, AssetHandler& assets, f32 delta) {
 
 	shadow_pass.draw(*this, world, assets);
 
-	ctx.context->RSSetViewports(1, &ctx.viewport);
 	for (const Viewpoint& v : context.viewpoints) {
+		ctx.context->RSSetViewports(1, &v.viewport);
 		first_pass.draw(*this, world, assets, v);
 
 		second_pass.draw(*this, world, v);

@@ -339,6 +339,10 @@ void Mesh::bind(ID3D11Device* device, AssetHandler& asset_handler) {
 	if (binded.is_some()) {
 		return;
 	}
+	if (vertices.len() == 0) {
+		binded.insert(Binded{ nullptr, nullptr });
+		return;
+	}
 
 	D3D11_BUFFER_DESC bufferDesc;
 	bufferDesc.ByteWidth = sizeof(Vertex) * vertices.len();
@@ -385,8 +389,8 @@ Mesh Mesh::default_asset() {
 
 void Mesh::clean_up() {
 	binded.map<bool>([](Binded binded) {
-		binded.vertex_buffer->Release();
-		binded.index_buffer->Release();
+		if (binded.vertex_buffer) binded.vertex_buffer->Release();
+		if (binded.index_buffer) binded.index_buffer->Release();
 		return true;
 	});
 }

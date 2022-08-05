@@ -40,6 +40,7 @@ struct Object {
 	bool tesselate{ true };
 };
 
+const Vec2<u16> REFLECTION_SIZE = {256, 256};
 struct Reflective {
 	Reflective(Transform transform);
 	Reflective(ID3D11Device* device, Transform transform);
