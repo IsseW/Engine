@@ -126,7 +126,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 		renderer.ctx.context->OMSetRenderTargets(1, &renderer.ctx.screen.rtv, nullptr);
 
-		auto fps_ts = (f64)std::chrono::duration_cast<std::chrono::nanoseconds>((std::chrono::high_resolution_clock::now() - now)).count() / 1000000.0;
 		processed_frames += 1;
 		average_frametime = dt * 1000.0 + average_frametime * (0.80 / processed_frames);
 		if (processed_frames >= 60) {
