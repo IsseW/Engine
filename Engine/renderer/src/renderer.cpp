@@ -1,5 +1,6 @@
 #include<renderer/renderer.h>
 #include<renderer/window.h>
+#include<DirectXCollision.h>
 
 void RendererCtx::clean_up() {
 	screen.clean_up();
@@ -46,6 +47,19 @@ DrawingContext DrawingContext::create(Renderer& renderer, const World& world, co
 		// TODO: collect info from scene.
 	});
 
+	auto camera_proj = world.camera.get_proj(renderer.ctx.ratio());
+	auto frustrum_planes = DirectX::BoundingFrustum{ to_direct(camera_proj) };
+	auto intersected_objects_camera = world.octree_obj.collect([&](Vec3<f32> origin, f32 len) {
+		auto bounding_box = DirectX::BoundingOrientedBox{};
+		auto xm_vec = to_direct(origin);
+		DirectX::XMFLOAT3 center;
+		DirectX::XMStoreFloat3(&center, xm_vec);
+		bounding_box.Center = center;
+		bounding_box.Extents = DirectX::XMFLOAT3{len, len, len};
+		return frustrum_planes.Intersects(bounding_box);
+	});
+
+	std::cout << intersected_objects_camera.len() << "\n";
 
 	world.reflective.iter([&](Id<Reflective> id, const Reflective& reflective) {
 		constexpr Mat4<f32> LOOKDIRS[6] = {
@@ -97,10 +111,10 @@ DrawingContext DrawingContext::create(Renderer& renderer, const World& world, co
 		f32 left = -right;
 		auto proj = math::create_persp_proj(left, right, bottom, top, n, 100.0f).transposed();
 		for (usize i = 0; i < 6; ++i) {
-			auto view = (mat * LOOKDIRS[i]).invert().transposed();
+			Vec<Id<Object>> objects_in_reflection;
 			context.viewpoints.push(Viewpoint{
-				objects_in_camera,
-				view,
+				objects_in_reflection,
+				(mat * LOOKDIRS[i]).invert().transposed(),
 				proj,
 				reflective.transform.translation,
 				reflective.cube_texture.uav[i],
@@ -115,7 +129,7 @@ DrawingContext DrawingContext::create(Renderer& renderer, const World& world, co
 	context.viewpoints.push(Viewpoint{
 		objects_in_camera,
 		world.camera.get_view().transposed(),
-		world.camera.get_proj(renderer.ctx.ratio()).transposed(),
+		camera_proj.transposed(),
 		world.camera.transform.translation,
 		renderer.ctx.screen.uav,
 		renderer.ctx.screen_depth,

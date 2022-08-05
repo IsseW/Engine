@@ -1,5 +1,4 @@
 #include<renderer/transform.h>
-#include <directxmath.h>
 #include<math/consts.h>
 
 Transform Transform::from_translation(Vec3<f32> trans) {
@@ -54,30 +53,22 @@ Vec3<f32> Transform::down() const {
 	return -up();
 }
 
-Mat4<f32> from_direct(DirectX::XMFLOAT4X4 mat) {
-	return Mat4<f32> {
-		mat._11, mat._21, mat._31, mat._41,
-		mat._12, mat._22, mat._32, mat._42,
-		mat._13, mat._23, mat._33, mat._43,
-		mat._14, mat._24, mat._34, mat._44,
+DirectX::XMMATRIX to_direct(Mat4<f32> mat) {
+	auto xm_mat = DirectX::XMFLOAT4X4 {
+	   mat[0][0], mat[1][0], mat[2][0], mat[3][0],
+	   mat[0][1], mat[1][1], mat[2][1], mat[3][1],
+	   mat[0][2], mat[1][2], mat[2][2], mat[3][2],
+	   mat[0][3], mat[1][3], mat[2][3], mat[3][3],
 	};
-	// return Mat4<f32> {
-	// 	mat._11, mat._12, mat._13, mat._14,
-	// 	mat._21, mat._22, mat._23, mat._24,
-	// 	mat._31, mat._32, mat._33, mat._34,
-	// 	mat._41, mat._42, mat._43, mat._44
-	// };
+	return DirectX::XMLoadFloat4x4(&xm_mat);
 }
 
-Mat4<f32> from_direct(DirectX::XMMATRIX m) {
-	DirectX::XMFLOAT4X4 mat;
-	DirectX::XMStoreFloat4x4(&mat, m);
-	return from_direct(mat);
-}
 
 DirectX::XMVECTOR to_direct(Vec3<f32> v) {
+	auto xm_vec = DirectX::XMFLOAT3{v[0], v[1], v[2]};
 	return DirectX::XMLoadFloat3((DirectX::XMFLOAT3*)&v);
 }
+
 
 DirectX::XMVECTOR to_direct(Quat<f32> v) {
 	return DirectX::XMLoadFloat4((DirectX::XMFLOAT4*)&v);

@@ -128,10 +128,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 		processed_frames += 1;
 		average_frametime = dt * 1000.0 + average_frametime * (0.80 / processed_frames);
-		if (processed_frames >= 60) {
-			fps = 1000.0 / average_frametime;
-			processed_frames = 0;
-		}
+		fps = 1000.0 / average_frametime;
 
 		update_ui(*window, renderer, world, assets, (f32)fps, (f32)average_frametime);
 

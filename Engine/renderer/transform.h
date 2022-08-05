@@ -1,5 +1,6 @@
 #pragma once
 #include<math/mat.h>
+#include<directxmath.h>
 
 struct ObjectData;
 struct Transform {
@@ -49,3 +50,8 @@ struct Camera {
 	// Only used when the camera is perspective
 	f32 fov;
 };
+
+Mat4<f32> from_direct(DirectX::XMFLOAT4X4 mat);
+DirectX::XMMATRIX to_direct(Mat4<f32> mat);
+Vec3<f32> from_direct(DirectX::XMFLOAT3 vec);
+DirectX::XMVECTOR to_direct(Vec3<f32> vec);

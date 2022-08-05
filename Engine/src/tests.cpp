@@ -140,15 +140,15 @@ namespace data_structures {
 		auto insert4_pos = insert3_pos;
 		auto insert4 = octree.insert(insert3_pos, 4);
 		ASSERT(insert4.is_ok());
-		ASSERT(octree.at(insert1_pos).is_some());
-		ASSERT(*octree.at(insert1_pos).unwrap()->get(0).unwrap() == 1);
-		ASSERT(octree.at(insert2_pos).is_some());
-		ASSERT(*octree.at(insert2_pos).unwrap()->get(0).unwrap() == 2);
-		ASSERT(octree.at(insert3_pos).is_some());
-		ASSERT(*octree.at(insert3_pos).unwrap()->get(0).unwrap() == 3);
-		ASSERT(octree.at(insert4_pos).is_some());
-		ASSERT(*octree.at(insert4_pos).unwrap()->get(1).unwrap() == 4);
-		ASSERT(octree.at(insert1_pos + insert2_pos + insert3_pos).is_none());
+		ASSERT(octree.at(insert1_pos) != nullptr);
+		ASSERT(*octree.at(insert1_pos)->get(0).unwrap() == 1);
+		ASSERT(octree.at(insert2_pos) != nullptr);
+		ASSERT(*octree.at(insert2_pos)->get(0).unwrap() == 2);
+		ASSERT(octree.at(insert3_pos) != nullptr);
+		ASSERT(*octree.at(insert3_pos)->get(0).unwrap() == 3);
+		ASSERT(octree.at(insert4_pos) != nullptr);
+		ASSERT(*octree.at(insert4_pos)->get(1).unwrap() == 4);
+		ASSERT(octree.at(insert1_pos + insert2_pos + insert3_pos) == nullptr);
 	}
 
 	void test_sparse_octree_aabb() {
@@ -158,17 +158,17 @@ namespace data_structures {
 		auto insert_aabb = Aabb<f32>{ insert_min, insert_max };
 		auto insert = octree.insert(insert_aabb, 1);
 		ASSERT(insert.is_ok());
-		ASSERT(octree.at(insert_min).is_some());
-		ASSERT(*octree.at(insert_min).unwrap()->get(0).unwrap() == 1);
-		ASSERT(octree.at(insert_max).is_some());
-		ASSERT(*octree.at(insert_max).unwrap()->get(0).unwrap() == 1);
-		ASSERT(octree.at(insert_min - 0.40f).is_none());
-		ASSERT(octree.at(insert_max + 0.40f).is_none());
-		ASSERT(octree.at(insert_min + 0.40f).is_some());
-		ASSERT(octree.at(insert_max - 0.40f).is_some());
-		ASSERT(*octree.at(insert_min + 0.40f).unwrap()->get(0).unwrap() == 1);
-		ASSERT(*octree.at(insert_max - 0.40f).unwrap()->get(0).unwrap() == 1);
-		ASSERT(octree.at(insert_min + (insert_max - insert_min ) / 2.0f).is_some());
+		ASSERT(octree.at(insert_min) != nullptr);
+		ASSERT(*octree.at(insert_min)->get(0).unwrap() == 1);
+		ASSERT(octree.at(insert_max) != nullptr);
+		ASSERT(*octree.at(insert_max)->get(0).unwrap() == 1);
+		ASSERT(octree.at(insert_min - 0.40f) == nullptr);
+		ASSERT(octree.at(insert_max + 0.40f) == nullptr);
+		ASSERT(octree.at(insert_min + 0.40f) != nullptr);
+		ASSERT(octree.at(insert_max - 0.40f) != nullptr);
+		ASSERT(*octree.at(insert_min + 0.40f)->get(0).unwrap() == 1);
+		ASSERT(*octree.at(insert_max - 0.40f)->get(0).unwrap() == 1);
+		ASSERT(octree.at(insert_min + (insert_max - insert_min ) / 2.0f) != nullptr);
 	}
 
 	void test() {

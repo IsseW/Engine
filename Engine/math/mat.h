@@ -261,7 +261,7 @@ namespace math {
 	constexpr Mat3<T> mat_from_quat(const Quat<T>& q) {
 		constexpr T ONE = (T)1;
 		constexpr T TWO = (T)2;
-		auto v = q.inner();
+		auto& v = q.inner();
 		return Mat3<T>(
 			TWO * (v.w * v.w + v.x * v.x) - ONE,
 			TWO * (v.x * v.y - v.w * v.z),
