@@ -18,17 +18,15 @@ struct ConstantOutput {
 struct HullOutput {
 	float4 position : SV_POSITION;
 	float3 normal : NORMAL0;
-	float3 tan : TANGENT0;
-	float3 uv : TEXCOORD0;
+	float2 uv : TEXCOORD0;
 };
 
 struct DomainOutput {
 	float4 position : SV_POSITION;
-	float2 uv : TEXCOORD0;
 	float3 normal : NORMAL0;
+	float2 uv : TEXCOORD0;
 	float3 wpos : TEXCOORD1;
 	float3 obj_pos : TEXCOORD2;
-	float3x3 tbn : MATRIX;
 };
 
 
@@ -54,12 +52,10 @@ DomainOutput main(ConstantOutput input, float3 uvw: SV_DomainLocation, const Out
 
 	// output.wpos = uvw.x * patch[0].wpos + uvw.y * patch[1].wpos + uvw.z * patch[2].wpos;
 
-	float3 uv = uvw.x * patch[0].uv + uvw.y * patch[1].uv + uvw.z * patch[2].uv;
-	output.uv = uv.xy;
+	float2 uv = uvw.x * patch[0].uv + uvw.y * patch[1].uv + uvw.z * patch[2].uv;
+	output.uv = uv;
 	float3 normal = uvw.x * patch[0].normal + uvw.y * patch[1].normal + uvw.z * patch[2].normal;
 	output.normal = normalize(mul(world_matrix, float4(normal, 0.0)).xyz);
-
-	output.tbn = (float3x3)0.0;
 
 	return output;
 }

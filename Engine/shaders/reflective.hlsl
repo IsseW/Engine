@@ -9,11 +9,10 @@ TextureCube reflection_tex : register(t4);
 
 struct PixelShaderInput {
     float4 position : SV_POSITION;
-    float2 uv : TEXCOORD0;
     float3 normal : NORMAL0;
+    float2 uv : TEXCOORD0;
     float3 wpos : TEXCOORD1;
     float3 obj_pos : TEXCOORD2;
-    float3x3 tbn : MATRIX;
 };
 
 struct PixelShaderOutput {
@@ -45,19 +44,41 @@ cbuffer MATERIAL : register(b2) {
 PixelShaderOutput main(PixelShaderInput input) : SV_TARGET {
     PixelShaderOutput output;
 
-    float3 reflection = reflection_tex.Sample(tex_sampler, normalize(input.obj_pos)).xyz;
+    float2 uv = input.uv;
+    float3 wpos = input.wpos;
 
-    output.ambient.xyz = ambient_c.xyz * ambient_tex.Sample(tex_sampler, input.uv).xyz + reflection / 3.0;
+    float3 n = input.normal;
+
+    float3 p_dx = ddx(wpos.xyz);
+    float3 p_dy = ddy(wpos.xyz);
+    float2 tc_dx = ddx(uv);
+    float2 tc_dy = ddy(uv);
+
+    float3 t = normalize(tc_dy.y * p_dx - tc_dx.y * p_dy);
+    float3 b = normalize(tc_dy.x * p_dx - tc_dx.x * p_dy); // sign inversion
+    float3 x = cross(n, t);
+
+    t = normalize(cross(x, n));
+
+    x = cross(b, n);
+    b = normalize(cross(x, n));
+
+    float3x3 tbn = float3x3(t, b, n);
+
+    float3 normal = normalize(normal_c.xyz * normal_tex.Sample(tex_sampler, uv).xyz * 2.0 - 1.0);
+
+    output.normal = float4(normal.x * t + normal.y * b + normal.z * n, 1.0);
+    output.position = float4(wpos, shininess_c);
+
+    float3 reflection = reflection_tex.Sample(tex_sampler, normalize(output.normal)).xyz;
+
+    output.ambient.xyz = ambient_c.xyz * ambient_tex.Sample(tex_sampler, uv).xyz + reflection / 3.0;
     output.ambient.w = 1.0;
-    output.diffuse.xyz = diffuse_c.xyz * reflection * diffuse_tex.Sample(tex_sampler, input.uv).xyz;
+    output.diffuse.xyz = diffuse_c.xyz * reflection * diffuse_tex.Sample(tex_sampler, uv).xyz;
     output.diffuse.w = 1.0;
-    output.specular.xyz = specular_c.xyz * specular_tex.Sample(tex_sampler, input.uv).xyz;
+    output.specular.xyz = specular_c.xyz * specular_tex.Sample(tex_sampler, uv).xyz;
     output.specular.w = 1.0;
 
-    float3 norm = normal_c.xyz * normal_tex.Sample(tex_sampler, input.uv).xyz;
-
-    output.normal = float4(input.normal, 1.0);
-    output.position = float4(input.wpos, shininess_c);
 
     return output;
 }

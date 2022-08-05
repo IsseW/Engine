@@ -7,26 +7,22 @@ void Mesh::push_quad(std::array<Vec3<f32>, 4> points) {
 	vertices.push(Vertex{
 		points[0],
 		normal,
-		tan,
-		Vec3<f32>(0.0f, 0.0f, 0.0f),
+		Vec2<f32>(0.0f, 0.0f),
 	});
 	vertices.push(Vertex{
 		points[1],
 		normal,
-		tan,
-		Vec3<f32>(1.0f, 0.0f, 0.0f),
+		Vec2<f32>(1.0f, 0.0f),
 		});
 	vertices.push(Vertex{
 		points[2],
 		normal,
-		tan,
-		Vec3<f32>(0.0f, 1.0f, 0.0f),
+		Vec2<f32>(0.0f, 1.0f),
 		});
 	vertices.push(Vertex{
 		points[3],
 		normal,
-		tan,
-		Vec3<f32>(1.0f, 1.0f, 0.0f),
+		Vec2<f32>(1.0f, 1.0f),
 	});
 	indices.push(i + 0);
 	indices.push(i + 2);

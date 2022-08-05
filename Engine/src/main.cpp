@@ -58,7 +58,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	window->set_renderer(&renderer);
 
 	AssetHandler assets {};
-
+	assets.load<Image>(fs::path{ "resources/normal.png" });
 	assets.load<Mesh>(std::filesystem::path { "resources/u.wavefront" });
 	assets.load<Mesh>(std::filesystem::path{ "resources/test.wavefront" });
 	auto sphere = assets.load<Mesh>(std::filesystem::path{ "resources/sphere.wavefront" });

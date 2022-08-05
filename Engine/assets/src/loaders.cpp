@@ -161,7 +161,7 @@ struct std::hash<Vertex> {
 				return _rotr(a, 1) ^ b;
 			});
 		};
-		return hash(k.v) ^ _rotr(hash(k.uv), 7) ^ _rotr(hash(k.vn), 13) ^ _rotr(hash(k.tan), 19);
+		return hash(k.v) ^ _rotr(hash(k.uv), 7) ^ _rotr(hash(k.vn), 17);
 	}
 };
 
@@ -266,31 +266,13 @@ Mesh Mesh::load(const fs::path& path, AssetHandler& asset_handler) {
 					return normals[i];
 				}) : Vec3<Vec3<f32>>((pos.y - pos.x).cross(pos.z - pos.x).normalized());
 
-
-			auto get_tan = [](auto pos, auto uv) {
-				auto e1 = pos.y - pos.x;
-				auto e2 = pos.z - pos.x;
-
-				auto c0 = (uv.y - uv.x);
-				auto c1 = (uv.z - uv.x);
-
-				return (e1 * c0.y - e2 * c1.y) / (c0.x * c1.y - c1.x * c0.y);
-			};
-
-			auto tangent = Vec3<Vec3<f32>>(
-				get_tan(pos.xyz(), uv.xyz()),
-				get_tan(pos.yzx(), uv.yzx()),
-				get_tan(pos.zxy(), uv.zxy())
-			);
-
-			auto triangle = pos.map<Vertex>([](Vec3<f32> pos, Vec2<f32> uv, Vec3<f32> norm, Vec3<f32> tan) {
+			auto triangle = pos.map<Vertex>([](Vec3<f32> pos, Vec2<f32> uv, Vec3<f32> norm) {
 				return Vertex{
 					pos,
 					norm,
-					tan,
-					uv.with_z(0.0),
+					uv,
 				};
-			}, uv, norm, tangent).map<Index>([&](Vertex vert) {
+			}, uv, norm).map<Index>([&](Vertex vert) {
 				auto found = vertice_indices.find(vert);
 
 				if (found == vertice_indices.end()) {

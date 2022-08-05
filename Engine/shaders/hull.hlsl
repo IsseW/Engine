@@ -7,8 +7,7 @@ cbuffer DATA {
 struct HullInput {
     float4 position : SV_POSITION;
     float3 normal : NORMAL0;
-    float3 tan : TANGENT0;
-    float3 uv : TEXCOORD0;
+    float2 uv : TEXCOORD0;
 };
 
 struct ConstantOutput {
@@ -19,8 +18,7 @@ struct ConstantOutput {
 struct HullOutput {
     float4 position : SV_POSITION;
     float3 normal : NORMAL0;
-    float3 tan : TANGENT0;
-    float3 uv : TEXCOORD0;
+    float2 uv : TEXCOORD0;
 };
 
 float round_to(float val, float rounding) {
@@ -84,7 +82,6 @@ HullOutput main(InputPatch<HullInput, 3> patch, uint point_id : SV_OutputControl
     output.position = patch[point_id].position;
     output.uv = patch[point_id].uv;
     output.normal = patch[point_id].normal;
-    output.tan = patch[point_id].tan;
 
     return output;
 }
