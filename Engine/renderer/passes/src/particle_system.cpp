@@ -36,9 +36,6 @@ Result<ParticleRenderer, RenderCreateError> ParticleRenderer::create(ID3D11Devic
 	ID3D11GeometryShader* gs;
 	TRY(gs, load_geometry(device, "shaders/particle_geometry.cso"));
 
-	ID3D11PixelShader* ps;
-	TRY(ps, load_pixel(device, "shaders/particle_pixel.cso"));
-
 	Uniform<ParticleSystemData> system_data;
 	TRY(system_data, Uniform<ParticleSystemData>::create(device));
 
@@ -50,7 +47,6 @@ Result<ParticleRenderer, RenderCreateError> ParticleRenderer::create(ID3D11Devic
 		vsil.il,
 		cs,
 		gs,
-		ps,
 		system_data,
 		gs_globals,
 	});
@@ -62,7 +58,6 @@ void ParticleRenderer::clean_up() {
 
 	cs->Release();
 	gs->Release();
-	ps->Release();
 
 	system_data.clean_up();
 	gs_globals.clean_up();

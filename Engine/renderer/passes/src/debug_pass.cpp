@@ -49,10 +49,10 @@ void DebugPass::draw(Renderer& rend, const World& world, Vec<Line> lines) {
 
 Result<DebugPass, RenderCreateError> DebugPass::create(ID3D11Device* device) {
 	VSIL vsil;
-	TRY(vsil, load_vertex(device, "debug_vertex.cso", { { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 } }));
+	TRY(vsil, load_vertex(device, "shaders/debug_vertex.cso", { { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 } }));
 	
 	ID3D11PixelShader* ps;
-	TRY(ps, load_pixel(device, "debug_pixel.cso"));
+	TRY(ps, load_pixel(device, "shaders/debug_pixel.cso"));
 	
 	ID3D11Buffer* vtx_buf;
 	TRY(vtx_buf, create_buf(device));
