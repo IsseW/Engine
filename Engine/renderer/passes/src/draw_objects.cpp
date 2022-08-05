@@ -89,6 +89,10 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 		}
 	});
 
+	if (pixel_shader) {
+		rend.ctx.context->PSSetShader(rend.first_pass.object_renderer.refl_ps, nullptr, 0);
+	}
+
 	world.reflective.iter([&](Id<Reflective> id, const Reflective& reflective) {
 		// Reflective materials skip themselfs
 		if (skip_reflective.as_ptr().map<bool>([&](const Id<Reflective>* skip) { return *skip == id; }).unwrap_or(false)) {
@@ -102,22 +106,23 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 		auto mesh = bind_mesh(reflective.mesh);
 
 		if (mesh) {
+			if (pixel_shader) {
+				auto default_srv = assets.assets<Image>().default_asset()->binded.as_ptr().unwrap()->srv;
+				ID3D11ShaderResourceView* srvs[3] = {
+					default_srv,
+					reflective.cube_texture.srv,
+					default_srv,
+				};
+				rend.ctx.context->PSSetShaderResources(0, 3, srvs);
 
-			auto default_srv = assets.assets<Image>().default_asset()->binded.as_ptr().unwrap()->srv;
-			ID3D11ShaderResourceView* srvs[3] = {
-				default_srv,
-				reflective.cube_texture.srv,
-				default_srv,
-			};
-			rend.ctx.context->PSSetShaderResources(0, 3, srvs);
-
-			auto mat_data = MaterialData{
-				0.0,
-				1.0,
-				1.0,
-				500.0,
-			};
-			rend.first_pass.object_renderer.material.update(rend.ctx.context, &mat_data);
+				auto mat_data = MaterialData{
+					0.0,
+					1.0,
+					1.0,
+					500.0,
+				};
+				rend.first_pass.object_renderer.material.update(rend.ctx.context, &mat_data);
+			}
 
 			for (const SubMesh& sub_mesh : mesh->submeshes) {
 				rend.ctx.context->DrawIndexed(sub_mesh.end_index - sub_mesh.start_index, sub_mesh.start_index, 0);
@@ -125,6 +130,10 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 		}
 	});
 	set_tesselation(false, {});
+
+	if (pixel_shader) {
+		rend.ctx.context->PSSetShader(rend.first_pass.object_renderer.ps, nullptr, 0);
+	}
 
 	rend.ctx.context->RSSetState(rend.first_pass.rs_cull_none);
 

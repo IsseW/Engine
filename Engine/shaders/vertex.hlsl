@@ -9,6 +9,7 @@ struct VertexShaderOutput {
     float2 uv : TEXCOORD0;
     float3 normal : NORMAL0;
     float3 wpos : TEXCOORD1;
+    float3 obj_pos : TEXCOORD2;
 };
 
 cbuffer GLOBALS : register(b0) {
@@ -36,6 +37,7 @@ VertexShaderOutput main(VertexShaderInput input)
 {
     float4 pos = mul(world_matrix, float4(input.position, 1.0));
     VertexShaderOutput output;
+    output.obj_pos = input.position;
     output.wpos = pos.xyz;
     output.position = transform_to_camera(pos);
     output.normal = normalize(mul(world_matrix, float4(input.normal, 0.0)).xyz);

@@ -18,6 +18,7 @@ struct PixelIn {
     float2 uv : TEXCOORD0;
     float3 normal : NORMAL0;
     float3 wpos : TEXCOORD1;
+    float3 obj_pos : TEXCOORD2;
 };
 
 float4 transform_to_camera(float4 vec) {
@@ -56,32 +57,38 @@ void main(point VertexOut input[1], inout TriangleStream<PixelIn> out_stream) {
     output.wpos = pos + axis1 + axis2;
     output.position = transform_to_camera(float4(output.wpos, 1.0));
     output.uv = float2(1.0, 1.0);
+    output.obj_pos = float3(1.0, 1.0, 0.0);
     out_stream.Append(output);
 
     output.wpos = pos + axis1 - axis2;
     output.position = transform_to_camera(float4(output.wpos, 1.0));
     output.uv = float2(1.0, 0.0);
+    output.obj_pos = float3(1.0, -1.0, 0.0);
     out_stream.Append(output);
 
     output.wpos = pos - axis1 - axis2;
     output.position = transform_to_camera(float4(output.wpos, 1.0));
     output.uv = float2(0.0, 0.0);
+    output.obj_pos = float3(-1.0, -1.0, 0.0);
     out_stream.Append(output);
 
 
     output.wpos = pos + axis1 + axis2;
     output.position = transform_to_camera(float4(output.wpos, 1.0));
     output.uv = float2(1.0, 1.0);
+    output.obj_pos = float3(1.0, 1.0, 0.0);
     out_stream.Append(output);
 
     output.wpos = pos - axis1 - axis2;
     output.position = transform_to_camera(float4(output.wpos, 1.0));
     output.uv = float2(0.0, 0.0);
+    output.obj_pos = float3(-1.0, -1.0, 0.0);
     out_stream.Append(output);
 
     output.wpos = pos - axis1 + axis2;
     output.position = transform_to_camera(float4(output.wpos, 1.0));
     output.uv = float2(0.0, 1.0);
+    output.obj_pos = float3(-1.0, 1.0, 0.0);
     out_stream.Append(output);
     
 

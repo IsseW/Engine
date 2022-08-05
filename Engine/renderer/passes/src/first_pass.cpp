@@ -18,6 +18,9 @@ Result<ObjectRenderer, RenderCreateError> ObjectRenderer::create(ID3D11Device* d
 	ID3D11DomainShader* ds;
 	TRY(ds, load_domain(device, "domain.cso"));
 
+	ID3D11PixelShader* refl_ps;
+	TRY(refl_ps, load_pixel(device, "reflective.cso"));
+
 	Uniform<ObjectData> object;
 	TRY(object, Uniform<ObjectData>::create(device));
 
@@ -48,6 +51,7 @@ Result<ObjectRenderer, RenderCreateError> ObjectRenderer::create(ID3D11Device* d
 			tess_vs,
 			hs,
 			ds,
+			refl_ps,
 			vsil.il,
 			object,
 			material,
@@ -62,6 +66,7 @@ void ObjectRenderer::clean_up() {
 	tess_vs->Release();
 	hs->Release();
 	ds->Release();
+	refl_ps->Release();
 
 	layout->Release();
 

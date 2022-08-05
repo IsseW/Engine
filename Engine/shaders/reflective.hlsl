@@ -1,8 +1,9 @@
 SamplerState tex_sampler : register(s0);
 
 Texture2D ambient_tex : register(t0);
-Texture2D diffuse_tex : register(t1);
+TextureCube diffuse_tex : register(t1);
 Texture2D specular_tex : register(t2);
+
 
 struct PixelShaderInput {
     float4 position : SV_POSITION;
@@ -37,13 +38,12 @@ cbuffer MATERIAL : register(b2) {
     float shininess_c;
 };
 
-PixelShaderOutput main(PixelShaderInput input) : SV_TARGET
-{
+PixelShaderOutput main(PixelShaderInput input) : SV_TARGET {
     PixelShaderOutput output;
 
-    output.ambient.xyz = ambient_c.xyz  * ambient_tex.Sample(tex_sampler, input.uv).xyz;
+    output.ambient.xyz = ambient_c.xyz * ambient_tex.Sample(tex_sampler, input.uv).xyz;
     output.ambient.w = 1.0;
-    output.diffuse.xyz = diffuse_c.xyz * diffuse_tex.Sample(tex_sampler, input.uv).xyz;
+    output.diffuse.xyz = diffuse_c.xyz * diffuse_tex.Sample(tex_sampler, float3(input.uv, 0.0)).xyz;
     output.diffuse.w = 1.0;
     output.specular.xyz = specular_c.xyz * specular_tex.Sample(tex_sampler, input.uv).xyz;
     output.specular.w = 1.0;

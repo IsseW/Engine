@@ -239,6 +239,7 @@
     <FxCompile Include="shaders\hull.hlsl" />
     <FxCompile Include="shaders\domain.hlsl" />
     <FxCompile Include="shaders\tesselation_vertex.hlsl" />
+    <FxCompile Include="shaders\reflective.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

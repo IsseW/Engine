@@ -26,6 +26,7 @@ struct DomainOutput {
 	float2 uv : TEXCOORD0;
 	float3 normal : NORMAL0;
 	float3 wpos : TEXCOORD1;
+	float3 obj_pos : TEXCOORD2;
 };
 
 
@@ -42,6 +43,7 @@ DomainOutput main(ConstantOutput input, float3 uvw: SV_DomainLocation, const Out
 	float4 tp = uvw.x * t0 + uvw.y * t1 + uvw.z * t2;
 	float a = 0.75;
 	float4 position = (1.0 - a) * p + a * tp;
+	output.obj_pos = position.xyz;
 	float4 wpos = mul(world_matrix, position);
 
 	output.wpos = wpos.xyz;
@@ -52,7 +54,7 @@ DomainOutput main(ConstantOutput input, float3 uvw: SV_DomainLocation, const Out
 
 	output.uv = uvw.x * patch[0].uv + uvw.y * patch[1].uv + uvw.z * patch[2].uv;
 	float3 normal = uvw.x * patch[0].normal + uvw.y * patch[1].normal + uvw.z * patch[2].normal;
-	output.normal = normal; // mul(world_matrix, float4(normal, 0.0));
+	output.normal = mul(world_matrix, float4(normal, 0.0)).xyz;
 
 	return output;
 }

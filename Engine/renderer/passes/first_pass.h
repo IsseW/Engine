@@ -16,6 +16,8 @@ struct ObjectRenderer {
 	ID3D11HullShader* hs;
 	ID3D11DomainShader* ds;
 
+	ID3D11PixelShader* refl_ps;
+
 	ID3D11InputLayout* layout;
 
 	Uniform<ObjectData> object;
