@@ -3,9 +3,9 @@
 
 
 void DepthTexture::clean_up() {
-	if (dsv) dsv->Release();
-	if (texture) texture->Release();
-	if (srv) srv->Release();
+	dsv->Release();
+	srv->Release();
+	texture->Release();
 }
 
 void DepthTexture::clear(ID3D11DeviceContext* ctx) {
@@ -93,8 +93,8 @@ void DepthTextures::clean_up() {
 	}
 	delete[] dsvs;
 	delete[] srvs;
-	if (texture) texture->Release();
-	if (srv) srv->Release();
+	srv->Release();
+	texture->Release();
 }
 
 void DepthTextures::resize(ID3D11Device* device, Vec3<u16> size) {
@@ -184,10 +184,10 @@ Result<DepthTextures, RenderCreateError> DepthTextures::create(ID3D11Device* dev
 
 
 void RenderTexture::clean_up() {
-	if (rtv) rtv->Release();
-	if (texture) texture->Release();
-	if (srv) srv->Release();
-	if (uav) uav->Release();
+	rtv->Release();
+	srv->Release();
+	uav->Release();
+	texture->Release();
 }
 
 void RenderTexture::resize(ID3D11Device* device, Vec2<u16> size) {
@@ -250,9 +250,9 @@ Result<RenderTexture, RenderCreateError> RenderTexture::create(ID3D11Device* dev
 }
 
 void RenderTarget::clean_up() {
-	if (uav) uav->Release();
-	if (texture) texture->Release();
-	if (rtv) rtv->Release();
+	uav->Release();
+	rtv->Release();
+	texture->Release();
 }
 
 void RenderTarget::resize(ID3D11Device* device, IDXGISwapChain* swap_chain) {
