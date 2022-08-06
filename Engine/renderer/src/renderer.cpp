@@ -87,6 +87,45 @@ void collect_to_render(const World& world, const Mat4<f32>& world_mat, const Mat
 		intersected_objects = world.octree_obj.collect(collect);
 		debug_lines.take();
 		intersected_reflective = world.octree_reflective.collect(collect);
+		
+		std::unordered_set<Id<Object>> objs;
+		for (auto* obj_id : intersected_objects) {
+			for (auto& id : *obj_id) {
+				if (!objs.contains(id)) {
+					objs.insert(id);
+					auto object = world.objects.get(id).unwrap();
+					auto& bounds = object->bounds;
+					auto center = bounds.center();
+					auto extents = bounds.extends();
+					DirectX::BoundingOrientedBox axis_bounds{};
+					axis_bounds.Center = *(DirectX::XMFLOAT3*)&center;
+					axis_bounds.Extents = *(DirectX::XMFLOAT3*)&extents;
+					if (shape.Intersects(axis_bounds)) {
+						objects.push(id);
+					}
+				}
+			}
+		}
+
+		std::unordered_set<Id<Reflective>> refls;
+		skip.then_do([&](auto id) { refls.insert(id); });
+		for (auto* obj_id : intersected_reflective) {
+			for (auto& id : *obj_id) {
+				if (!refls.contains(id)) {
+					refls.insert(id);
+					auto refl = world.reflective.get(id).unwrap();
+					auto& bounds = refl->bounds;
+					auto center = bounds.center();
+					auto extents = bounds.extends();
+					DirectX::BoundingOrientedBox axis_bounds{};
+					axis_bounds.Center = *(DirectX::XMFLOAT3*)&center;
+					axis_bounds.Extents = *(DirectX::XMFLOAT3*)&extents;
+					if (shape.Intersects(axis_bounds)) {
+						reflective.push(id);
+					}
+				}
+			}
+		}
 	};
 
 	if (orthographic) {
@@ -113,29 +152,6 @@ void collect_to_render(const World& world, const Mat4<f32>& world_mat, const Mat
 		DirectX::BoundingFrustum bounding_frustrum {};
 		frustrum_planes.Transform(bounding_frustrum, to_direct(world_mat));
 		intersect_shape(bounding_frustrum);
-	}
-	
-
-	std::unordered_set<Id<Object>> objs;
-
-	for (auto* obj_id : intersected_objects) {
-		for (auto& id : *obj_id) {
-			if (!objs.contains(id)) {
-				objs.insert(id);
-				objects.push(id);
-			}
-		}
-	}
-
-	std::unordered_set<Id<Reflective>> refls;
-	skip.then_do([&](auto id) { refls.insert(id); });
-	for (auto* obj_id : intersected_reflective) {
-		for (auto& id : *obj_id) {
-			if (!refls.contains(id)) {
-				refls.insert(id);
-				reflective.push(id);
-			}
-		}
 	}
 }
 

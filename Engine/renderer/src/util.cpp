@@ -39,7 +39,7 @@ void DepthTexture::resize(ID3D11Device* device, Vec2<u16> size) {
 }
 
 Result<DepthTexture, RenderCreateError> DepthTexture::create(ID3D11Device* device, Vec2<u16> size) {
-	D3D11_TEXTURE2D_DESC textureDesc;
+	D3D11_TEXTURE2D_DESC textureDesc{};
 	textureDesc.Width = size.x;
 	textureDesc.Height = size.y;
 	textureDesc.MipLevels = 1;
@@ -57,7 +57,7 @@ Result<DepthTexture, RenderCreateError> DepthTexture::create(ID3D11Device* devic
 	}
 	ID3D11DepthStencilView* view;
 
-	D3D11_DEPTH_STENCIL_VIEW_DESC dsv_desc;
+	D3D11_DEPTH_STENCIL_VIEW_DESC dsv_desc{};
 	dsv_desc.Format = DXGI_FORMAT_D32_FLOAT;
 	dsv_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	dsv_desc.Flags = 0;
@@ -68,7 +68,7 @@ Result<DepthTexture, RenderCreateError> DepthTexture::create(ID3D11Device* devic
 		return FailedDSVCreation;
 	}
 
-	D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc;
+	D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc{};
 	resource_desc.Texture2D = { 0, 1 };
 	resource_desc.Format = DXGI_FORMAT_R32_FLOAT;
 	resource_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
@@ -103,7 +103,7 @@ void DepthTextures::resize(ID3D11Device* device, Vec3<u16> size) {
 }
 
 Result<DepthTextures, RenderCreateError> DepthTextures::create(ID3D11Device* device, Vec3<u16> size) {
-	D3D11_TEXTURE2D_DESC textureDesc;
+	D3D11_TEXTURE2D_DESC textureDesc{};
 	textureDesc.Width = size.x;
 	textureDesc.Height = size.y;
 	textureDesc.ArraySize = size.z;
@@ -120,14 +120,14 @@ Result<DepthTextures, RenderCreateError> DepthTextures::create(ID3D11Device* dev
 		return FailedTextureCreation;
 	}
 
-	D3D11_DEPTH_STENCIL_VIEW_DESC dsv_desc;
+	D3D11_DEPTH_STENCIL_VIEW_DESC dsv_desc{};
 	dsv_desc.Format = DXGI_FORMAT_D32_FLOAT;
 	dsv_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
 	dsv_desc.Flags = 0;
 	dsv_desc.Texture2DArray.MipSlice = 0;
 	dsv_desc.Texture2DArray.ArraySize = 1;
 
-	D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc;
+	D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc{};
 	resource_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
 	resource_desc.Format = DXGI_FORMAT_R32_FLOAT;
 	resource_desc.Texture2DArray.ArraySize = 1;
@@ -170,13 +170,6 @@ Result<DepthTextures, RenderCreateError> DepthTextures::create(ID3D11Device* dev
 	resource_desc.Texture2DArray.ArraySize = size.z;
 	ID3D11ShaderResourceView* srv;
 	if (FAILED(device->CreateShaderResourceView(texture, &resource_desc, &srv))) {
-		texture->Release();
-		for (usize i = 0; i < size.z; ++i) {
-			dsvs[i]->Release();
-			srvs[i]->Release();
-		}
-		delete[] dsvs;
-		delete[] srvs;
 		return FailedSRVCreation;
 	}
 
@@ -203,7 +196,7 @@ void RenderTexture::resize(ID3D11Device* device, Vec2<u16> size) {
 }
 
 Result<RenderTexture, RenderCreateError> RenderTexture::create(ID3D11Device* device, Vec2<u16> size, DXGI_FORMAT format) {
-	D3D11_TEXTURE2D_DESC textureDesc;
+	D3D11_TEXTURE2D_DESC textureDesc{};
 	textureDesc.Width = size.x;
 	textureDesc.Height = size.y;
 	textureDesc.MipLevels = 1;
@@ -235,7 +228,7 @@ Result<RenderTexture, RenderCreateError> RenderTexture::create(ID3D11Device* dev
 		return FailedUAVCreation;
 	}
 
-	D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc;
+	D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc{};
 	resource_desc.Texture2D = { 0, 1 };
 	resource_desc.Format = textureDesc.Format;
 	resource_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
@@ -280,7 +273,7 @@ Result<RenderTarget, RenderCreateError> RenderTarget::create(ID3D11Device* devic
 		return FailedRTVCreation;
 	}
 
-	D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc;
+	D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc{};
 	uav_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	uav_desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
 	uav_desc.Texture2DArray = {
@@ -307,7 +300,7 @@ Result<RenderTarget, RenderCreateError> RenderTarget::create(ID3D11Device* devic
 
 
 Result<ID3D11ShaderResourceView*, RenderCreateError> create_buffer_srv(ID3D11Device* device, ID3D11Buffer* buffer, usize len) {
-	D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc;
+	D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc{};
 	resource_desc.Format = DXGI_FORMAT_UNKNOWN;
 	resource_desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
 	resource_desc.Buffer.FirstElement = 0;
@@ -321,14 +314,14 @@ Result<ID3D11ShaderResourceView*, RenderCreateError> create_buffer_srv(ID3D11Dev
 }
 
 Result<Buffer, RenderCreateError> Buffer::create(ID3D11Device* device, usize len) {
-	D3D11_BUFFER_DESC desc;
+	D3D11_BUFFER_DESC desc{};
 	desc.ByteWidth = sizeof(Vertex) * len;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_VERTEX_BUFFER;
 	desc.CPUAccessFlags = 0;
 	desc.MiscFlags = 0;
 	desc.StructureByteStride = 0;
-	D3D11_SUBRESOURCE_DATA res_data;
+	D3D11_SUBRESOURCE_DATA res_data{};
 	auto data = new Vertex[len];
 	ZeroMemory(data, len * sizeof(Vertex));
 	res_data.pSysMem = data;
@@ -342,7 +335,7 @@ Result<Buffer, RenderCreateError> Buffer::create(ID3D11Device* device, usize len
 	}
 	delete[] data;
 
-	D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc;
+	D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc{};
 	uav_desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 	uav_desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	uav_desc.Buffer = {
@@ -370,7 +363,7 @@ void Buffer::clean_up(){
 }
 
 Result<CubeTexture, RenderCreateError> CubeTexture::create(ID3D11Device* device, Vec2<u16> size) {
-	D3D11_TEXTURE2D_DESC textureDesc;
+	D3D11_TEXTURE2D_DESC textureDesc{};
 	textureDesc.Width = size.x;
 	textureDesc.Height = size.y;
 	textureDesc.MipLevels = 1;
@@ -383,13 +376,13 @@ Result<CubeTexture, RenderCreateError> CubeTexture::create(ID3D11Device* device,
 	textureDesc.CPUAccessFlags = 0;
 	textureDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
 
-	CubeTexture res;
+	CubeTexture res{};
 	if (FAILED(device->CreateTexture2D(&textureDesc, nullptr, &res.texture))) {
 		return FailedTextureCreation;
 	}
 
 	for (usize i = 0; i < 6; ++i) {
-		D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc;
+		D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc{};
 		uav_desc.Format = textureDesc.Format;
 		uav_desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
 		uav_desc.Texture2DArray = {
@@ -401,7 +394,7 @@ Result<CubeTexture, RenderCreateError> CubeTexture::create(ID3D11Device* device,
 		if (FAILED(device->CreateUnorderedAccessView(res.texture, &uav_desc, &res.uav[i]))) {
 			return FailedUAVCreation;
 		}
-		D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc;
+		D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc{};
 		resource_desc.Format = textureDesc.Format;
 		resource_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
 		resource_desc.Texture2DArray = { 0, 1, i, 1 };
@@ -410,7 +403,7 @@ Result<CubeTexture, RenderCreateError> CubeTexture::create(ID3D11Device* device,
 		}
 	}
 
-	D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc;
+	D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc{};
 	resource_desc.Format = textureDesc.Format;
 	resource_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
 	resource_desc.TextureCube = { 0, 1 };

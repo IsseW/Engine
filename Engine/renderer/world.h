@@ -87,6 +87,6 @@ struct World {
 	Depot<Object> objects;
 	Depot<Reflective> reflective;
 	Depot<ParticleSystem> particle_systems;
-	SparseOctree<Id<Object>, 5> octree_obj{ Vec3<f32>{0,0,0}, 80 };
-	SparseOctree<Id<Reflective>, 5> octree_reflective{ Vec3<f32>{0,0,0}, 80 };
+	SparseOctree<Id<Object>, 5> octree_obj{ Vec3<f32>{0,0,0}, 256 };
+	SparseOctree<Id<Reflective>, 5> octree_reflective{ Vec3<f32>{0,0,0}, 256 };
 };

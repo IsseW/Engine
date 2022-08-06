@@ -3,6 +3,7 @@
 #include<iostream>
 #include"panic.h"
 #include<concepts>
+#include<array>
 
 template<typename T>
 struct Option {
@@ -22,7 +23,7 @@ struct Option {
 		}
 	}
 
-	Option() : _is_some(false) { /*zero();*/ }
+	Option() : _is_some(false), _fill{} { /*zero();*/ }
 
 	Option(Option&& other) noexcept requires std::movable<T> {
 		if (other.is_some()) {
@@ -182,6 +183,7 @@ private:
 	bool _is_some;
 	union {
 		T _v;
+		std::array<u8, sizeof(T)> _fill;
 	};
 };
 

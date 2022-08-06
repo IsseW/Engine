@@ -132,7 +132,7 @@ private:
 		if (depth != 0) {
 			auto branch = dynamic_cast<OctreeBranch*>(cur_node);
 			for (usize oct = 0; oct < 8; ++oct) {
-				auto oct_origin = origins[oct];
+				Vec3<f32> oct_origin = origins[oct];
 				if (f(oct_origin, new_len)) {
 					collect_inner(f, collector, branch->children[oct].get(), depth - 1, oct_origin, new_len); 
 				}
@@ -172,7 +172,7 @@ private:
 		if (depth != 0) {
 			auto branch = dynamic_cast<OctreeBranch*>(cur_node);
 			for (usize oct = 0; oct < 8; ++oct) {
-				auto oct_origin = origins[oct];
+				Vec3<f32> oct_origin = origins[oct];
 				if (f(oct_origin, new_len)) {
 					collect_inner(f, collector, branch->children[oct].get(), depth - 1, oct_origin, new_len);
 				}

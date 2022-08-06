@@ -104,7 +104,7 @@ create_interfaces(const Window& window)
 
 D3D11_VIEWPORT create_viewport(Vec2<u16> size)
 {
-	D3D11_VIEWPORT viewport;
+	D3D11_VIEWPORT viewport{};
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.Width = (f32)size.x;
