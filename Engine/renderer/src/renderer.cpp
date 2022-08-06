@@ -14,6 +14,11 @@ void RendererCtx::clean_up() {
 	swap_chain->Release();
 	context->Release();
 	device->Release();
+#if defined(_DEBUG)
+	Sleep(1000);
+	debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+	debug->Release();
+#endif
 }
 
 Vec2<u16> Viewpoint::size() const {
@@ -25,11 +30,11 @@ f32 RendererCtx::ratio() const {
 }
 
 void Renderer::clean_up() {
-	ctx.clean_up();
 	shadow_pass.clean_up();
 	first_pass.clean_up();
 	second_pass.clean_up();
 	debug_pass.clean_up();
+	ctx.clean_up();
 }
 
 void Renderer::resize(const Window& window, Vec2<u16> size)  {
@@ -158,7 +163,6 @@ void collect_to_render(const World& world, const Mat4<f32>& world_mat, const Mat
 
 DrawingContext DrawingContext::create(Renderer& renderer, const World& world, const AssetHandler& assets, const Input& input, Vec<Line>& debug_lines) {
 	DrawingContext context{};
-
 	static Mat4<f32> camera_world_mat;
 	static Mat4<f32> camera_proj_mat;
 	static bool is_orth;
@@ -303,6 +307,8 @@ void Renderer::draw(const World& world, AssetHandler& assets, const Input& input
 	if (draw_debug) {
 		debug_pass.draw(*this, world, debug_lines);
 	}
+
+	ctx.context->ClearState();
 }
 
 void Renderer::present() {

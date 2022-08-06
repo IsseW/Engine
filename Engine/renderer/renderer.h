@@ -19,6 +19,10 @@ struct RendererCtx {
 	DepthTexture reflection_depth;
 	GBuffer reflection_gbuffer;
 
+#if defined(_DEBUG)
+	IDXGIDebug* debug;
+#endif
+
 	static Result<RendererCtx, RenderCreateError> create(const Window& window);
 	void resize(Vec2<u16> size);
 	void clean_up();

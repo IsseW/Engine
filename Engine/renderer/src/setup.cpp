@@ -4,12 +4,14 @@
 #include<iostream>
 #include<memory>
 #include<renderer/window.h>
-#include<dxgidebug.h>
 
 struct DeviceCreationRes {
 	ID3D11Device* device;
 	ID3D11DeviceContext* context;
 	IDXGISwapChain* swap_chain;
+#if defined(_DEBUG)
+	IDXGIDebug* debug;
+#endif
 };
 
 Result<DeviceCreationRes, RenderCreateError>
@@ -55,8 +57,6 @@ create_interfaces(const Window& window)
 	if (FAILED(pGNSI(__uuidof(IDXGIDebug), (void**)&debug))) {
 		return FailedDeviceCreation;
 	}
-	debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_DETAIL);
-	debug->Release();
 #endif
 
 	IDXGIDevice* idxgi_device = nullptr;
@@ -101,7 +101,14 @@ create_interfaces(const Window& window)
 	}
 	*/
 
-	return ok<DeviceCreationRes, RenderCreateError>(DeviceCreationRes { device, context, swap_chain });
+	return ok<DeviceCreationRes, RenderCreateError>(DeviceCreationRes {
+		device,
+		context,
+		swap_chain,
+#if defined(_DEBUG)
+		debug,
+#endif
+	});
 }
 
 D3D11_VIEWPORT create_viewport(Vec2<u16> size)
@@ -164,6 +171,9 @@ Result<RendererCtx, RenderCreateError> RendererCtx::create(const Window& window)
 		reflection_viewport,
 		reflection_depth,
 		reflection_gbuffer,
+#if defined(_DEBUG)
+		device_res.debug,
+#endif
 	});
 }
 

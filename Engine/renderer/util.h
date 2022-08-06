@@ -6,6 +6,10 @@
 #include<rstd/depot.h>
 #include<vector>
 
+#ifdef _DEBUG
+#include<dxgidebug.h>
+#endif
+
 enum RenderCreateError {
 	FailedWindowCreation,
 	FailedDeviceCreation,

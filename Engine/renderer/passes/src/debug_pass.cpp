@@ -46,8 +46,11 @@ void DebugPass::draw(Renderer& rend, const World& world, Vec<Line> lines) {
 		ctx->Unmap(this->vtx_buf, 0);
 		ctx->Draw(count*2, 0);
 	}
-	
+
+	ctx->VSSetShader(nullptr, nullptr, 0);
 	ctx->PSSetShader(nullptr, nullptr, 0);
+
+	ctx->IASetInputLayout(nullptr);
 }
 
 Result<DebugPass, RenderCreateError> DebugPass::create(ID3D11Device* device) {
