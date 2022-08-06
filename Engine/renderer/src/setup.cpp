@@ -48,11 +48,14 @@ create_interfaces(const Window& window)
 	}
 
 #if defined(_DEBUG)
-	// IDXGIDebug* debug = nullptr;
-	// if (FAILED(DXGIGetDebugInterface(__uuidof(IDXGIDebug), (void**)&debug))) {
-	// 	return FailedDeviceCreation;
-	// }
-	// debug->ReportLiveObjects(DXGI_DEBUG_D3D11, DXGI_DEBUG_RLO_ALL);
+	typedef HRESULT (WINAPI* PGNSI)(const IID&, void**);
+	IDXGIDebug* debug = nullptr;
+	PGNSI pGNSI = (PGNSI)GetProcAddress(GetModuleHandle(TEXT("Dxgidebug.dll")), "DXGIGetDebugInterface");
+	
+	if (FAILED(pGNSI(__uuidof(IDXGIDebug), (void**)&debug))) {
+		return FailedDeviceCreation;
+	}
+	debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
 #endif
 
 	IDXGIDevice* idxgi_device = nullptr;

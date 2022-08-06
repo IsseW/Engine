@@ -29,9 +29,9 @@ namespace math {
 		}
 
 		bool intersects(const Aab& other) const {
-			return this->min.map<bool>([&](const auto& amin, const auto& amax, const auto& bmin, const auto& bmax) {
-				return (amin >= bmin && amin < bmax) || (amax > bmin && amax <= bmax) || (bmin >= amin && bmin < amax) || (bmax > amin && bmax <= amax);
-			}, this->max, other.min, other.max).reduce_and();
+			return !this->min.map<bool>([&](const auto& amin, const auto& amax, const auto& bmin, const auto& bmax) {
+				return amin > bmax || amax < bmin;
+			}, this->max, other.min, other.max).reduce_or();
 		}
 
 		void grow_to_contain(const Vec<T, L>& point) {

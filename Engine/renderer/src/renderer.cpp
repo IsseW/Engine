@@ -29,6 +29,7 @@ void Renderer::clean_up() {
 	shadow_pass.clean_up();
 	first_pass.clean_up();
 	second_pass.clean_up();
+	debug_pass.clean_up();
 }
 
 void Renderer::resize(const Window& window, Vec2<u16> size)  {

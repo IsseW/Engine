@@ -34,7 +34,18 @@ Id<Reflective> World::add(Reflective&& object) {
 }
 
 void World::remove(Id<Object> id) {
-	objects.remove(id);
+	objects.remove(id).then_do([&](Object obj) {
+		Vec<Vec<Id<Object>>*> r = octree_obj.collect([&](Vec3<f32> origin, f32 len) {
+			Aabb<f32> cell_bounds{ origin - len, origin + len };
+			return cell_bounds.intersects(obj.bounds);
+		});
+
+		for (auto vec : r) {
+			vec->index_of(id).then_do([&](usize i) {
+				vec->swap_remove(i);
+			});
+		}
+	});
 }
 void World::remove(Id<Light> id) {
 	lights.remove(id);
@@ -45,8 +56,19 @@ void World::remove(Id<ParticleSystem> id) {
 	});
 }
 void World::remove(Id<Reflective> id) {
-	reflective.remove(id).then_do([](Reflective reflective) {
+	reflective.remove(id).then_do([&](Reflective reflective) {
 		reflective.clean_up();
+
+		Vec<Vec<Id<Reflective>>*> r = octree_reflective.collect([&](Vec3<f32> origin, f32 len) {
+			Aabb<f32> cell_bounds{ origin - len, origin + len };
+			return cell_bounds.intersects(reflective.bounds);
+		});
+
+		for (auto vec : r) {
+			vec->index_of(id).then_do([&](usize i) {
+				vec->swap_remove(i);
+			});
+		}
 	});
 }
 

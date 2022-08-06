@@ -51,11 +51,11 @@ PixelShaderOutput main(PixelShaderInput input) : SV_TARGET {
 
     float3 p_dx = ddx(wpos.xyz);
     float3 p_dy = ddy(wpos.xyz);
-    float2 tc_dx = ddx(uv);
-    float2 tc_dy = ddy(uv);
+    float2 uv_dx = ddx(uv);
+    float2 uv_dy = ddy(uv);
 
-    float3 t = normalize(tc_dy.y * p_dx - tc_dx.y * p_dy);
-    float3 b = normalize(tc_dy.x * p_dx - tc_dx.x * p_dy); // sign inversion
+    float3 t = normalize(uv_dy.y * p_dx - uv_dx.y * p_dy);
+    float3 b = normalize(uv_dy.x * p_dx - uv_dx.x * p_dy); // sign inversion
     float3 x = cross(n, t);
 
     t = normalize(cross(x, n));
@@ -78,7 +78,6 @@ PixelShaderOutput main(PixelShaderInput input) : SV_TARGET {
     output.diffuse.w = 1.0;
     output.specular.xyz = specular_c.xyz * specular_tex.Sample(tex_sampler, uv).xyz;
     output.specular.w = 1.0;
-
 
     return output;
 }
