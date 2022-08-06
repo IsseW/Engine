@@ -22,7 +22,9 @@ std::string load_file_text(const char* file) {
 }
 
 void dxname(ID3D11DeviceChild* obj, std::string name) {
+#ifdef _DEBUG
 	obj->SetPrivateData(WKPDID_D3DDebugObjectName, name.size(), name.data());
+#endif
 }
 
 Result<ID3D11PixelShader*, RenderCreateError> load_pixel(ID3D11Device* device, const char* file) {
