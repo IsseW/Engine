@@ -41,7 +41,6 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 	auto bind_mesh = [&](Option<AId<Mesh>> mesh_handle) {
 		const Mesh* mesh = assets.get_or_default(mesh_handle);
 		if (mesh->binded.is_none()) {
-			std::cerr << "Mesh needed for drawing isn't bound." << std::endl;
 			return (const Mesh*)nullptr;
 		}
 		auto binded = mesh->binded.as_ptr().unwrap_unchecked();
