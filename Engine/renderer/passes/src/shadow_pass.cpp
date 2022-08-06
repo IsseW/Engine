@@ -4,7 +4,7 @@ void ShadowPass::clean_up() {
 	shadows.clean_up();
 }
 
-constexpr Vec2<u16> TEX_SIZE = { 1024, 1024 };
+constexpr Vec2<u16> TEX_SIZE = { 2048, 2048 };
 
 void ShadowPass::resize(ID3D11Device* device, Vec2<u16> size) {
 	// directional_shadows.resize(device, get_size(size));

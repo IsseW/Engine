@@ -55,7 +55,8 @@ create_interfaces(const Window& window)
 	if (FAILED(pGNSI(__uuidof(IDXGIDebug), (void**)&debug))) {
 		return FailedDeviceCreation;
 	}
-	debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+	debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_DETAIL);
+	debug->Release();
 #endif
 
 	IDXGIDevice* idxgi_device = nullptr;
@@ -67,15 +68,18 @@ create_interfaces(const Window& window)
 	if (FAILED(idxgi_device->GetAdapter(&adapter))) {
 		return FailedSwapChainCreation;
 	}
+	idxgi_device->Release();
 
 	IDXGIFactory* factory = nullptr;
 	if (FAILED(adapter->GetParent(__uuidof(IDXGIFactory), (void**)&factory))) {
 		return FailedSwapChainCreation;
 	}
+	adapter->Release();
 
 	if (FAILED(factory->CreateSwapChain(device, &swap_chain_desc, &swap_chain))) {
 		return FailedSwapChainCreation;
 	}
+	factory->Release();
 	
 	/*
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(
@@ -97,9 +101,7 @@ create_interfaces(const Window& window)
 	}
 	*/
 
-	else {
-		return ok<DeviceCreationRes, RenderCreateError>(DeviceCreationRes { device, context, swap_chain });
-	}
+	return ok<DeviceCreationRes, RenderCreateError>(DeviceCreationRes { device, context, swap_chain });
 }
 
 D3D11_VIEWPORT create_viewport(Vec2<u16> size)
