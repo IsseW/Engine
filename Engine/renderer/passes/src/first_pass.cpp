@@ -71,6 +71,7 @@ void ObjectRenderer::clean_up() {
 	layout->Release();
 
 	object.clean_up();
+	material.clean_up();
 
 	detail_data.clean_up();
 
