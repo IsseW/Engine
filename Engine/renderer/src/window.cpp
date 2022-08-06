@@ -119,7 +119,8 @@ std::string last_error_msg()
 
 Option<Window*> create_window(HINSTANCE instance, Vec2<u16> size, i32 n_cmd_show)
 {
-	const wchar_t CLASS_NAME[] = L"Cool Engine";
+	const wchar_t CLASS_NAME[] = L"Renderer";
+	const wchar_t WINDOW_NAME[] = L"RDX";
 
 	WNDCLASS wc = {};
 	wc.lpfnWndProc = window_proc;
@@ -130,7 +131,7 @@ Option<Window*> create_window(HINSTANCE instance, Vec2<u16> size, i32 n_cmd_show
 
 	RECT rt = { 0, 0, (LONG)size.x, (LONG)size.y };
 	AdjustWindowRect(&rt, WS_OVERLAPPEDWINDOW, FALSE);
-	HWND hw = CreateWindowEx(0, CLASS_NAME, L"Very cool", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, rt.right - rt.left, rt.bottom - rt.top, nullptr, nullptr, instance, nullptr);
+	HWND hw = CreateWindowEx(0, CLASS_NAME, WINDOW_NAME, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, rt.right - rt.left, rt.bottom - rt.top, nullptr, nullptr, instance, nullptr);
 	
 	if (hw == nullptr) {
 		return none<Window*>();
