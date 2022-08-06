@@ -21,6 +21,10 @@ Option<std::string> load_file_text(const char* file) {
 	return some(data);
 }
 
+void dxname(ID3D11DeviceChild* obj, std::string name) {
+	obj->SetPrivateData(WKPDID_D3DDebugObjectName, name.size(), name.data());
+}
+
 Result<ID3D11PixelShader*, RenderCreateError> load_pixel(ID3D11Device* device, const char* file) {
 	auto maybe_data = load_file_text(file);
 	if (maybe_data.is_none()) {

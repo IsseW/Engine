@@ -10,6 +10,8 @@
 #include<dxgidebug.h>
 #endif
 
+void dxname(ID3D11DeviceChild* obj, std::string name);
+
 enum RenderCreateError {
 	FailedWindowCreation,
 	FailedDeviceCreation,

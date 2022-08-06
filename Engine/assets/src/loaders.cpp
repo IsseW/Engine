@@ -3,6 +3,7 @@
 #include<iostream>
 #include<fstream>
 #include<sstream>
+#include<renderer/util.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include<assets/stb_image.h>
@@ -67,6 +68,7 @@ void Image::bind(ID3D11Device* device) {
 	if (FAILED(res)) {
 		PANIC("Failed to create loaded texture.");
 	}
+	dxname(texture, "Asset texture");
 	D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc;
 	resource_desc.Texture2D = { 0, 1 };
 	resource_desc.Format = desc.Format;
