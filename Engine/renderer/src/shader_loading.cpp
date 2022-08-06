@@ -1,13 +1,13 @@
 #include<renderer/util.h>
 #include<fstream>
 
-Option<std::string> load_file_text(const char* file) {
+std::string load_file_text(const char* file) {
 	std::string data;
 	std::ifstream reader;
 	reader.open(file, std::ios::binary | std::ios::ate);
 	if (!reader.is_open())
 	{
-		return none<std::string>();
+		return std::string();
 	}
 
 	reader.seekg(0, std::ios::end);
@@ -18,7 +18,7 @@ Option<std::string> load_file_text(const char* file) {
 		std::istreambuf_iterator<char>());
 	reader.close();
 
-	return some(data);
+	return data;
 }
 
 void dxname(ID3D11DeviceChild* obj, std::string name) {
@@ -26,11 +26,10 @@ void dxname(ID3D11DeviceChild* obj, std::string name) {
 }
 
 Result<ID3D11PixelShader*, RenderCreateError> load_pixel(ID3D11Device* device, const char* file) {
-	auto maybe_data = load_file_text(file);
-	if (maybe_data.is_none()) {
+	auto data = load_file_text(file);
+	if (data.size() == 0) {
 		return MissingShaderFile;
 	}
-	auto data = maybe_data.unwrap_unchecked();
 	ID3D11PixelShader* shader;
 	if (FAILED(device->CreatePixelShader(data.c_str(), data.length(), nullptr, &shader)))
 	{
@@ -41,11 +40,10 @@ Result<ID3D11PixelShader*, RenderCreateError> load_pixel(ID3D11Device* device, c
 
 
 Result<ID3D11VertexShader*, RenderCreateError> load_vertex_without_layout(ID3D11Device* device, const char* file) {
-	auto maybe_data = load_file_text(file);
-	if (maybe_data.is_none()) {
+	auto data = load_file_text(file);
+	if (data.size() == 0) {
 		return MissingShaderFile;
 	}
-	auto data = maybe_data.unwrap_unchecked();
 	ID3D11VertexShader* shader;
 	auto hr = device->CreateVertexShader(data.c_str(), data.length(), nullptr, &shader);
 	if (FAILED(hr)) {
@@ -55,11 +53,10 @@ Result<ID3D11VertexShader*, RenderCreateError> load_vertex_without_layout(ID3D11
 }
 
 Result<VSIL, RenderCreateError> load_vertex(ID3D11Device* device, const char* file, const std::vector<D3D11_INPUT_ELEMENT_DESC>& input) {
-	auto maybe_data = load_file_text(file);
-	if (maybe_data.is_none()) {
+	auto data = load_file_text(file);
+	if (data.size() == 0) {
 		return MissingShaderFile;
 	}
-	auto data = maybe_data.unwrap_unchecked();
 	ID3D11VertexShader* shader;
 	auto hr = device->CreateVertexShader(data.c_str(), data.length(), nullptr, &shader);
 	if (FAILED(hr)) {
@@ -77,12 +74,10 @@ Result<VSIL, RenderCreateError> load_vertex(ID3D11Device* device, const char* fi
 }
 
 Result<ID3D11ComputeShader*, RenderCreateError> load_compute(ID3D11Device* device, const char* file) {
-	auto maybe_data = load_file_text(file);
-	if (maybe_data.is_none()) {
+	auto data = load_file_text(file);
+	if (data.size() == 0) {
 		return MissingShaderFile;
 	}
-
-	std::string data = maybe_data.unwrap_unchecked();
 
 	ID3D11ComputeShader* shader;
 	if (FAILED(device->CreateComputeShader(data.c_str(), data.length(), nullptr, &shader))) {
@@ -92,12 +87,11 @@ Result<ID3D11ComputeShader*, RenderCreateError> load_compute(ID3D11Device* devic
 }
 
 Result<ID3D11GeometryShader*, RenderCreateError> load_geometry(ID3D11Device* device, const char* file) {
-	auto maybe_data = load_file_text(file);
-	if (maybe_data.is_none()) {
+	auto data = load_file_text(file);
+	if (data.size() == 0) {
 		return MissingShaderFile;
 	}
 
-	std::string data = maybe_data.unwrap_unchecked();
 	ID3D11GeometryShader* shader;
 
 	if (FAILED(device->CreateGeometryShader(data.c_str(), data.length(), nullptr, &shader))) {
@@ -107,12 +101,11 @@ Result<ID3D11GeometryShader*, RenderCreateError> load_geometry(ID3D11Device* dev
 }
 
 Result<ID3D11HullShader*, RenderCreateError> load_hull(ID3D11Device* device, const char* file) {
-	auto maybe_data = load_file_text(file);
-	if (maybe_data.is_none()) {
+	auto data = load_file_text(file);
+	if (data.size() == 0) {
 		return MissingShaderFile;
 	}
 
-	std::string data = maybe_data.unwrap_unchecked();
 	ID3D11HullShader* shader;
 
 	if (FAILED(device->CreateHullShader(data.c_str(), data.length(), nullptr, &shader))) {
@@ -122,12 +115,11 @@ Result<ID3D11HullShader*, RenderCreateError> load_hull(ID3D11Device* device, con
 }
 
 Result<ID3D11DomainShader*, RenderCreateError> load_domain(ID3D11Device* device, const char* file) {
-	auto maybe_data = load_file_text(file);
-	if (maybe_data.is_none()) {
+	auto data = load_file_text(file);
+	if (data.size() == 0) {
 		return MissingShaderFile;
 	}
 
-	std::string data = maybe_data.unwrap_unchecked();
 	ID3D11DomainShader* shader;
 
 	if (FAILED(device->CreateDomainShader(data.c_str(), data.length(), nullptr, &shader))) {

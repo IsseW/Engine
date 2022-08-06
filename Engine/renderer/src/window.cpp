@@ -98,11 +98,11 @@ void clear_error() {
 	SetLastError(0);
 }
 
-Option<std::string> last_error_msg()
+std::string last_error_msg()
 {
 	DWORD error_id = GetLastError();
 	if (error_id == 0) {
-		return none<std::string>();
+		return std::string();
 	}
 
 	LPSTR msg_buffer = nullptr;
@@ -114,7 +114,7 @@ Option<std::string> last_error_msg()
 
 	LocalFree(msg_buffer);
 
-	return some(std::move(message));
+	return message;
 }
 
 Option<Window*> create_window(HINSTANCE instance, u32 width, u32 height, i32 n_cmd_show)
@@ -143,8 +143,8 @@ Option<Window*> create_window(HINSTANCE instance, u32 width, u32 height, i32 n_c
 	SetWindowLongPtr(hw, GWLP_USERDATA, (LONG_PTR)window);
 	auto error = last_error_msg();
 
-	if (error.is_some()) {
-		std::cerr << error.unwrap_unchecked() << std::endl;
+	if (error.size() > 0) {
+		std::cerr << error << std::endl;
 		PANIC("Failed to set window data.");
 	}
 
