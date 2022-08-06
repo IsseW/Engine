@@ -89,7 +89,7 @@ struct SBuffer {
 			clean_up();
 			ID3D11Device* device;
 			ctx->GetDevice(&device);
-			*this = create(device, capacity * 2).unwrap();
+			*this = create(device, capacity * 2, "test").unwrap();
 		}
 		D3D11_MAPPED_SUBRESOURCE resource;
 
@@ -105,7 +105,7 @@ struct SBuffer {
 		if (srv) srv->Release();
 	}
 
-	static Result<SBuffer, RenderCreateError> create(ID3D11Device* device, usize capacity) {
+	static Result<SBuffer, RenderCreateError> create(ID3D11Device* device, usize capacity, std::string name) {
 		D3D11_BUFFER_DESC desc;
 		desc.ByteWidth = sizeof(T) * capacity;
 		desc.Usage = D3D11_USAGE_DYNAMIC;
@@ -118,6 +118,7 @@ struct SBuffer {
 		if (FAILED(device->CreateBuffer(&desc, nullptr, &buffer))) {
 			return FailedBufferCreation;
 		}
+		dxname(buffer, (name + " sbuffer").data());
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc;
 		resource_desc.Format = DXGI_FORMAT_UNKNOWN;
@@ -130,6 +131,7 @@ struct SBuffer {
 			buffer->Release();
 			return FailedSRVCreation;
 		}
+		dxname(buffer, (name + " sbuffer srv").data());
 
 		return ok<SBuffer, RenderCreateError>(SBuffer{ buffer, srv, capacity });
 	}
