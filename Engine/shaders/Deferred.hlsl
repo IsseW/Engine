@@ -54,7 +54,7 @@ void deferred(uint2 pos) {
 
 		for (uint i = 0; i < num_lights; i++) {
 
-			float bias = 0.001f;
+			float bias = 0.00001f;
 
 			Light light = lights[i];
 
