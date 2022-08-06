@@ -129,6 +129,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	auto cleanup = [&]() {
 		clean_up_ui();
 		assets.clean_up();
+		world.clean_up();
 		renderer.clean_up();
 		delete window;
 	};
