@@ -50,9 +50,8 @@ struct SparseOctree {
 
 	Result<EmptyTuple, OctreeError> insert(Aabb<f32> bb, T val) {
 		auto index = index_of_multiple(bb);
-		if (index.is_some()) {
-			auto idx = index.unwrap_unchecked();
-			for (auto cur : idx) {
+		if (index.len() != 0) {
+			for (auto cur : index) {
 				insert(cur, val);
 			}
 			return ok<EmptyTuple, OctreeError>(EmptyTuple{});
@@ -272,7 +271,7 @@ private:
 		}
 	}
 
-	Option<Vec<u64>> index_of_multiple(Aabb<f32> bb) const {
+	Vec<u64> index_of_multiple(Aabb<f32> bb) const {
 		auto len = this->len;
 		bool out_of_range = false;
 		auto ratio = [&](auto elem) {
@@ -282,11 +281,11 @@ private:
 		};
 		auto absolute = Aabb<f32>{ bb.min.map<f32>(ratio), bb.max.map<f32>(ratio) };
 		if (out_of_range) {
-			return none<Vec<u64>>();
+			return Vec<u64>{};
 		}
 		auto vec = Vec<u64>{};
 		index_of_multiple_recurse(DEPTH, absolute, 0, vec);
-		return some<Vec<u64>>(vec);
+		return vec;
 	}
 
 	void index_of_multiple_recurse(usize depth, Aabb<f32> bb, u64 result, Vec<u64>& results) const {

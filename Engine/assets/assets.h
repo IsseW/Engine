@@ -13,7 +13,7 @@ namespace fs = std::filesystem;
 struct AssetHandler;
 template<typename T>
 struct Asset {
-	Option<std::string> path;
+	std::string path;
 	T asset;
 };
 
@@ -141,7 +141,7 @@ struct Assets {
 		auto got = loaded_paths.find(asset);
 		if (got == loaded_paths.end()) {
 			T a = T::load(path, asset_handler);
-			auto id = _items.insert(Asset<T> { some(asset), a });
+			auto id = _items.insert(Asset<T> { asset, a });
 			loaded_paths.insert({ asset, id });
 			return id;
 		}
@@ -151,10 +151,10 @@ struct Assets {
 	}
 
 	AId<T> insert(T&& asset, std::string name) {
-		return _items.insert(std::move(Asset<T> { some(name), asset }));
+		return _items.insert(std::move(Asset<T> { name, asset }));
 	}
 	AId<T> insert(T&& asset) {
-		return _items.insert(std::move(Asset<T> { none<std::string>(), asset }));
+		return _items.insert(std::move(Asset<T> { std::string{}, asset }));
 	}
 
 	Option<const T*> get(AId<T> handle) const {

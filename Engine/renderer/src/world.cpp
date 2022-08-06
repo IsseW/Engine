@@ -132,36 +132,35 @@ void World::update(f32 dt, const Window& window, const AssetHandler& assets) {
 				Aabb<f32> cell_bounds{ origin - len, origin + len };
 				return cell_bounds.intersects(obj.bounds);
 			});
-
 			for (auto vec : r) {
 				vec->index_of(id).then_do([&](usize i) {
 					vec->swap_remove(i);
 				});
 			}
 			obj.bounds = bounds;
-			octree_obj.insert(bounds, id);
+			//octree_obj.insert(bounds, id);
 		}
 	});
-
-	reflective.iter([&](Id<Reflective> id, Reflective& obj) {
-		auto bounds = assets.get_or_default(obj.mesh)->bounds;
-		bounds = bounds.transformed(obj.transform.get_mat());
-
-		if (bounds.min != obj.bounds.min || bounds.max != obj.bounds.max) {
-			Vec<Vec<Id<Reflective>>*> r = octree_reflective.collect([&](Vec3<f32> origin, f32 len) {
-				Aabb<f32> cell_bounds{ origin - len, origin + len };
-				return cell_bounds.intersects(obj.bounds);
-			});
-
-			for (auto vec : r) {
-				vec->index_of(id).then_do([&](usize i) {
-					vec->swap_remove(i);
-					});
-			}
-			obj.bounds = bounds;
-			octree_reflective.insert(bounds, id);
-		}
-		});
+	//
+	//reflective.iter([&](Id<Reflective> id, Reflective& obj) {
+	//	auto bounds = assets.get_or_default(obj.mesh)->bounds;
+	//	bounds = bounds.transformed(obj.transform.get_mat());
+	//
+	//	if (bounds.min != obj.bounds.min || bounds.max != obj.bounds.max) {
+	//		Vec<Vec<Id<Reflective>>*> r = octree_reflective.collect([&](Vec3<f32> origin, f32 len) {
+	//			Aabb<f32> cell_bounds{ origin - len, origin + len };
+	//			return cell_bounds.intersects(obj.bounds);
+	//		});
+	//
+	//		for (auto vec : r) {
+	//			vec->index_of(id).then_do([&](usize i) {
+	//				vec->swap_remove(i);
+	//				});
+	//		}
+	//		obj.bounds = bounds;
+	//		octree_reflective.insert(bounds, id);
+	//	}
+	//});
 
 	update_camera(camera, dt, window);
 }

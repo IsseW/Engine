@@ -142,8 +142,12 @@ void select_asset(const char* name, Option<AId<T>>& asset_id, AssetHandler& asse
 		assets.assets<T>().iter([&](AId<T> id, const Asset<T>& asset) {
 			std::string s = id.to_string();
 			s += " ";
-			s += asset.path.as_ptr().map<const char*>([](const std::string* s) { return s->data(); }).unwrap_or("Unnamed");
-
+			if (asset.path.size() > 0) {
+				s += asset.path;
+			}
+			else {
+				s += "unnamed";
+			}
 			if (ImGui::Selectable(s.data(), asset_id.is_some() && *asset_id.as_ptr().unwrap_unchecked() == id)) {
 				asset_id = some(id);
 			}
@@ -490,8 +494,12 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 
 				std::string s = id.to_string();
 				s += " ";
-				s += asset.path.as_ptr().map<const char*>([](const std::string* s) { return s->data(); }).unwrap_or("unnamed");
-
+				if (asset.path.size() > 0) {
+					s += asset.path;
+				}
+				else {
+					s += "unknown";
+				}
 				if (ImGui::CollapsingHeader(s.data())) {
 					ImGui::Indent();
 
@@ -555,8 +563,12 @@ void editor_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 				ImGui::PushID(id.idx());
 				std::string s = id.to_string();
 				s += " ";
-				s += asset.path.as_ptr().map<const char*>([](const std::string* s) { return s->data(); }).unwrap_or("unnamed");
-
+				if (asset.path.size() > 0) {
+					s += asset.path;
+				}
+				else {
+					s += "unknown";
+				}
 				if (ImGui::CollapsingHeader(s.data())) {
 					ImGui::Indent();
 
