@@ -1,265 +1,99 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Header Files\Pipelines">
-      <UniqueIdentifier>{9ba3b717-8930-4148-9e5b-b19da2303edd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\rstd">
-      <UniqueIdentifier>{37b5c258-8683-4298-ab8b-74e112d78979}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\math">
-      <UniqueIdentifier>{a2f480fa-22b0-42a2-9fc8-1c28d4535ab5}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="renderer\src\setup.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\tests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rstd\src\rstd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\src\renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ui\imgui\imgui.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ui\imgui\imgui_demo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ui\imgui\imgui_draw.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ui\imgui\imgui_impl_dx11.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ui\imgui\imgui_impl_win32.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ui\imgui\imgui_tables.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ui\imgui\imgui_widgets.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ui\ui.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="assets\src\loaders.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\src\window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\src\transform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\src\world.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="assets\src\shape.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="input\src\input.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\passes\src\shadow_pass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\passes\src\first_pass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\src\util.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\passes\src\second_pass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\src\shader_loading.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\passes\src\draw_objects.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\passes\src\particle_system.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\src\particle.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\passes\src\debug_pass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="renderer\renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="assets\stb_image.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\transform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rstd\result.h">
-      <Filter>Header Files\rstd</Filter>
-    </ClInclude>
-    <ClInclude Include="rstd\option.h">
-      <Filter>Header Files\rstd</Filter>
-    </ClInclude>
-    <ClInclude Include="rstd\panic.h">
-      <Filter>Header Files\rstd</Filter>
-    </ClInclude>
-    <ClInclude Include="rstd\tuple.h">
-      <Filter>Header Files\rstd</Filter>
-    </ClInclude>
-    <ClInclude Include="rstd\primitives.h">
-      <Filter>Header Files\rstd</Filter>
-    </ClInclude>
-    <ClInclude Include="rstd\vector.h">
-      <Filter>Header Files\rstd</Filter>
-    </ClInclude>
-    <ClInclude Include="math\vec.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="math\mat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="math\quat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="math\consts.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\dev\c++\imgui\imconfig.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ui\imgui\imconfig.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ui\imgui\imgui.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ui\imgui\imgui_impl_dx11.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ui\imgui\imgui_impl_win32.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ui\imgui\imgui_internal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ui\imgui\imstb_rectpack.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ui\imgui\imstb_textedit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ui\imgui\imstb_truetype.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ui\ui.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="assets\assets.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rstd\depot.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\world.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="assets\shape.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="input\input.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="math\aab.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\passes\shadow_pass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\passes\first_pass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\util.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\passes\second_pass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\passes\draw_objects.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="data_structures\sparse_octree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rstd\box.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\passes\particle_system.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\particle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\passes\debug_pass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="shaders\vertex.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="shaders\pixel.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
+    <FxCompile Include="shaders\debug_pixel.hlsl" />
+    <FxCompile Include="shaders\debug_vertex.hlsl" />
+    <FxCompile Include="shaders\domain.hlsl" />
+    <FxCompile Include="shaders\hull.hlsl" />
+    <FxCompile Include="shaders\particle_geometry.hlsl" />
     <FxCompile Include="shaders\deferred.hlsl" />
     <FxCompile Include="shaders\particle_compute.hlsl" />
-    <FxCompile Include="shaders\particle_geometry.hlsl" />
     <FxCompile Include="shaders\particle_vertex.hlsl" />
-    <FxCompile Include="shaders\hull.hlsl" />
-    <FxCompile Include="shaders\domain.hlsl" />
-    <FxCompile Include="shaders\tesselation_vertex.hlsl" />
+    <FxCompile Include="shaders\pixel.hlsl" />
     <FxCompile Include="shaders\reflective.hlsl" />
-    <FxCompile Include="shaders\debug_vertex.hlsl" />
-    <FxCompile Include="shaders\debug_pixel.hlsl" />
+    <FxCompile Include="shaders\tesselation_vertex.hlsl" />
+    <FxCompile Include="shaders\vertex.hlsl" />
+    <FxCompile Include="shaders\ffxa.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="assets\src\loaders.cpp" />
+    <ClCompile Include="assets\src\shape.cpp" />
+    <ClCompile Include="input\src\input.cpp" />
+    <ClCompile Include="renderer\passes\src\debug_pass.cpp" />
+    <ClCompile Include="renderer\passes\src\draw_objects.cpp" />
+    <ClCompile Include="renderer\passes\src\first_pass.cpp" />
+    <ClCompile Include="renderer\passes\src\particle_system.cpp" />
+    <ClCompile Include="renderer\passes\src\second_pass.cpp" />
+    <ClCompile Include="renderer\passes\src\shadow_pass.cpp" />
+    <ClCompile Include="renderer\src\particle.cpp" />
+    <ClCompile Include="renderer\src\shader_loading.cpp" />
+    <ClCompile Include="renderer\src\transform.cpp" />
+    <ClCompile Include="renderer\src\util.cpp" />
+    <ClCompile Include="renderer\src\window.cpp" />
+    <ClCompile Include="renderer\src\world.cpp" />
+    <ClCompile Include="ui\ui.cpp" />
+    <ClCompile Include="ui\imgui\imgui.cpp" />
+    <ClCompile Include="ui\imgui\imgui_demo.cpp" />
+    <ClCompile Include="ui\imgui\imgui_draw.cpp" />
+    <ClCompile Include="ui\imgui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="ui\imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="ui\imgui\imgui_tables.cpp" />
+    <ClCompile Include="ui\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="renderer\src\renderer.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="renderer\src\setup.cpp" />
+    <ClCompile Include="rstd\src\rstd.cpp" />
+    <ClCompile Include="src\tests.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\..\dev\c++\imgui\imconfig.h" />
+    <ClInclude Include="assets\assets.h" />
+    <ClInclude Include="assets\shape.h" />
+    <ClInclude Include="data_structures\sparse_octree.h" />
+    <ClInclude Include="input\input.h" />
+    <ClInclude Include="math\aab.h" />
+    <ClInclude Include="renderer\particle.h" />
+    <ClInclude Include="renderer\passes\debug_pass.h" />
+    <ClInclude Include="renderer\passes\draw_objects.h" />
+    <ClInclude Include="renderer\passes\second_pass.h" />
+    <ClInclude Include="renderer\passes\shadow_pass.h" />
+    <ClInclude Include="renderer\passes\first_pass.h" />
+    <ClInclude Include="renderer\passes\particle_system.h" />
+    <ClInclude Include="renderer\util.h" />
+    <ClInclude Include="renderer\window.h" />
+    <ClInclude Include="renderer\world.h" />
+    <ClInclude Include="rstd\box.h" />
+    <ClInclude Include="rstd\depot.h" />
+    <ClInclude Include="ui\ui.h" />
+    <ClInclude Include="ui\imgui\imconfig.h" />
+    <ClInclude Include="ui\imgui\imgui.h" />
+    <ClInclude Include="ui\imgui\imgui_impl_dx11.h" />
+    <ClInclude Include="ui\imgui\imgui_impl_win32.h" />
+    <ClInclude Include="ui\imgui\imgui_internal.h" />
+    <ClInclude Include="ui\imgui\imstb_rectpack.h" />
+    <ClInclude Include="ui\imgui\imstb_textedit.h" />
+    <ClInclude Include="ui\imgui\imstb_truetype.h" />
+    <ClInclude Include="math\consts.h" />
+    <ClInclude Include="math\mat.h" />
+    <ClInclude Include="math\quat.h" />
+    <ClInclude Include="math\vec.h" />
+    <ClInclude Include="rstd\option.h" />
+    <ClInclude Include="rstd\panic.h" />
+    <ClInclude Include="rstd\primitives.h" />
+    <ClInclude Include="rstd\result.h" />
+    <ClInclude Include="renderer\transform.h" />
+    <ClInclude Include="renderer\renderer.h" />
+    <ClInclude Include="assets\stb_image.h" />
+    <ClInclude Include="rstd\tuple.h" />
+    <ClInclude Include="rstd\vector.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resources\croc.png" />
+    <Image Include="resources\test_texture.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
     <None Include="resources\croc.mtl" />
     <None Include="resources\croc.wavefront" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="resources\test_texture.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="resources\croc.png">
-      <Filter>Resource Files</Filter>
-    </Image>
   </ItemGroup>
 </Project>

@@ -5,6 +5,9 @@ Result<SecondPass, RenderCreateError> SecondPass::create(ID3D11Device* device) {
 	ID3D11ComputeShader* deferred;
 	TRY(deferred, load_compute(device, "shaders/deferred.cso"));
 
+	ID3D11ComputeShader* ffxa;
+	TRY(ffxa, load_compute(device, "shaders/ffxa.cso"));
+
 	Uniform<ObjectData> object;
 	TRY(object, Uniform<ObjectData>::create(device));
 
@@ -30,6 +33,7 @@ Result<SecondPass, RenderCreateError> SecondPass::create(ID3D11Device* device) {
 
 	return ok<SecondPass, RenderCreateError>(SecondPass{
 			deferred,
+			ffxa,
 			object,
 			lights,
 			shadow_sampler_state,
@@ -37,7 +41,13 @@ Result<SecondPass, RenderCreateError> SecondPass::create(ID3D11Device* device) {
 }
 
 void SecondPass::clean_up() {
-	if (deferred) deferred->Release();
+	deferred->Release();
+	ffxa->Release();
+
+	object.clean_up();
+	lights.clean_up();
+
+	shadow_sampler->Release();
 }
 
 void SecondPass::draw(Renderer& rend, const World& world, const Viewpoint& viewpoint) {
@@ -82,6 +92,15 @@ void SecondPass::draw(Renderer& rend, const World& world, const Viewpoint& viewp
 	// Unbind resources
 	ID3D11ShaderResourceView* empty_srv[SRV_COUNT] = { nullptr };
 	rend.ctx.context->CSSetShaderResources(0, SRV_COUNT, empty_srv);
+
+	ID3D11Buffer* null = nullptr;
+	rend.ctx.context->CSSetConstantBuffers(0, 1, &null);
+
+	if (do_ffxa) {
+		rend.ctx.context->CSSetShader(ffxa, NULL, 0);
+		rend.ctx.context->Dispatch(size.x, size.y, 1);
+	}
+
 	ID3D11UnorderedAccessView* empty_uav = nullptr;
 	rend.ctx.context->CSSetUnorderedAccessViews(0, 1, &empty_uav, nullptr);
 }

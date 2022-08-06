@@ -38,12 +38,15 @@ struct SecondPass {
 
 	ID3D11ComputeShader* deferred;
 
+	ID3D11ComputeShader* ffxa;
+
 	Uniform<ObjectData> object;
 
 	SBuffer<LightData> lights;
 	ID3D11SamplerState* shadow_sampler;
 
 	RenderMode mode = RenderMode::Deferred;
+	bool do_ffxa = true;
 
 	void draw(Renderer& rend, const World& world, const Viewpoint& viewpoint);
 

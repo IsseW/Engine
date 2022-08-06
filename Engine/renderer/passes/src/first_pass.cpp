@@ -142,6 +142,7 @@ Result<FirstPass, RenderCreateError> FirstPass::create(ID3D11Device* device, Vec
 	ZeroMemory(&rs_desc, sizeof(D3D11_RASTERIZER_DESC));
 	rs_desc.FillMode = D3D11_FILL_SOLID;
 	rs_desc.CullMode = D3D11_CULL_BACK;
+	rs_desc.AntialiasedLineEnable = false;
 	ID3D11RasterizerState* rs_default;
 	if (FAILED(device->CreateRasterizerState(&rs_desc, &rs_default))) {
 		return FailedRSCreation;

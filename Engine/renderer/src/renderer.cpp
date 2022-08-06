@@ -46,7 +46,7 @@ DrawingContext DrawingContext::create(Renderer& renderer, const World& world, co
 	static Transform transform{};
 	static float rotation = 0.0;
 	transform.rotation = Quat<f32>::angle_axis(Vec3<f32>{0,0,1.0f}, rotation);
-	rotation += 0.01;
+	rotation += 0.01f;
 
 	auto camera_transform = world.camera.transform.get_mat();
 	auto camera_proj = world.camera.get_proj(renderer.ctx.ratio());

@@ -622,6 +622,7 @@ void update_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 
 				ImGui::EndListBox();
 			}
+			ImGui::Checkbox("FFXA", &renderer.second_pass.do_ffxa);
 			if (ImGui::Button("Toggle Wireframe")) {
 				auto temp = renderer.first_pass.rs_default;
 				renderer.first_pass.rs_default = renderer.first_pass.rs_wireframe;
