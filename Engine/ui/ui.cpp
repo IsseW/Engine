@@ -617,6 +617,7 @@ void update_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 			ImGui::Text("Move with w, a, s, d, space and left shift");
 			ImGui::Text("Speed boost with left control");
 			ImGui::Text("Rotate camera with mouse");
+			ImGui::Text("Press G to lock camera culling");
 		}
 		ImGui::End();
 	}

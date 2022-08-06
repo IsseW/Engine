@@ -101,7 +101,8 @@
     </Link>
     <PostBuildEvent>
       <Message>Copy resources</Message>
-      <Command>Xcopy /Y /E /I "$(ProjectDir)resources" "$(OutDir)resources"</Command>
+      <Command>rmdir /s /q "$(OutDir)resources"
+Xcopy /Y /E /I /K /D /H "$(ProjectDir)resources" "$(OutDir)resources"</Command>
     </PostBuildEvent>
     <FxCompile>
       <ObjectFileOutput>$(OutDir)shaders/%(Filename).cso</ObjectFileOutput>
@@ -126,7 +127,8 @@
     </Link>
     <PostBuildEvent>
       <Message>Copy resources</Message>
-      <Command>Xcopy /Y /E /I "$(ProjectDir)resources" "$(OutDir)resources"</Command>
+      <Command>rmdir /s /q "$(OutDir)resources"
+Xcopy /Y /E /I /K /D /H "$(ProjectDir)resources" "$(OutDir)resources"</Command>
     </PostBuildEvent>
     <FxCompile>
       <ObjectFileOutput>$(OutDir)shaders/%(Filename).cso</ObjectFileOutput>

@@ -70,7 +70,7 @@ PixelShaderOutput main(PixelShaderInput input) : SV_TARGET {
     output.normal = float4(normal.x * t + normal.y * b + normal.z * n, 1.0);
     output.position = float4(wpos, shininess_c);
 
-    float3 reflection = reflection_tex.Sample(tex_sampler, normalize(output.normal)).xyz;
+    float3 reflection = reflection_tex.Sample(tex_sampler, normalize(output.normal + input.obj_pos)).xyz;
 
     output.ambient.xyz = ambient_c.xyz * ambient_tex.Sample(tex_sampler, uv).xyz + reflection / 3.0;
     output.ambient.w = 1.0;

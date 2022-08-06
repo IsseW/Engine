@@ -44,6 +44,7 @@ void run_tests();
 #endif
 
 void setup_scene(World& world, Renderer& renderer, AssetHandler& assets) {
+	world.add(Light::directional(Transform::from_translation({ -2.0f, 5.0f, -2.0f }).looking_at({ 0.0f }), { 0.5f }));
 	auto mat_group_handle = assets.load<MaterialGroup>(fs::path { "resources\\icons.mtl" });
 	auto mat_group = assets.get(mat_group_handle).unwrap();
 
@@ -62,9 +63,9 @@ void setup_scene(World& world, Renderer& renderer, AssetHandler& assets) {
 	particle_system.vel_magnitude_max = 0.1f;
 
 	particle_system.acceleration = { 0.0f, -9.8f, 0.0f };
-	particle_system.min_life_time = 6.0f;
-	particle_system.max_life_time = 7.0f;
-	particle_system.start_size = 0.05f;
+	particle_system.min_life_time = 2.0f;
+	particle_system.max_life_time = 4.0f;
+	particle_system.start_size = 0.2f;
 
 	world.add(std::move(particle_system));
 	
@@ -81,22 +82,52 @@ void setup_scene(World& world, Renderer& renderer, AssetHandler& assets) {
 	world.add(Object(Transform::from_translation({ 20.0f, 1.0f, 7.0f }).with_rotation(rot))
 		.with_mesh(assets.load<Mesh>(fs::path{ "resources/quad_bevy.wavefront" })));
 
+	auto quad = assets.load<Mesh>(fs::path{ "resources/quad_veloren.wavefront" });
+
 	world.add(Object(Transform::from_translation({ 20.0f, 1.0f, 9.0f }).with_rotation(rot))
-		.with_mesh(assets.load<Mesh>(fs::path{ "resources/quad_veloren.wavefront" })));
+		.with_mesh(quad));
 
 	auto croc_mesh = assets.load<Mesh>(std::filesystem::path{ "resources/croc.wavefront" });
 
 	Vec3<f32> center { 15.0f, 0.0f, -15.0f };
 	f32 radius = 8.0f;
-	for (f32 a = 0.0f; a <= 360.0f; a += 15.0f) {
-		auto rot = Quat<f32>::from_euler(Vec3<f32>{ 0.0f, 0.0f, a } *F32::TO_RAD);
-		auto dir = rot* Vec3<f32>::unit_x();
-		for (f32 z = 0.0f; z < 50.0f; z += 10.0f) {
-			world.add(Object(Transform::from_translation(center + dir * radius + Vec3<f32> {0.0f, 0.0f, -z})).with_mesh(croc_mesh));
+	Vec3<f32> colors[6] = {
+		{0.0f, 1.0f, 1.0f},
+		{1.0f, 0.0f, 1.0f},
+		{1.0f, 1.0f, 0.0f},
+		{1.0f, 0.0f, 0.0f},
+		{0.0f, 1.0f, 0.0f},
+		{0.0f, 0.0f, 1.0f},
+	};
+	for (u32 z = 0; z < 6; ++z) {
+		Vec3<f32> p = center + Vec3<f32> {0.0f, 0.0f, -(f32)z * 10.0f};
+		for (f32 a = 0.0f; a <= 360.0f; a += 15.0f) {
+			auto rot = Quat<f32>::from_euler(Vec3<f32>{ 0.0f, 0.0f, a } *F32::TO_RAD);
+			auto dir = rot* Vec3<f32>::unit_x();
+			world.add(Object(Transform::from_translation(p + dir * radius)).with_mesh(croc_mesh));
 		}
+		f32 offset = radius / 2.0f;
+
+		world.add(Light::spot(
+			Transform::from_translation(p + Vec3<f32>{(f32)(z % 2)* offset - (f32)(z % 2 + 1) * offset, radius * 2.0f, 0.0})
+			.looking_at(p), colors[z], 13.0f * F32::TO_RAD));
 	}
 	auto sphere = assets.load<Mesh>(std::filesystem::path{ "resources/sphere.wavefront" });
-	world.add(Reflective(renderer.ctx.device, Transform::from_translation(center + Vec3<f32>{0.0f, 0.0f, -25.0f}).with_scale(4.0)).with_mesh(sphere));
+	world.add(Reflective(renderer.ctx.device, 
+		Transform::from_translation(center + Vec3<f32>{0.0f, 0.0f, -25.0f}).with_scale(4.0f)).with_mesh(sphere));
+
+	world.add(Object(Transform::from_translation(center + Vec3<f32>{0.0f, 0.0f, -5.0f}).with_scale(0.5f)).with_mesh(sphere));
+	world.add(Object(Transform::from_translation(center + Vec3<f32>{0.0f, 0.0f, -15.0f}).with_scale(0.5f)).with_mesh(sphere));
+	world.add(Object(Transform::from_translation(center + Vec3<f32>{0.0f, 0.0f, -30.0f}).with_scale(0.5f)).with_mesh(sphere));
+
+	auto cube = assets.load<Mesh>(std::filesystem::path{ "resources/cube.wavefront" });
+
+	world.add(Reflective(renderer.ctx.device, Transform::from_translation(center)).with_mesh(cube));
+	
+
+	world.add(Object(
+		Transform::from_translation(Vec3<f32>{0.0f, -10.0f, 0.0f})
+			.with_scale(100.0)).with_mesh(quad));
 
 }
 
@@ -122,16 +153,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	Renderer renderer = maybe_renderer.unwrap();
 	window->set_renderer(&renderer);
 
-	AssetHandler assets {};
-	assets.load<Mesh>(std::filesystem::path { "resources/u.wavefront" });
-	assets.load<Mesh>(std::filesystem::path{ "resources/test.wavefront" });
+	AssetHandler assets {}; 
 
 	auto cam = Camera::perspective(Transform::from_translation({ 0.0, 2.0, -5}).looking_at({0.0}), 60.0f * F32::TO_RAD);
 	World world(cam);
-
-
-	world.add(Light::directional(Transform::from_translation({ -2.0f, 5.0f, -2.0f }).looking_at({ 0.0f }), {0.5f}));
-	world.add(Light::spot(Transform::from_translation({ 0.0f, 5.0f, 0.0f }).looking_at({ 0.0f }), { 1.0 }, F32::PI / 16.0f));
 	
 	setup_scene(world, renderer, assets);
 

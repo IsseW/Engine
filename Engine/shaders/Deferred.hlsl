@@ -60,17 +60,11 @@ void deferred(uint2 pos) {
 
 			float4 shadow_uv = mul(light.proj_mat, mul(light.view_mat, float4(p, 1.0)));
 			shadow_uv /= shadow_uv.w;
-			if (light.light_type == SPOT_LIGHT) {
-				// shadow_uv.z = sqrt(abs(shadow_uv.z)) * shadow_uv.z / abs(shadow_uv.z);
-			}
 			float shadow = shadows.SampleLevel(
 				shadow_sampler,
 				float3(0.5 + shadow_uv.xy * float2(0.5, -0.5), (float)i),
 				0, 0
 			).x + bias;
-
-			// float d = pow((abs(shadow_uv.z - shadow)), 0.5) * 2.0;
-			// write(pos, float4(d, d, d, 1.0));
 
 			if (shadow_uv.z < shadow) {
 				if (light.light_type == DIR_LIGHT) {

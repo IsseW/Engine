@@ -48,9 +48,7 @@ DomainOutput main(ConstantOutput input, float3 uvw: SV_DomainLocation, const Out
 
 	output.wpos = wpos.xyz;
 
-	output.position = mul(proj_matrix, mul(view_matrix, wpos)); // uvw.x * patch[0].position + uvw.y * patch[1].position + uvw.z * patch[2].position;
-
-	// output.wpos = uvw.x * patch[0].wpos + uvw.y * patch[1].wpos + uvw.z * patch[2].wpos;
+	output.position = mul(proj_matrix, mul(view_matrix, wpos));
 
 	float2 uv = uvw.x * patch[0].uv + uvw.y * patch[1].uv + uvw.z * patch[2].uv;
 	output.uv = uv;

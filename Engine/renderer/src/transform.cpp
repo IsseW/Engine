@@ -83,7 +83,7 @@ Camera Camera::perspective(Transform transform, f32 fov) {
 	Camera c;
 	c.transform = transform;
 	c.cam_near = 0.01f;
-	c.cam_far = 100.0f;
+	c.cam_far = 500.0f;
 	c.is_perspective = true;
 	c.size = 10.0f;
 	c.fov = fov;
@@ -93,7 +93,7 @@ Camera Camera::orthographic(Transform transform, f32 size) {
 	Camera c;
 	c.transform = transform;
 	c.cam_near = 0.01f;
-	c.cam_far = 100.0f;
+	c.cam_far = 500.0f;
 	c.is_perspective = false;
 	c.size = size;
 	c.fov = 60.0f;
