@@ -34,6 +34,9 @@ struct Vec {
 	void push(T&& t) {
 		_internal.push_back(std::move(t));
 	}
+	void extend(const Vec& other) {
+		_internal.insert(_internal.end(), other._internal.begin(), other._internal.end());
+	}
 
 	void push(const T& t) {
 		_internal.push_back(std::move(t));
@@ -41,6 +44,20 @@ struct Vec {
 
 	void insert(T elem, usize index) {
 		_internal.insert(elem, index);
+	}
+
+	Option<usize> index_of(const T& e) const {
+		for (usize i = 0; i < len(); ++i) {
+			if (e == *this->get(i).unwrap_unchecked()) {
+				return some(i);
+			}
+		}
+		return {};
+	}
+
+	void swap_remove(usize i) {
+		std::swap(_internal[i], _internal.back());
+		_internal.pop_back();
 	}
 
 	Option<T> pop() {

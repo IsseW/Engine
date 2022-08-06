@@ -11,12 +11,6 @@ Object&& Object::with_mesh(AId<Mesh> mesh) {
 	return std::move(*this);
 }
 
-Aabb<f32> Object::get_bounds(const AssetHandler& assets) const {
-	auto bounds = assets.get_or_default(mesh)->bounds;
-	bounds = bounds.transformed(transform.get_mat());
-	return bounds;
-}
-
 ObjectData Transform::get_data() const {
 	return ObjectData{
 		get_mat().transposed(),
@@ -27,7 +21,6 @@ World::World(Camera camera) : camera(camera) { }
 
 Id<Object> World::add(Object&& object) {
 	auto id = objects.insert(std::move(object));
-	object_to_add_into_octree.push(id);
 	return id;
 }
 Id<Light> World::add(Light&& object) {
@@ -105,19 +98,49 @@ void update_camera(Camera& cam, f32 dt, const Window& window) {
 	cam.transform.rotation = Quat<f32>::angle_axis(Vec3<f32>::unit_y(), cam.yaw) * Quat<f32>::angle_axis(Vec3<f32>::unit_x(), cam.pitch);
 }
 
-void World::update(f32 dt, const Window& window, const AssetHandler& asset_handler) {
+void World::update(f32 dt, const Window& window, const AssetHandler& assets) {
 	time += dt;
-	while(object_to_add_into_octree.len() > 0){
-		auto id = object_to_add_into_octree.pop().unwrap_unchecked();
-		auto object = this->objects.get(id).unwrap();
-		object->mesh.as_ptr().then_do([&](AId<Mesh>* mesh) {
-			const auto mesh_data = asset_handler.get<Mesh>(*mesh).unwrap();
-			auto bounds = mesh_data->bounds;
-			auto transform = object->transform.get_mat();
-			auto new_bounds = Aabb<f32>{ (transform * bounds.min.with_w(1)).xyz(), (transform * bounds.max.with_w(1)).xyz() };
-			this->octree_obj.insert(new_bounds, id);
+
+	objects.iter([&](Id<Object> id, Object& obj) {
+		auto bounds = assets.get_or_default(obj.mesh)->bounds;
+		bounds = bounds.transformed(obj.transform.get_mat());
+		
+		if (bounds.min != obj.bounds.min || bounds.max != obj.bounds.max) {
+			Vec<Vec<Id<Object>>*> r = octree_obj.collect([&](Vec3<f32> origin, f32 len) {
+				Aabb<f32> cell_bounds{ origin - len, origin + len };
+				return cell_bounds.intersects(obj.bounds);
+			});
+
+			for (auto vec : r) {
+				vec->index_of(id).then_do([&](usize i) {
+					vec->swap_remove(i);
+				});
+			}
+			obj.bounds = bounds;
+			octree_obj.insert(bounds, id);
+		}
+	});
+
+	reflective.iter([&](Id<Reflective> id, Reflective& obj) {
+		auto bounds = assets.get_or_default(obj.mesh)->bounds;
+		bounds = bounds.transformed(obj.transform.get_mat());
+
+		if (bounds.min != obj.bounds.min || bounds.max != obj.bounds.max) {
+			Vec<Vec<Id<Reflective>>*> r = octree_reflective.collect([&](Vec3<f32> origin, f32 len) {
+				Aabb<f32> cell_bounds{ origin - len, origin + len };
+				return cell_bounds.intersects(obj.bounds);
+			});
+
+			for (auto vec : r) {
+				vec->index_of(id).then_do([&](usize i) {
+					vec->swap_remove(i);
+					});
+			}
+			obj.bounds = bounds;
+			octree_reflective.insert(bounds, id);
+		}
 		});
-	}
+
 	update_camera(camera, dt, window);
 }
 

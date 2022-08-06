@@ -4,6 +4,7 @@ struct VertexShaderInput {
 
 struct VertexShaderOutput {
     float4 pos : SV_POSITION;
+    float4 color : COLOR;
 };
 
 cbuffer GLOBALS : register(b0) {
@@ -19,8 +20,8 @@ float4 transform_to_camera(float4 vec) {
 }
 
 VertexShaderOutput main(VertexShaderInput input) {
-    float4 pos = transform_to_camera(input.position);
     VertexShaderOutput output;
-    output.pos = pos;
+    output.pos = transform_to_camera(float4(input.position.xyz, 1.0));
+    output.color = float4(1.0, 0, 0, 1.0) * (1.0 - input.position.w) + float4(0.0, 0.0, 1.0, 1.0) * input.position.w;
     return output;
 }

@@ -1,15 +1,16 @@
 struct PixelShaderInput {
     float4 pos : SV_POSITION;
+    float4 color : COLOR;
 };
 
 struct PixelShaderOutput {
-    float4 colour;
+    float4 color;
 };
 
 PixelShaderOutput main(PixelShaderInput input) : SV_TARGET
 {
     PixelShaderOutput output;
-    output.colour = float4(1.0, 0, 0, 1);
+    output.color = input.color;
 
     return output;
 }

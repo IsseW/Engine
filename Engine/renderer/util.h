@@ -2,8 +2,8 @@
 
 #include<d3d11.h>
 #include<rstd/result.h>
-#include<math/vec.h>
-#include<rstd/vector.h>
+#include<math/mat.h>
+#include<rstd/depot.h>
 #include<vector>
 
 enum RenderCreateError {
@@ -274,3 +274,9 @@ Result<ID3D11DomainShader*, RenderCreateError> load_domain(ID3D11Device* device,
 struct Renderer;
 struct RendererCtx;
 struct Viewpoint;
+struct Line;
+struct World;
+struct Object;
+struct Reflective;
+
+void collect_to_render(const World& world, const Mat4<f32>& world_mat, const Mat4<f32>& proj_mat, bool orthographic, Vec<Id<Object>>& objects, Vec<Id<Reflective>>& reflective, Option<Id<Reflective>> skip, Option<Vec<Line>*> debug_lines = {});

@@ -28,8 +28,11 @@ struct RendererCtx {
 
 struct Window;
 
+struct Input;
+
 struct Viewpoint {
 	Vec<Id<Object>> objects_in_camera;
+	Vec<Id<Reflective>> reflective_in_camera;
 
 	Mat4<f32> view;
 	Mat4<f32> proj;
@@ -38,7 +41,6 @@ struct Viewpoint {
 	DepthTexture& depth;
 	GBuffer& gbuffer;
 	const D3D11_VIEWPORT& viewport;
-	Option<Id<Reflective>> skip_reflective;
 	Vec2<u16> size() const;
 };
 
@@ -46,7 +48,7 @@ struct DrawingContext {
 	Vec<Viewpoint> viewpoints;
 	Aabb<f32> psr_bounds;
 
-	static DrawingContext create(Renderer& renderer, const World& world, const AssetHandler& assets, Vec<Line>& debug_lines);
+	static DrawingContext create(Renderer& renderer, const World& world, const AssetHandler& assets, const Input& input, Vec<Line>& debug_lines);
 };
 
 struct Renderer {
@@ -58,7 +60,7 @@ struct Renderer {
 	DebugPass debug_pass;
 
 	void clean_up();
-	void draw(const World& world, AssetHandler& assets, f32 delta);
+	void draw(const World& world, AssetHandler& assets, const Input& input, f32 delta);
 	void resize(const Window& window, Vec2<u16>);
 	void present();
 

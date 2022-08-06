@@ -102,6 +102,12 @@ struct SparseOctree {
 		collect_inner(f, &collector, this->_root.get(), DEPTH, this->origin, this->len);
 		return collector;
 	}
+	template<typename F>
+	Vec<Vec<T>*> collect(F f) {
+		Vec<Vec<T>*> collector{};
+		collect_inner(f, &collector, this->_root.get(), DEPTH, this->origin, this->len);
+		return collector;
+	}
 private:
 	template<typename F>
 	void collect_inner(F f, Vec<const Vec<T>*>* collector, OctreeNode* cur_node, usize depth, Vec3<f32> origin, f32 len) const {
@@ -111,9 +117,9 @@ private:
 		Vec3<f32> origins[8];
 		f32 new_len = len / 2;
 		usize index = 0;
-		for (usize x = 0; x <= 1; ++x) {
+		for (usize z = 0; z <= 1; ++z) {
 			for (usize y = 0; y <= 1; ++y) {
-				for (usize z = 0; z <= 1; ++z) {
+				for (usize x = 0; x <= 1; ++x) {
 					Vec3<f32> offset = Vec3<f32>{
 						(f32)x * 2 - 1,
 						(f32)y * 2 - 1,
@@ -141,7 +147,48 @@ private:
 			}
 		}
 	}
-		
+	
+
+	template<typename F>
+	void collect_inner(F f, Vec<Vec<T>*>* collector, OctreeNode* cur_node, usize depth, Vec3<f32> origin, f32 len) {
+		if (!cur_node) {
+			return;
+		}
+		Vec3<f32> origins[8];
+		f32 new_len = len / 2;
+		usize index = 0;
+		for (usize z = 0; z <= 1; ++z) {
+			for (usize y = 0; y <= 1; ++y) {
+				for (usize x = 0; x <= 1; ++x) {
+					Vec3<f32> offset = Vec3<f32>{
+						(f32)x * 2 - 1,
+						(f32)y * 2 - 1,
+						(f32)z * 2 - 1,
+					};
+					origins[index++] = origin + offset * new_len;
+				}
+			}
+		}
+		if (depth != 0) {
+			auto branch = dynamic_cast<OctreeBranch*>(cur_node);
+			for (usize oct = 0; oct < 8; ++oct) {
+				auto oct_origin = origins[oct];
+				if (f(oct_origin, new_len)) {
+					collect_inner(f, collector, branch->children[oct].get(), depth - 1, oct_origin, new_len);
+				}
+			}
+		}
+		else {
+			auto leaf = dynamic_cast<OctreeLeaf<T>*>(cur_node);
+			for (usize oct = 0; oct < 8; ++oct) {
+				if (f(origins[oct], new_len)) {
+					collector->push(&leaf->data[oct]);
+				}
+			}
+		}
+	}
+
+
 	Vec<T>* find_or_create(u64 node_index) {
 		OctreeNode* node = _root.get();
 		for (usize depth = DEPTH; depth > 0; --depth) {

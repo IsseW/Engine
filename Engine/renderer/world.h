@@ -34,6 +34,7 @@ struct Object {
 	Aabb<f32> get_bounds(const AssetHandler& assets) const;
 
 	Transform transform;
+	Aabb<f32> bounds { F32::INF, F32::NEG_INF };
 	Option<AId<Mesh>> mesh;
 
 
@@ -55,6 +56,7 @@ struct Reflective {
 	CubeTexture cube_texture;
 
 	Transform transform;
+	Aabb<f32> bounds{ F32::INF, F32::NEG_INF };
 	Option<AId<Mesh>> mesh;
 	bool tesselate{ true };
 };
@@ -87,5 +89,4 @@ struct World {
 	Depot<ParticleSystem> particle_systems;
 	SparseOctree<Id<Object>, 5> octree_obj{ Vec3<f32>{0,0,0}, 80 };
 	SparseOctree<Id<Reflective>, 5> octree_reflective{ Vec3<f32>{0,0,0}, 80 };
-	Vec<Id<Object>> object_to_add_into_octree;
 };

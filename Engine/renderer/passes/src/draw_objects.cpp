@@ -1,7 +1,7 @@
 #include<renderer/passes/draw_objects.h>
 
 void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets, FirstPass::Globals globals, bool pixel_shader, 
-	const Vec<Id<Object>>& objects_to_draw, const Vec<Id<Reflective>>& reflectives_to_draw, Option<Id<Reflective>> skip_reflective)
+	const Vec<Id<Object>>& objects_to_draw, const Vec<Id<Reflective>>& reflectives_to_draw)
 {
 	rend.ctx.context->RSSetState(rend.first_pass.rs_default);
 
@@ -78,7 +78,7 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 
 	for (const auto& id : objects_to_draw) {
 		const auto& obj = *world.objects.get(id).unwrap();
-		set_tesselation(obj.tesselate, obj.get_bounds(assets));
+		set_tesselation(obj.tesselate, obj.bounds);
 		ObjectData object_data = obj.transform.get_data();
 		rend.first_pass.object_renderer.object.update(rend.ctx.context, &object_data);
 
@@ -99,11 +99,8 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 
 	for (const auto& id : reflectives_to_draw) {
 		const auto& reflective = *world.reflective.get(id).unwrap();
-		// Reflective materials skip themselfs
-		if (skip_reflective.as_ptr().map<bool>([&](const Id<Reflective>* skip) { return *skip == id; }).unwrap_or(false)) {
-			return;
-		}
-		set_tesselation(reflective.tesselate, reflective.get_bounds(assets));
+	// world.reflective.iter([&](Id<Reflective> id, const Reflective& reflective) {
+		set_tesselation(reflective.tesselate, reflective.bounds);
 
 		ObjectData object_data = reflective.transform.get_data();
 		rend.first_pass.object_renderer.object.update(rend.ctx.context, &object_data);
@@ -122,7 +119,7 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 				rend.ctx.context->DrawIndexed(sub_mesh.end_index - sub_mesh.start_index, sub_mesh.start_index, 0);
 			}
 		}
-	}
+	}//);
 	set_tesselation(false, {});
 
 	if (pixel_shader) {

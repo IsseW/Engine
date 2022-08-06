@@ -45,6 +45,16 @@ namespace math {
 			}
 		}
 	
+		Vec<T, L> center() const {
+			return (min + max) / (T)2;
+		}
+		Vec<T, L> size() const {
+			return max - min;
+		}
+		Vec<T, L> extends() const {
+			return size() / (T)2;
+		}
+
 		T distance_to_sqr(const Vec<T, L>& point) const {
 			constexpr T ZERO = (T)0;
 			Vec<T, L> d = point.map<T>([&](const T& t, const T& min, const T& max) {

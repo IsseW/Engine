@@ -332,7 +332,7 @@ namespace math {
 		return Mat4<f32> {
 			TWO* n / (r - l), ZERO, (r + l) / (r - l), ZERO,
 			ZERO, TWO* n / (t - b), (t + b) / (t - b), ZERO,
-			ZERO, ZERO, ((f + n) / (f - n) - ONE) / TWO + ONE, f * n / (n - f),
+			ZERO, ZERO, ((f + n) / (f - n) + ONE) / TWO, f * n / (n - f),
 			ZERO, ZERO, ONE, ZERO,
 		};
 	}

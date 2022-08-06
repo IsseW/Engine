@@ -196,7 +196,7 @@ void FirstPass::draw(Renderer& rend, const World& world, const AssetHandler& ass
 		viewpoint.pos,
 	};
 
-	draw_objects(rend, world, assets, g, true, viewpoint.objects_in_camera, Vec<Id<Reflective>>{}, viewpoint.skip_reflective);
+	draw_objects(rend, world, assets, g, true, viewpoint.objects_in_camera, viewpoint.reflective_in_camera);
 }
 
 

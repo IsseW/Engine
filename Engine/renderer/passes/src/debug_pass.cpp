@@ -31,13 +31,16 @@ void DebugPass::draw(Renderer& rend, const World& world, Vec<Line> lines) {
 	ctx->IASetInputLayout(this->il);
 	ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 	ctx->VSSetConstantBuffers(0, 1, &rend.first_pass.globals.buffer);
+	u32 stride = sizeof(Vec4<f32>);
+	u32 offset = 0;
+	ctx->IASetVertexBuffers(0, 1, &this->vtx_buf, &stride, &offset);
 	
 	ctx->OMSetRenderTargets(1, &rend.ctx.screen.rtv, nullptr);
 
 	for (usize i = 0; i < lines.len(); i += LEN/2) {
 		D3D11_MAPPED_SUBRESOURCE res;
 		ctx->Map(this->vtx_buf, 0, D3D11_MAP_WRITE_DISCARD, 0, &res);
-		usize count = max(lines.len() - i, LEN / 2);
+		usize count = min(lines.len() - i, LEN / 2);
 		Line* data = &lines[i];
 		memcpy(res.pData, data, count*sizeof(Line));
 		ctx->Unmap(this->vtx_buf, 0);

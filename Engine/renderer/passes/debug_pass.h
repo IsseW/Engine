@@ -4,6 +4,7 @@
 
 struct Line {
 	Line(Vec3<f32> p0, Vec3<f32> p1) : p0{ p0.with_w(0) }, p1{p1.with_w(0)} {}
+	Line(Vec3<f32> p0, Vec3<f32> p1, f32 c) : p0{ p0.with_w(c) }, p1{ p1.with_w(c) } {}
 
 	Vec4<f32> p0, p1;
 };

@@ -270,6 +270,8 @@ struct AssetHandler {
 	void clean_up() {
 		assets<Image>().clean_up();
 		assets<Mesh>().clean_up();
+		assets<Material>().clean_up();
+		assets<MaterialGroup>().clean_up();
 	}
 
 private:

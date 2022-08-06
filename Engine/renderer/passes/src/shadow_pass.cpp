@@ -31,7 +31,13 @@ void ShadowPass::draw(Renderer& rend, const World& world, const AssetHandler& as
 	world.lights.values([&](const Light& light) {
 		rend.ctx.context->OMSetRenderTargets(0, rtv, shadows.dsvs[i++]);
 		auto g = FirstPass::Globals::from_light(light, world.camera);
-		draw_objects(rend, world, assets, g, false, Vec<Id<Object>>{}, Vec<Id<Reflective>>{});
+
+		Vec<Id<Object>> objects{};
+		Vec<Id<Reflective>> reflective{};
+
+		collect_to_render(world, light.transform.get_mat(), light.get_proj_mat(world.camera), light.light_type == LightType::Directional, objects, reflective, {});
+
+		draw_objects(rend, world, assets, g, false, objects, reflective);
 	});
 }
 
