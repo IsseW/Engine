@@ -12,7 +12,7 @@ Result<SecondPass, RenderCreateError> SecondPass::create(ID3D11Device* device) {
 	TRY(object, Uniform<ObjectData>::create(device));
 
 	SBuffer<LightData> lights;
-	TRY(lights, SBuffer<LightData>::create(device, 10, "lights"));
+	TRY(lights, SBuffer<LightData>::create(device, 10));
 
 
 	D3D11_SAMPLER_DESC sampler_desc;

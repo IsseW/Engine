@@ -68,7 +68,8 @@ void Image::bind(ID3D11Device* device) {
 	if (FAILED(res)) {
 		PANIC("Failed to create loaded texture.");
 	}
-	dxname(texture, "Asset texture");
+	static usize cnt = 0;
+	dxname(texture, std::string(CUR_FILE_AND_LINE_STR) + std::to_string(cnt));
 	D3D11_SHADER_RESOURCE_VIEW_DESC resource_desc;
 	resource_desc.Texture2D = { 0, 1 };
 	resource_desc.Format = desc.Format;
@@ -78,7 +79,7 @@ void Image::bind(ID3D11Device* device) {
 	if (FAILED(res)) {
 		PANIC("Failed to create shader resource view for texture.");
 	}
-	dxname(srv, "Asset texture srv");
+	dxname(srv, std::string(CUR_FILE_AND_LINE_STR) + std::to_string(cnt++));
 
 	binded.insert(Binded{
 			texture,
@@ -365,7 +366,9 @@ void Mesh::bind(ID3D11Device* device, AssetHandler& asset_handler) {
 	if (FAILED(device->CreateBuffer(&bufferDesc, &data, &vertex_buffer))) {
 		PANIC("Failed to create vertex buffer for model");
 	}
-	dxname(vertex_buffer, "Asset vertex buffer");
+	static usize cnt = 0;
+	std::string cnt_str = std::to_string(cnt);
+	dxname(vertex_buffer, std::string(CUR_FILE_AND_LINE_STR) + cnt_str);
 
 	bufferDesc.ByteWidth = sizeof(Index) * indices.len();
 	bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
@@ -381,7 +384,8 @@ void Mesh::bind(ID3D11Device* device, AssetHandler& asset_handler) {
 	if (FAILED(device->CreateBuffer(&bufferDesc, &data, &index_buffer))) {
 		PANIC("Failed to create index buffer for model");
 	}
-	dxname(index_buffer, "Asset index buffer");
+	dxname(index_buffer, std::string(CUR_FILE_AND_LINE_STR) + cnt_str);
+	cnt += 1;
 
 	binded.insert(Binded{
 		vertex_buffer,
