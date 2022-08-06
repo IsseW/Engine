@@ -98,7 +98,6 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 
 	for (const auto& id : reflectives_to_draw) {
 		const auto& reflective = *world.reflective.get(id).unwrap();
-	// world.reflective.iter([&](Id<Reflective> id, const Reflective& reflective) {
 		set_tesselation(reflective.tesselate, reflective.bounds);
 
 		ObjectData object_data = reflective.transform.get_data();
@@ -118,7 +117,7 @@ void draw_objects(Renderer& rend, const World& world, const AssetHandler& assets
 				rend.ctx.context->DrawIndexed(sub_mesh.end_index - sub_mesh.start_index, sub_mesh.start_index, 0);
 			}
 		}
-	}//);
+	}
 	set_tesselation(false, {});
 
 	if (pixel_shader) {

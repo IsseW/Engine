@@ -25,7 +25,6 @@ struct Result {
 	}
 	~Result() {
 		if (is_ok()) {
-			// std::cout << "Bye bye " << typeid(T).name() << std::endl;
 			_ok.~T();
 		}
 		else {

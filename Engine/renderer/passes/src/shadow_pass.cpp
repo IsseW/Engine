@@ -6,10 +6,6 @@ void ShadowPass::clean_up() {
 
 constexpr Vec2<u16> TEX_SIZE = { 2048, 2048 };
 
-void ShadowPass::resize(ID3D11Device* device, Vec2<u16> size) {
-	// directional_shadows.resize(device, get_size(size));
-}
-
 void ShadowPass::draw(Renderer& rend, const World& world, const AssetHandler& assets) {
 	if (world.lights.len() > shadows.size.z) {
 		shadows.resize(rend.ctx.device, shadows.size.with_z((u16)world.lights.len() + 5));
