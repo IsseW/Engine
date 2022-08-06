@@ -1,4 +1,0 @@
-// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
-// such as names of functions and macros.
-// For more information see https://go.microsoft.com/fwlink/?linkid=865984
-#define TRY(x, result) { auto x##__res = result; if (!(x##__res)) { return std::move((x##__res).err()); } x = (x##__res).ok(); }
