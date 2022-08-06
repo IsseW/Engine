@@ -238,7 +238,7 @@ Mesh Mesh::load(const fs::path& path, AssetHandler& asset_handler) {
 		}
 		else if (first == "f") {
 			if (split.len() != 4) {
-				PANIC("");
+				PANIC("Doesn't support non triangle meshes");
 			}
 			auto a = split[1];
 			auto a_split = split_string(std::move(a), '/');

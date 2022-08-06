@@ -290,6 +290,9 @@ void Renderer::draw(const World& world, AssetHandler& assets, const Input& input
 	world.reflective.values([&](const Reflective& obj) {
 		assets.get_or_default(obj.mesh)->bind(ctx.device, assets);
 	});
+	world.particle_systems.values([&](const ParticleSystem& obj) {
+		assets.get_or_default(obj.material)->bind(ctx.device, assets);
+	});
 
 	Vec<Line> debug_lines;
 	DrawingContext context = DrawingContext::create(*this, world, assets, input, debug_lines);
