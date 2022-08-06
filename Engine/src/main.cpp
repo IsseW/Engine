@@ -1,3 +1,10 @@
+// Detects memory leaks.
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#endif
+
 #include<math/mat.h>
 #include<renderer/window.h>
 #include<chrono>
@@ -42,6 +49,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	Console __console{};
 
 #ifdef _DEBUG
+	// Enables memory leak collection on exit.
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
 	run_tests();
 #endif
 
