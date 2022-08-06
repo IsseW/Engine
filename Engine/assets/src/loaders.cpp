@@ -9,7 +9,7 @@
 #include<assets/stb_image.h>
 
 Image Image::load(const fs::path& path, AssetHandler& asset_handler) {
-	int width, height;
+	i32 width, height;
 	u8* data = stbi_load(path.string().data(), &width, &height, nullptr, 4);
 
 	if (data == nullptr) {

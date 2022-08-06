@@ -56,7 +56,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 #endif
 
 
-	Window* window = create_window(hInstance, 1000, 1000, nCmdShow).unwrap();
+	Window* window = create_window(hInstance, { 1000, 1000 }, nCmdShow).unwrap();
 	auto maybe_renderer = Renderer::create(*window);
 
 	if (maybe_renderer.is_err()) {

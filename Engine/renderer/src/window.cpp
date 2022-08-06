@@ -117,7 +117,7 @@ std::string last_error_msg()
 	return message;
 }
 
-Option<Window*> create_window(HINSTANCE instance, u32 width, u32 height, i32 n_cmd_show)
+Option<Window*> create_window(HINSTANCE instance, Vec2<u16> size, i32 n_cmd_show)
 {
 	const wchar_t CLASS_NAME[] = L"Cool Engine";
 
@@ -128,7 +128,7 @@ Option<Window*> create_window(HINSTANCE instance, u32 width, u32 height, i32 n_c
 
 	RegisterClass(&wc);
 
-	RECT rt = { 0, 0, (LONG)width, (LONG)height };
+	RECT rt = { 0, 0, (LONG)size.x, (LONG)size.y };
 	AdjustWindowRect(&rt, WS_OVERLAPPEDWINDOW, FALSE);
 	HWND hw = CreateWindowEx(0, CLASS_NAME, L"Very cool", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, rt.right - rt.left, rt.bottom - rt.top, nullptr, nullptr, instance, nullptr);
 	

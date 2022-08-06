@@ -31,4 +31,4 @@ private:
 	Input _input;
 };
 
-Option<Window*> create_window(HINSTANCE instance, u32 width, u32 height, i32 n_command_show);
+Option<Window*> create_window(HINSTANCE instance, Vec2<u16> size, i32 n_command_show);
