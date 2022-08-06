@@ -15,7 +15,6 @@ void RendererCtx::clean_up() {
 	context->Release();
 	device->Release();
 #if defined(_DEBUG)
-	Sleep(1000);
 	debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
 	debug->Release();
 #endif
