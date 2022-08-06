@@ -628,6 +628,7 @@ void update_ui(const Window& window, Renderer& renderer, World& world, AssetHand
 				renderer.first_pass.rs_default = renderer.first_pass.rs_wireframe;
 				renderer.first_pass.rs_wireframe = temp;
 			}
+			ImGui::Checkbox("Draw Debug", &renderer.draw_debug);
 		}
 		ImGui::End();
 	}

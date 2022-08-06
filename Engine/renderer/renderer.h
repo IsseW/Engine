@@ -58,6 +58,7 @@ struct Renderer {
 	FirstPass first_pass;
 	SecondPass second_pass;
 	DebugPass debug_pass;
+	bool draw_debug{ true };
 
 	void clean_up();
 	void draw(const World& world, AssetHandler& assets, const Input& input, f32 delta);

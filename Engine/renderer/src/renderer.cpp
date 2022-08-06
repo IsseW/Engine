@@ -283,7 +283,9 @@ void Renderer::draw(const World& world, AssetHandler& assets, const Input& input
 		second_pass.draw(*this, world, v);
 	}
 
-	debug_pass.draw(*this, world, debug_lines);
+	if (draw_debug) {
+		debug_pass.draw(*this, world, debug_lines);
+	}
 }
 
 void Renderer::present() {
