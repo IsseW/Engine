@@ -90,10 +90,22 @@
   <ItemGroup>
     <Image Include="resources\croc.png" />
     <Image Include="resources\test_texture.png" />
+    <Image Include="resources\veloren.png" />
+    <Image Include="resources\rust.png" />
+    <Image Include="resources\normal.png" />
+    <Image Include="resources\bevy.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
     <None Include="resources\croc.mtl" />
     <None Include="resources\croc.wavefront" />
+    <None Include="resources\sphere.wavefront" />
+    <None Include="resources\sphere.mtl" />
+    <None Include="resources\quad_veloren.wavefront" />
+    <None Include="resources\quad_rust.wavefront" />
+    <None Include="resources\quad_bevy.wavefront" />
+    <None Include="resources\icons.mtl" />
+    <None Include="resources\cube.wavefront" />
+    <None Include="resources\cube.mtl" />
   </ItemGroup>
 </Project>
